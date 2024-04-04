@@ -1,9 +1,10 @@
 use chrono::{DateTime, Duration, NaiveDateTime, TimeZone, Utc};
+use derive_more::From;
 use serde::{Deserialize, Serialize};
 
 pub type DateTimeUtc = DateTime<Utc>;
 
-#[derive(Deserialize, Serialize, sqlx::Type, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Deserialize, Serialize, sqlx::Type, Debug, PartialEq, Eq, Clone, Copy, From)]
 #[sqlx(transparent)]
 pub struct Milliseconds(i64);
 
@@ -16,12 +17,6 @@ impl From<Milliseconds> for Duration {
 impl From<Duration> for Milliseconds {
     fn from(value: Duration) -> Self {
         Milliseconds(value.num_milliseconds())
-    }
-}
-
-impl From<i64> for Milliseconds {
-    fn from(value: i64) -> Self {
-        Milliseconds(value)
     }
 }
 
