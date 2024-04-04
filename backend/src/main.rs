@@ -137,8 +137,6 @@ mod tests {
             .await
             .unwrap();
 
-        println!("{:?}", response);
-
         if response.status() != StatusCode::OK {
             let body = response.into_body().collect().await.unwrap().to_bytes();
             let body = String::from_utf8_lossy(&body);
