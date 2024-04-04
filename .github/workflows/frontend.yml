@@ -40,6 +40,11 @@ jobs:
           api-level: 29
           working-directory: ./frontend
           script: ./gradlew connectedCheck
+      - name: Report
+        uses: FlickerSoul/android-test-report-actions@v1.2
+        with:
+          working-directory: "./frontend"
+          show-skipped: "true"
       - name: Lint
         run: |
           ./gradlew lint
