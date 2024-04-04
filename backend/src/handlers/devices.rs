@@ -7,16 +7,16 @@ use crate::{
 };
 
 #[debug_handler]
-pub async fn get_all_smart_devices(
+pub async fn get_all_devices(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
 ) -> Result<Json<Vec<Device>>, (StatusCode, String)> {
     let devices = sqlx::query!(
         r#"
-			SELECT id, effect, account_id
-			FROM Devices
-			WHERE account_id = ?
-		"#,
+	SELECT id, effect, account_id
+	FROM Devices
+	WHERE account_id = ?
+	"#,
         account_id
     )
     .fetch_all(&pool)
@@ -36,16 +36,16 @@ pub async fn get_all_smart_devices(
 }
 
 #[debug_handler]
-pub async fn create_smart_device(
+pub async fn create_device(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
     Json(create_device_request): Json<CreateDeviceRequest>,
 ) -> Result<Json<Device>, (StatusCode, String)> {
     let id = sqlx::query_scalar!(
         r#"
-            INSERT INTO Devices (effect, account_id)
-            VALUES (?, ?)
-            RETURNING id
+        INSERT INTO Devices (effect, account_id)
+        VALUES (?, ?)
+        RETURNING id
         "#,
         create_device_request.effect,
         account_id
