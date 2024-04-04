@@ -4,3 +4,8 @@ use serde::{Deserialize, Serialize};
 pub struct CreateDeviceRequest {
     pub effect: f64,
 }
+
+#[derive(Deserialize, Serialize)]
+pub struct DeleteDeviceRequest {
+    pub id: i64,
+}

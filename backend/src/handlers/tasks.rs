@@ -5,7 +5,7 @@ use crate::{
     data_model::{task::Task, time::Timespan},
     extractors::auth::Authentication,
     handlers::util::internal_error,
-    protocol::tasks::CreateTaskRequest,
+    protocol::tasks::{CreateTaskRequest, DeleteTaskRequest},
 };
 
 #[debug_handler]
@@ -77,7 +77,7 @@ pub async fn create_task(
 pub async fn delete_task(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
-    Json(task): Json<Task>,
+    Json(delete_task_request): Json<DeleteTaskRequest>,
 ) -> Result<(), (StatusCode, String)> {
     sqlx::query!(
         r#"
@@ -89,7 +89,7 @@ pub async fn delete_task(
             AND Devices.account_id == ?
         )
         "#,
-        task.id,
+        delete_task_request.id,
         account_id
     )
     .execute(&pool)

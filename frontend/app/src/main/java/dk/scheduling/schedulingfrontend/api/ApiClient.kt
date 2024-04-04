@@ -4,19 +4,19 @@ import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.create
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
-object RetrofitClient {
+class RetrofitClient(val baseUrl: String) {
     /**
      * The base URL of the API
      * 10.0.2.2 is a special alias to your host loopback interface (127.0.0.1 on your development machine)
      * 2222 is the port where the server is running
      */
-    private const val BASE_URL = "http://10.0.2.2:2222/"
     private val gson = GsonBuilder().setLenient().create()
     private val okHttpClient: OkHttpClient by lazy {
         val trustAllCertificates =
@@ -48,15 +48,13 @@ object RetrofitClient {
     }
     val retrofit: Retrofit by lazy {
         Retrofit.Builder()
-            .baseUrl(BASE_URL)
+            .baseUrl(baseUrl)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
     }
 }
 
-object ApiClient {
-    val apiService: ApiService by lazy {
-        RetrofitClient.retrofit.create(ApiService::class.java)
-    }
+fun getApiClient(baseUrl: String): ApiService {
+    return RetrofitClient(baseUrl).retrofit.create<ApiService>()
 }
