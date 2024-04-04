@@ -40,5 +40,6 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         clippy_flags: --all-features --all-targets -- -Dwarnings
         workdir: ./backend
+        fail_on_error: true
     - name: Check formatting
       run: cargo fmt --all -- --check
