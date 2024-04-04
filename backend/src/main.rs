@@ -41,9 +41,9 @@ fn app(pool: SqlitePool) -> Router {
         .route("/tasks/all", get(get_tasks))
         .route("/tasks/create", post(create_task))
         .route("/tasks/delete", post(delete_task))
-        .route("/devices/all", get(get_all_smart_devices))
-        .route("/devices/create", post(create_smart_device))
-        .route("/devices/delete", post(delete_smart_device))
+        .route("/devices/all", get(get_devices))
+        .route("/devices/create", post(create_device))
+        .route("/devices/delete", post(delete_device))
         .route("/accounts/register", post(register_account))
         .route("/accounts/login", post(login_to_account))
         .with_state(pool)
@@ -122,7 +122,7 @@ mod tests {
     async fn generate_device(app: &mut RouterIntoService<Body>, auth_token: String) -> Device {
         let request = Request::builder()
             .method(Method::POST)
-            .uri("/device/create")
+            .uri("/devices/create")
             .header("Content-Type", "application/json")
             .header("X-Auth-Token", auth_token.clone())
             .body(Body::from(

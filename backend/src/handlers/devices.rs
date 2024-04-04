@@ -7,7 +7,7 @@ use crate::{
 };
 
 #[debug_handler]
-pub async fn get_all_devices(
+pub async fn get_devices(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
 ) -> Result<Json<Vec<Device>>, (StatusCode, String)> {
@@ -64,7 +64,7 @@ pub async fn create_device(
 }
 
 #[debug_handler]
-pub async fn delete_smart_device(
+pub async fn delete_device(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
     Json(device): Json<Device>,
