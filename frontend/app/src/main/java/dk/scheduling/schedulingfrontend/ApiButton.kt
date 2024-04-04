@@ -4,41 +4,34 @@ import android.util.Log
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import dk.scheduling.schedulingfrontend.api.ApiClient
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import androidx.compose.runtime.rememberCoroutineScope
+import dk.scheduling.schedulingfrontend.api.getApiClient
+import kotlinx.coroutines.launch
 
 @Composable
 fun ApiButton() {
+    val coroutineScope = rememberCoroutineScope()
+    val apiService = getApiClient("http://10.0.2.2:2222")
+
     Button(onClick = {
-        val call = ApiClient.apiService.test()
+        coroutineScope.launch {
+            try {
+                val response = apiService.getTasks("NOT_VALID")
 
-        call.enqueue(
-            object : Callback<String> {
-                override fun onResponse(
-                    call: Call<String>,
-                    response: Response<String>,
-                ) {
-                    if (response.isSuccessful) {
-                        // val post = response.body()
-                        Log.i("testAPI", "we got a response")
-                        // Handle the retrieved post data
-                    } else {
-                        Log.w("testAPI", "we did not get a successful response")
-                        // Handle error
-                    }
+                if (response.isSuccessful) {
+                    // val post = response.body()
+                    Log.i("testAPI", "we got a response")
+                    // Handle the retrieved post data
+                } else {
+                    Log.w("testAPI", "we did not get a successful response")
+                    Log.w("testAPI", response.message())
+                    // Handle error
                 }
-
-                override fun onFailure(
-                    call: Call<String>,
-                    t: Throwable,
-                ) {
-                    // Handle failure
-                    Log.e("testAPI", "could not get a response")
-                }
-            },
-        )
+            } catch (e: Exception) {
+                Log.e("testApi", e.toString())
+                throw e
+            }
+        }
     }) {
         Text("Test API")
     }

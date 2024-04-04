@@ -8,3 +8,8 @@ pub struct CreateTaskRequest {
     pub duration: Milliseconds,
     pub device_id: i64,
 }
+
+#[derive(Deserialize, Serialize)]
+pub struct DeleteTaskRequest {
+    pub id: i64,
+}

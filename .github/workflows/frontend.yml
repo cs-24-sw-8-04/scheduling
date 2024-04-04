@@ -9,6 +9,10 @@ on:
 permissions:
   contents: read
 
+env:
+  CARGO_TERM_COLOR: always
+  DATABASE_URL: sqlite://ci.db?mode=rwc
+
 jobs:
   build:
 
@@ -30,8 +34,17 @@ jobs:
           java-version: '21'
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
+      - uses: Swatinem/rust-cache@v2
+      - name: Run backend for testing
+        run: |
+          cargo install sqlx-cli --no-default-features --features sqlite
+          cargo sqlx db create
+          cargo sqlx migrate run
+          cargo build
+          cargo run &
+        working-directory: backend
       - name: Build with Gradle
-        run: ./gradlew build
+        run: ./gradlew build -x test
       - name: Test (local)
         run: ./gradlew test
       - name: Test (emulator)
@@ -45,6 +58,7 @@ jobs:
         with:
           working-directory: "./frontend"
           show-skipped: "true"
+        if: ${{ always() }}
       - name: Lint
         run: |
           ./gradlew lint
