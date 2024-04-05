@@ -1,14 +1,11 @@
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,28 +13,27 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import dk.scheduling.schedulingfrontend.HomePage
-import dk.scheduling.schedulingfrontend.Page
+import dk.scheduling.schedulingfrontend.PageNumber
 import dk.scheduling.schedulingfrontend.pagesInfo
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 
 @Composable
 fun App() {
-    var currentPage by remember { mutableStateOf(Page.HomePage) }
+    var currentPageNumber by remember { mutableStateOf(PageNumber.HomePage) }
 
     Box(modifier = Modifier.fillMaxSize()) {
         // Content of the current page
         Column(modifier = Modifier.fillMaxSize()) {
-            pagesInfo.find { it.page == currentPage }?.composable?.invoke() ?: HomePage() // Default to HomePage if not found
+            pagesInfo.find { it.pageNumber == currentPageNumber }?.composable?.invoke() ?: HomePage() // Default to HomePage if not found
             Spacer(modifier = Modifier.weight(1f))
         }
 
         // Bottom navigation bar
         BottomNavigationBar(
-            currentPage = currentPage,
-            onPageSelected = { page -> currentPage = page },
+            currentPageNumber = currentPageNumber,
+            onPageSelected = { page -> currentPageNumber = page },
             modifier = Modifier.align(Alignment.BottomCenter),
         )
     }
@@ -45,38 +41,19 @@ fun App() {
 
 @Composable
 fun BottomNavigationBar(
-    currentPage: Page,
-    onPageSelected: (Page) -> Unit,
+    currentPageNumber: PageNumber,
+    onPageSelected: (PageNumber) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(color = MaterialTheme.colorScheme.surfaceContainer, modifier = modifier) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            pagesInfo.forEach { pageInfo ->
-                BottomNavigationButton(
-                    icon = pageInfo.icon,
-                    isSelected = currentPage == pageInfo.page,
-                ) { onPageSelected(pageInfo.page) }
-            }
+    NavigationBar(modifier = modifier) {
+        pagesInfo.forEach { page ->
+            NavigationBarItem(
+                icon = { Icon(page.icon, contentDescription = page.description) },
+                label = { Text(page.description) },
+                selected = currentPageNumber == page.pageNumber,
+                onClick = { onPageSelected(page.pageNumber) },
+            )
         }
-    }
-}
-
-@Composable
-fun BottomNavigationButton(
-    icon: ImageVector,
-    isSelected: Boolean,
-    onClick: () -> Unit,
-) {
-    IconButton(onClick = onClick) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            // tint = if (isSelected) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.onSurfaceVariant,
-        )
     }
 }
 
