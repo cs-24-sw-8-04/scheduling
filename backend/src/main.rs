@@ -309,8 +309,6 @@ mod tests {
             .await
             .unwrap();
 
-        println!("{:?}", response);
-
         if response.status() != StatusCode::OK {
             let body = response.into_body().collect().await.unwrap().to_bytes();
             let body = String::from_utf8_lossy(&body);
@@ -379,6 +377,7 @@ mod tests {
         // Registers an account
         let auth_token = get_account(&mut app).await;
         let auth_token = auth_token_to_uuid(auth_token);
+
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token, 3600, &device).await;
 
@@ -394,6 +393,7 @@ mod tests {
         // Registers an account
         let auth_token = get_account(&mut app).await;
         let auth_token = auth_token_to_uuid(auth_token);
+
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
         let all_tasks = get_tasks(&mut app, auth_token).await;
