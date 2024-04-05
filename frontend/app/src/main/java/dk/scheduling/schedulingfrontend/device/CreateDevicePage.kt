@@ -66,18 +66,16 @@ fun CreateDevicePage(
         verticalArrangement = Arrangement.Center,
     ) {
         StandardTextField(
-            modifier = modifier,
-            "Device Name",
-            device.name,
+            label = "Device Name",
+            value = device.name,
             onValueChange = { device = Device(-1, it, device.effect) },
         )
 
         Spacer(modifier = Modifier.height(20.dp))
 
         StandardTextField(
-            modifier = modifier,
-            "Effect (W)",
-            if (device.effect != null) device.effect.toString() else "",
+            label = "Effect (W)",
+            value = if (device.effect != null) device.effect.toString() else "",
             onValueChange = {
                 var effect: Int? = null
                 if (it == "") {
