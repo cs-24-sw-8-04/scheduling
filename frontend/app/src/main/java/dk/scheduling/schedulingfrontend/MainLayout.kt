@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -15,12 +16,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import dk.scheduling.schedulingfrontend.HomePage
 import dk.scheduling.schedulingfrontend.Page
 import dk.scheduling.schedulingfrontend.pagesInfo
+import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 
 @Composable
 fun App() {
@@ -48,7 +49,7 @@ fun BottomNavigationBar(
     onPageSelected: (Page) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Surface(color = Color.Gray, modifier = modifier) {
+    Surface(color = MaterialTheme.colorScheme.surfaceContainer, modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
@@ -74,13 +75,23 @@ fun BottomNavigationButton(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = if (isSelected) Color.White else Color.Magenta,
+            // tint = if (isSelected) MaterialTheme.colorScheme.surfaceTint else MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }
 
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
-fun PreviewApp() {
-    App()
+fun PreviewAppLightMode() {
+    SchedulingFrontendTheme(darkTheme = false) {
+        App()
+    }
+}
+
+@Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
+@Composable
+fun PreviewAppDarkMode() {
+    SchedulingFrontendTheme(darkTheme = true) {
+        App()
+    }
 }
