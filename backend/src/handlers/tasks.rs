@@ -1,4 +1,9 @@
-use axum::{debug_handler, extract::State, http::StatusCode, Json};
+use axum::{
+    debug_handler,
+    extract::{Query, State},
+    http::StatusCode,
+    Json,
+};
 use sqlx::SqlitePool;
 
 use crate::{
@@ -81,7 +86,7 @@ pub async fn create_task(
 pub async fn delete_task(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
-    Json(delete_task_request): Json<DeleteTaskRequest>,
+    Query(delete_task_request): Query<DeleteTaskRequest>,
 ) -> Result<(), (StatusCode, String)> {
     sqlx::query!(
         r#"

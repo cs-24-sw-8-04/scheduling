@@ -1,11 +1,16 @@
-use axum::{debug_handler, extract::State, http::StatusCode, Json};
+use axum::{
+    debug_handler,
+    extract::{Query, State},
+    http::StatusCode,
+    Json,
+};
 use sqlx::SqlitePool;
 
 use crate::{
     data_model::device::{Device, DeviceId},
     extractors::auth::Authentication,
     handlers::util::internal_error,
-    protocol::devices::CreateDeviceRequest,
+    protocol::devices::{CreateDeviceRequest, DeleteDeviceRequest},
 };
 
 #[debug_handler]
@@ -61,14 +66,14 @@ pub async fn create_device(
 pub async fn delete_device(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
-    Json(device): Json<Device>,
+    Query(delete_device_request): Query<DeleteDeviceRequest>,
 ) -> Result<(), (StatusCode, String)> {
     sqlx::query!(
         r#"
         DELETE FROM Devices
         WHERE id == ? AND account_id == ?
         "#,
-        device.id,
+        delete_device_request.id,
         account_id
     )
     .execute(&pool)
