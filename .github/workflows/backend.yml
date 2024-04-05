@@ -25,6 +25,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: "backend -> target"
+        cache-all-crates: true
     - name: Install sqlx-cli
       run: cargo install sqlx-cli --no-default-features --features sqlite
     - name: Setup local db
