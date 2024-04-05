@@ -68,7 +68,7 @@ fun CreateDevicePage(
         StandardTextField(
             label = "Device Name",
             value = device.name,
-            onValueChange = { device = Device(-1, it, device.effect) },
+            onValueChange = { device = Device(device.id, it, device.effect) },
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -85,7 +85,7 @@ fun CreateDevicePage(
                     isEffectSet = true
                 }
 
-                device = Device(-1, device.name, effect)
+                device = Device(device.id, device.name, effect)
             },
             keyboardOptions =
                 KeyboardOptions(
