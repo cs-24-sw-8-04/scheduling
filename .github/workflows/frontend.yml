@@ -35,6 +35,9 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
       - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: "backend -> target"
+          cache-all-crates: true
       - name: Run backend for testing
         run: |
           cargo install sqlx-cli --no-default-features --features sqlite
