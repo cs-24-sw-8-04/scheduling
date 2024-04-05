@@ -43,7 +43,6 @@ fun LoginPage(
 
     Title(titleText = "Login")
 
-    
     Column(
         modifier =
             modifier
