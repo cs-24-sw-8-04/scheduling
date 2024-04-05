@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 pub type DateTimeUtc = DateTime<Utc>;
 
-#[derive(Serialize, Deserialize, sqlx::Type, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, sqlx::Type, Debug, PartialEq, Eq, Clone, Copy)]
 #[sqlx(transparent)]
 pub struct Milliseconds(i64);
 

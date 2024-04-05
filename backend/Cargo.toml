@@ -16,6 +16,7 @@ serde = "1.0"
 serde_with = "3.7"
 dotenv = "0.15"
 argon2 = { version = "0.5", features = ["std"] }
+derive_more = "0.99"
 
 [dev-dependencies]
 tower = { version = "0.4", features = ["util"] }
