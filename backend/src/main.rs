@@ -54,7 +54,7 @@ fn app(pool: SqlitePool) -> Router {
 #[cfg(test)]
 mod tests {
     use crate::{
-        data_model::{event::Event, task::Task, time::Timespan}, protocol::events::GetEventsResponse, scheduling::event_creation::create_event
+        data_model::{task::Task, time::Timespan}, protocol::events::GetEventsResponse, scheduling::event_creation::create_event
     };
 
     use self::{
