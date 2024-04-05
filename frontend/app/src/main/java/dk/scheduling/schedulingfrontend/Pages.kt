@@ -7,21 +7,22 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.vector.ImageVector
 
-enum class Page {
+enum class PageNumber {
     HomePage,
     ApiButtonPage,
     PAGE_3,
 }
 
 data class PageInfo(
-    val page: Page,
+    val pageNumber: PageNumber,
     val icon: ImageVector,
+    val description: String,
     val composable: @Composable () -> Unit,
 )
 
 val pagesInfo =
     listOf(
-        PageInfo(Page.HomePage, Icons.Default.Home) { HomePage() },
-        PageInfo(Page.ApiButtonPage, Icons.Default.Favorite) { ApiButton() },
-        PageInfo(Page.PAGE_3, Icons.Default.Settings) { Page3() },
+        PageInfo(PageNumber.HomePage, Icons.Default.Home, "Home") { HomePage() },
+        PageInfo(PageNumber.ApiButtonPage, Icons.Default.Favorite, "Favorite") { ApiButton() },
+        PageInfo(PageNumber.PAGE_3, Icons.Default.Settings, "Settings") { Page3() },
     )

@@ -6,7 +6,7 @@ mod protocol;
 use std::error::Error;
 
 use axum::{
-    routing::{get, post},
+    routing::{delete, get, post},
     Router,
 };
 use dotenv::dotenv;
@@ -17,7 +17,7 @@ use handlers::{accounts::*, devices::*, tasks::*};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    dotenv()?;
+    dotenv().ok();
 
     let db_connection_string = std::env::var("DATABASE_URL")?;
 
@@ -40,10 +40,10 @@ fn app(pool: SqlitePool) -> Router {
     Router::new()
         .route("/tasks/all", get(get_tasks))
         .route("/tasks/create", post(create_task))
-        .route("/tasks/delete", post(delete_task))
+        .route("/tasks/delete", delete(delete_task))
         .route("/devices/all", get(get_devices))
         .route("/devices/create", post(create_device))
-        .route("/devices/delete", post(delete_device))
+        .route("/devices/delete", delete(delete_device))
         .route("/accounts/register", post(register_account))
         .route("/accounts/login", post(login_to_account))
         .with_state(pool)
