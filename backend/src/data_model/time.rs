@@ -3,13 +3,13 @@ use serde::{Deserialize, Serialize};
 
 pub type DateTimeUtc = DateTime<Utc>;
 
-#[derive(Serialize, Deserialize, sqlx::Type, Debug, PartialEq, Eq)]
+#[derive(Serialize, Deserialize, sqlx::Type, Debug, PartialEq, Eq, Clone, Copy)]
 #[sqlx(transparent)]
 pub struct Milliseconds(i64);
 
-impl Into<Duration> for Milliseconds {
-    fn into(self) -> Duration {
-        Duration::try_milliseconds(self.0).unwrap()
+impl From<Milliseconds> for Duration {
+    fn from(val: Milliseconds) -> Self {
+        Duration::try_milliseconds(val.0).unwrap()
     }
 }
 

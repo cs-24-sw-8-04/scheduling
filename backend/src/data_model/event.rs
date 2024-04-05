@@ -1,11 +1,15 @@
 use serde::{Deserialize, Serialize};
 
-use super::time::DateTimeUtc;
+use super::{device::DeviceId, time::DateTimeUtc};
+
+#[derive(Deserialize, Serialize, Debug, sqlx::Type, PartialEq, Eq)]
+#[sqlx(transparent)]
+struct EventId(i64);
 
 #[derive(Serialize, Deserialize)]
 struct Event {
-    id: i64,
-    device_id: i64,
+    id: EventId,
+    device_id: DeviceId,
     version_nr: i64,
     start_time: DateTimeUtc,
 }

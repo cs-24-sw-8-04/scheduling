@@ -1,5 +1,7 @@
 use serde::{Deserialize, Serialize};
 
+use crate::data_model::device::DeviceId;
+
 #[derive(Deserialize, Serialize)]
 pub struct CreateDeviceRequest {
     pub effect: f64,
@@ -7,5 +9,5 @@ pub struct CreateDeviceRequest {
 
 #[derive(Deserialize, Serialize)]
 pub struct DeleteDeviceRequest {
-    pub id: i64,
+    pub id: DeviceId,
 }

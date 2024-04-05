@@ -2,7 +2,11 @@ use axum::{debug_handler, extract::State, http::StatusCode, Json};
 use sqlx::SqlitePool;
 
 use crate::{
-    data_model::{task::Task, time::Timespan},
+    data_model::{
+        device::DeviceId,
+        task::{Task, TaskId},
+        time::{Milliseconds, Timespan},
+    },
     extractors::auth::Authentication,
     handlers::util::internal_error,
     protocol::tasks::{CreateTaskRequest, DeleteTaskRequest},
@@ -15,7 +19,7 @@ pub async fn get_tasks(
 ) -> Result<Json<Vec<Task>>, (StatusCode, String)> {
     let tasks = sqlx::query!(
         r#"
-        SELECT Tasks.id, Tasks.timespan_start, Tasks.timespan_end, Tasks.duration, Tasks.device_id
+        SELECT Tasks.id as "id: TaskId", Tasks.timespan_start, Tasks.timespan_end, Tasks.duration as "duration: Milliseconds", Tasks.device_id as "device_id: DeviceId"
         FROM Tasks
         JOIN Devices ON Tasks.device_id == Devices.id
         WHERE Devices.account_id = ?
@@ -31,7 +35,7 @@ pub async fn get_tasks(
         .map(|t| Task {
             id: t.id,
             timespan: Timespan::new_from_naive(t.timespan_start, t.timespan_end),
-            duration: t.duration.into(),
+            duration: t.duration,
             device_id: t.device_id,
         })
         .collect();
@@ -42,14 +46,14 @@ pub async fn get_tasks(
 #[debug_handler]
 pub async fn create_task(
     State(pool): State<SqlitePool>,
-    Authentication(account_id): Authentication,
+    Authentication(_account_id): Authentication,
     Json(create_task_request): Json<CreateTaskRequest>,
 ) -> Result<Json<Task>, (StatusCode, String)> {
     let id = sqlx::query_scalar!(
         r#"
         INSERT INTO Tasks (timespan_start, timespan_end, duration, device_id)
         VALUES (?, ?, ?, ?)
-        RETURNING id
+        RETURNING id as "id: TaskId"
         "#,
         create_task_request.timespan.start,
         create_task_request.timespan.end,
