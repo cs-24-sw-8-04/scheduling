@@ -12,7 +12,3 @@ data class CreateTaskRequest(
     val duration: Long,
     val device_id: Long,
 )
-
-data class DeleteTaskRequest(
-    val id: Long,
-)
