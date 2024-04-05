@@ -92,6 +92,16 @@ class ApiServiceTest {
         }
     }
 
+    @Test
+    fun testGetEvents() {
+        runBlocking {
+            val (authToken, _) = createAccount("get_events_test")
+
+            val response = apiService.getEvents(authToken.toString())
+            assert(response.isSuccessful) { printErrorContext(response) }
+        }
+    }
+
     private fun createAccount(username: String): Pair<UUID, String> {
         return runBlocking {
             val randomNumber = Random.nextULong()
