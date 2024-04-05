@@ -216,7 +216,7 @@ mod tests {
             .header("X-Auth-Token", auth_token.clone())
             .body(Body::from(
                 serde_json::to_vec(&Task {
-                    id: -1,
+                    id: (-1).into(),
                     timespan: Timespan::new(
                         Utc::now(),
                         Utc::now().checked_add_days(Days::new(1)).unwrap(),
@@ -244,7 +244,7 @@ mod tests {
         let body = response.into_body().collect().await.unwrap().to_bytes();
         let response: Task = serde_json::from_slice(&body).unwrap();
 
-        assert_ne!(response.id, -1);
+        assert_ne!(response.id, (-1).into());
         assert_eq!(response.duration, 3600.into());
     }
 
@@ -264,7 +264,7 @@ mod tests {
             .header("X-Auth-Token", auth_token.clone())
             .body(Body::from(
                 serde_json::to_vec(&Task {
-                    id: -1,
+                    id: (-1).into(),
                     timespan: Timespan::new(
                         Utc::now(),
                         Utc::now().checked_add_days(Days::new(1)).unwrap(),

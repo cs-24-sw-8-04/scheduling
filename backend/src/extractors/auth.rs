@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 use sqlx::SqlitePool;
 use uuid::Uuid;
 
+use crate::data_model::account::AccountId;
+
 #[derive(Deserialize, Serialize, sqlx::Type)]
 #[sqlx(transparent)]
 pub struct AuthToken(Uuid);
@@ -23,7 +25,7 @@ impl AuthToken {
 }
 
 // Account id
-pub struct Authentication(pub i64);
+pub struct Authentication(pub AccountId);
 
 #[async_trait]
 impl FromRequestParts<SqlitePool> for Authentication {
@@ -57,10 +59,10 @@ fn get_auth_token(headers: &HeaderMap) -> Option<AuthToken> {
     AuthToken::try_parse(string).ok()
 }
 
-async fn get_account_id_from_token(token: AuthToken, pool: &SqlitePool) -> Option<i64> {
+async fn get_account_id_from_token(token: AuthToken, pool: &SqlitePool) -> Option<AccountId> {
     sqlx::query_scalar!(
         r#"
-        SELECT account_id
+        SELECT account_id as "id: AccountId"
         FROM AuthTokens
         WHERE id = ?
         "#,
@@ -72,7 +74,7 @@ async fn get_account_id_from_token(token: AuthToken, pool: &SqlitePool) -> Optio
 }
 
 pub async fn create_auth_token(
-    account_id: i64,
+    account_id: AccountId,
     pool: &SqlitePool,
 ) -> Result<AuthToken, sqlx::Error> {
     let auth_token = AuthToken::new();

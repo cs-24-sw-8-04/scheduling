@@ -6,6 +6,7 @@ use axum::{debug_handler, extract::State, http::StatusCode, Json};
 use sqlx::SqlitePool;
 
 use crate::{
+    data_model::account::AccountId,
     extractors::auth::create_auth_token,
     handlers::util::internal_error,
     protocol::accounts::{RegisterOrLoginRequest, RegisterOrLoginResponse},
@@ -31,7 +32,7 @@ pub async fn register_account(
         r#"
         INSERT INTO Accounts (username, password_hash)
         VALUES (?, ?)
-        RETURNING id
+        RETURNING id as "id: AccountId"
         "#,
         register_request.username,
         password_hash
@@ -54,7 +55,7 @@ pub async fn login_to_account(
 ) -> Result<Json<RegisterOrLoginResponse>, (StatusCode, String)> {
     let account = sqlx::query!(
         r#"
-        SELECT id, password_hash
+        SELECT id as "id: AccountId", password_hash
         FROM Accounts
         WHERE username = ?
         "#,
