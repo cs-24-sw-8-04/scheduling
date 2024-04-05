@@ -2,6 +2,7 @@ mod data_model;
 mod extractors;
 mod handlers;
 mod protocol;
+mod scheduling;
 
 use std::error::Error;
 
@@ -13,7 +14,7 @@ use dotenv::dotenv;
 use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 use tokio::net::TcpListener;
 
-use handlers::{accounts::*, devices::*, tasks::*};
+use handlers::{accounts::*, devices::*, events::*, tasks::*};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -46,12 +47,15 @@ fn app(pool: SqlitePool) -> Router {
         .route("/devices/delete", delete(delete_device))
         .route("/accounts/register", post(register_account))
         .route("/accounts/login", post(login_to_account))
+        .route("/events/all", get(get_events))
         .with_state(pool)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::data_model::{task::Task, time::Timespan};
+    use crate::{
+        data_model::{event::Event, task::Task, time::Timespan}, protocol::events::GetEventsResponse, scheduling::event_creation::create_event
+    };
 
     use self::{
         data_model::device::Device,
@@ -73,7 +77,7 @@ mod tests {
     use tower::{Service, ServiceExt};
     use uuid::Uuid;
 
-    async fn test_app() -> Router {
+    async fn test_app() -> (Router, SqlitePool) {
         let db_connection_string = "sqlite::memory:";
 
         let pool = SqlitePoolOptions::new()
@@ -83,7 +87,7 @@ mod tests {
 
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
 
-        app(pool)
+        (app(pool.clone()), pool)
     }
 
     async fn get_account(app: &mut RouterIntoService<Body>) -> AuthToken {
@@ -155,16 +159,61 @@ mod tests {
         uuid.hyphenated().to_string()
     }
 
+    async fn generate_task(
+        app: &mut RouterIntoService<Body>,
+        auth_token: String,
+        device: Device,
+    ) -> Task {
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/tasks/create")
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token.clone())
+            .body(Body::from(
+                serde_json::to_vec(&Task {
+                    id: -1,
+                    timespan: Timespan::new(
+                        Utc::now(),
+                        Utc::now().checked_add_days(Days::new(1)).unwrap(),
+                    ),
+                    duration: 3600.into(),
+                    device_id: device.id,
+                })
+                .unwrap(),
+            ))
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(&mut app.clone())
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        if response.status() != StatusCode::OK {
+            let body = response.into_body().collect().await.unwrap().to_bytes();
+            let body = String::from_utf8_lossy(&body);
+            panic!("{}", body);
+        }
+
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let task: Task = serde_json::from_slice(&body).unwrap();
+
+        task
+    }
+
     #[tokio::test]
     async fn register_account() {
-        let mut app = test_app().await.into_service();
+        let (router, _) = test_app().await;
+        let mut app = router.into_service();
 
         get_account(&mut app).await;
     }
 
     #[tokio::test]
     async fn login_to_account() {
-        let mut app = test_app().await.into_service();
+        let (router, _) = test_app().await;
+        let mut app = router.into_service();
 
         // Registers an account
         get_account(&mut app).await;
@@ -202,7 +251,8 @@ mod tests {
 
     #[tokio::test]
     async fn create_task() {
-        let mut app = test_app().await.into_service();
+        let (router, _) = test_app().await;
+        let mut app = router.into_service();
 
         // Registers an account
         let auth_token = get_account(&mut app).await;
@@ -250,7 +300,8 @@ mod tests {
 
     #[tokio::test]
     async fn get_all_tasks() {
-        let mut app = test_app().await.into_service();
+        let (router, _) = test_app().await;
+        let mut app = router.into_service();
 
         // Registers an account
         let auth_token = get_account(&mut app).await;
@@ -317,5 +368,42 @@ mod tests {
         let all_tasks: Vec<Task> = serde_json::from_slice(&body).unwrap();
 
         assert_eq!(all_tasks.first().unwrap(), &created_task);
+    }
+
+    #[tokio::test]
+    async fn get_all_events() {
+        let (router, pool) = test_app().await;
+        let mut app = router.into_service();
+        let auth_token = get_account(&mut app).await;
+        let auth_token = auth_token_to_uuid(auth_token);
+        let device = generate_device(&mut app, auth_token.clone()).await;
+        let task = generate_task(&mut app, auth_token.clone(), device).await;
+        let event = create_event(&pool, task, Utc::now()).await.unwrap();
+
+        let request = Request::builder()
+            .method(Method::GET)
+            .uri("/events/all")
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token)
+            .body(Body::empty())
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(&mut app)
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        if response.status() != StatusCode::OK {
+            let body = response.into_body().collect().await.unwrap().to_bytes();
+            let body = String::from_utf8_lossy(&body);
+            panic!("{}", body);
+        }
+
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let response: GetEventsResponse = serde_json::from_slice(&body).unwrap();
+
+        assert_eq!(response.events.first().unwrap().id, event.id);
     }
 }

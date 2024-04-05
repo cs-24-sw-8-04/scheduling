@@ -3,7 +3,7 @@ use std::time::Duration;
 use axum::async_trait;
 use tokio::sync::mpsc;
 
-use crate::data_model::{task::Task, event::Event};
+use crate::data_model::{event::Event, task::Task};
 
 pub trait Scheduler {
     fn schedule(self: &mut Self, tasks: Vec<Task>) -> Vec<Event>;
@@ -14,16 +14,20 @@ pub enum SchedulerMessage {
 }
 
 pub struct SchedulerTask {
-    receiver: mpsc::UnboundedReceiver<SchedulerMessage>
+    receiver: mpsc::UnboundedReceiver<SchedulerMessage>,
 }
 
 impl SchedulerTask {
     pub fn new(receiver: mpsc::UnboundedReceiver<SchedulerMessage>) -> Self {
         SchedulerTask { receiver }
     }
-    pub async fn run_scheduler<TScheduler, TSchedulerCreator>(mut self: Self, scheduler_creator: TSchedulerCreator)
-        where TScheduler: Scheduler,
-        TSchedulerCreator: FnOnce() -> TScheduler {
+    pub async fn run_scheduler<TScheduler, TSchedulerCreator>(
+        mut self: Self,
+        scheduler_creator: TSchedulerCreator,
+    ) where
+        TScheduler: Scheduler,
+        TSchedulerCreator: FnOnce() -> TScheduler,
+    {
         let mut scheduler = scheduler_creator();
 
         loop {
@@ -48,16 +52,14 @@ impl SchedulerTask {
 
                             // Run scheduler
                             let events = scheduler.schedule(tasks);
-                            
+
                             // Propogate events
                             dbg!(events);
                         }
                     }
-                },
+                }
                 None => break,
             }
         }
-
     }
 }
-

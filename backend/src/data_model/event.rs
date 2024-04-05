@@ -1,6 +1,7 @@
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
-use super::{device::DeviceId, time::DateTimeUtc};
+use super::{device::DeviceId, task::TaskId, time::DateTimeUtc};
 
 #[derive(Deserialize, Serialize, Debug, sqlx::Type, PartialEq, Eq)]
 #[sqlx(transparent)]
@@ -8,8 +9,7 @@ struct EventId(i64);
 
 #[derive(Serialize, Deserialize)]
 struct Event {
-    id: EventId,
-    device_id: DeviceId,
-    version_nr: i64,
-    start_time: DateTimeUtc,
+    pub id: EventId,
+    pub task_id: TaskId,
+    pub start_time: DateTime<Utc>,
 }
