@@ -46,7 +46,7 @@ pub async fn get_tasks(
 #[debug_handler]
 pub async fn create_task(
     State(pool): State<SqlitePool>,
-    Authentication(account_id): Authentication,
+    Authentication(_account_id): Authentication,
     Json(create_task_request): Json<CreateTaskRequest>,
 ) -> Result<Json<Task>, (StatusCode, String)> {
     let id = sqlx::query_scalar!(
