@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 
 @Composable
 fun LoginPage(
@@ -181,6 +182,16 @@ fun login(
 
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
-fun LoginPagePreview() {
-    LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
+fun LoginPagePreviewLightMode() {
+    SchedulingFrontendTheme(darkTheme = false) {
+        LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
+    }
+}
+
+@Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
+@Composable
+fun LoginPagePreviewDarkMode() {
+    SchedulingFrontendTheme(darkTheme = true) {
+        LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
+    }
 }
