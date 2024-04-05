@@ -6,7 +6,7 @@ use super::{task::TaskId, time::DateTimeUtc};
 #[sqlx(transparent)]
 pub struct EventId(i64);
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
 pub struct Event {
     pub id: EventId,
     pub task_id: TaskId,

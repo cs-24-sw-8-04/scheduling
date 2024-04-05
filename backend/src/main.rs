@@ -164,7 +164,7 @@ mod tests {
     async fn generate_task(
         app: &mut RouterIntoService<Body>,
         auth_token: String,
-        device: Device,
+        device: &Device,
     ) -> Task {
         let request = Request::builder()
             .method(Method::POST)
@@ -379,8 +379,8 @@ mod tests {
         let auth_token = get_account(&mut app).await;
         let auth_token = auth_token_to_uuid(auth_token);
         let device = generate_device(&mut app, auth_token.clone()).await;
-        let task = generate_task(&mut app, auth_token.clone(), device).await;
-        let event = _create_event(&pool, task, Utc::now()).await.unwrap();
+        let task = generate_task(&mut app, auth_token.clone(), &device).await;
+        let event = _create_event(&pool, &task, Utc::now()).await.unwrap();
 
         let request = Request::builder()
             .method(Method::GET)
@@ -406,6 +406,6 @@ mod tests {
         let body = response.into_body().collect().await.unwrap().to_bytes();
         let response: GetEventsResponse = serde_json::from_slice(&body).unwrap();
 
-        assert_eq!(response.events.first().unwrap().id, event.id);
+        assert_eq!(response.events.first().unwrap(), &event);
     }
 }
