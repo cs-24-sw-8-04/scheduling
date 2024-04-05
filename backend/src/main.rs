@@ -173,7 +173,7 @@ mod tests {
             .header("X-Auth-Token", auth_token.clone())
             .body(Body::from(
                 serde_json::to_vec(&Task {
-                    id: -1,
+                    id: (-1).into(),
                     timespan: Timespan::new(
                         Utc::now(),
                         Utc::now().checked_add_days(Days::new(1)).unwrap(),

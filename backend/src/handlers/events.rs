@@ -3,7 +3,12 @@ use chrono::{TimeZone, Utc};
 use sqlx::SqlitePool;
 
 use crate::{
-    data_model::event::Event, extractors::auth::Authentication, handlers::util::internal_error,
+    data_model::{
+        event::{Event, EventId},
+        task::TaskId,
+    },
+    extractors::auth::Authentication,
+    handlers::util::internal_error,
     protocol::events::GetEventsResponse,
 };
 
@@ -14,7 +19,7 @@ pub async fn get_events(
 ) -> Result<Json<GetEventsResponse>, (StatusCode, String)> {
     let events = sqlx::query!(
         r#"
-        SELECT Events.id, Events.task_id, Events.start_time
+        SELECT Events.id as "id: EventId", Events.task_id as "task_id: TaskId", Events.start_time
         FROM Events 
         JOIN Tasks ON Events.task_id == Tasks.id 
         JOIN Devices ON Tasks.device_id == Devices.id
@@ -26,7 +31,7 @@ pub async fn get_events(
     .await
     .map_err(internal_error)?;
 
-    let my_events = events
+    let events = events
         .iter()
         .map(|e| Event {
             id: e.id,
@@ -35,5 +40,5 @@ pub async fn get_events(
         })
         .collect();
 
-    Ok(Json(GetEventsResponse { events: my_events }))
+    Ok(Json(GetEventsResponse { events }))
 }
