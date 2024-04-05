@@ -3,8 +3,8 @@ use chrono::{TimeZone, Utc};
 use sqlx::SqlitePool;
 
 use crate::{
-    data_model::event::Event, extractors::auth::Authentication,
-    handlers::util::internal_error, protocol::events::GetEventsResponse,
+    data_model::event::Event, extractors::auth::Authentication, handlers::util::internal_error,
+    protocol::events::GetEventsResponse,
 };
 
 #[debug_handler]
@@ -34,6 +34,6 @@ pub async fn get_events(
             start_time: Utc.from_utc_datetime(&e.start_time),
         })
         .collect();
-    
+
     Ok(Json(GetEventsResponse { events: my_events }))
 }
