@@ -227,7 +227,7 @@ fun SignUpPagePreviewLightMode() {
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
 fun SignUpPagePreviewDarkMode() {
-    SchedulingFrontendTheme(darkTheme = true) {
+    SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
         SignUpPage(navigateOnValidSignUp = {}, navigateToLoginPage = {})
     }
 }
