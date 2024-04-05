@@ -46,7 +46,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
       - name: Test (local)
-        run: ./gradlew test
+        run: ./gradlew test -i
       - name: Test (emulator)
         uses: reactivecircus/android-emulator-runner@v2
         with:
