@@ -3,7 +3,7 @@ use sqlx::{Error, SqlitePool};
 
 use crate::data_model::{event::Event, task::Task};
 
-pub async fn create_event(
+pub async fn _create_event(
     pool: &SqlitePool,
     task: Task,
     start_time: DateTime<Utc>,

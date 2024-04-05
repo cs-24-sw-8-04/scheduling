@@ -54,7 +54,7 @@ fn app(pool: SqlitePool) -> Router {
 #[cfg(test)]
 mod tests {
     use crate::{
-        data_model::{task::Task, time::Timespan}, protocol::events::GetEventsResponse, scheduling::event_creation::create_event
+        data_model::{task::Task, time::Timespan}, protocol::events::GetEventsResponse, scheduling::event_creation::_create_event
     };
 
     use self::{
@@ -378,7 +378,7 @@ mod tests {
         let auth_token = auth_token_to_uuid(auth_token);
         let device = generate_device(&mut app, auth_token.clone()).await;
         let task = generate_task(&mut app, auth_token.clone(), device).await;
-        let event = create_event(&pool, task, Utc::now()).await.unwrap();
+        let event = _create_event(&pool, task, Utc::now()).await.unwrap();
 
         let request = Request::builder()
             .method(Method::GET)
