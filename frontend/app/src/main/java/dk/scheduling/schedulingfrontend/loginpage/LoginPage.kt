@@ -1,24 +1,15 @@
 package dk.scheduling.schedulingfrontend.loginpage
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Visibility
-import androidx.compose.material.icons.filled.VisibilityOff
-import androidx.compose.material3.Button
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,13 +17,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import dk.scheduling.schedulingfrontend.sharedcomponents.FilledButton
+import dk.scheduling.schedulingfrontend.sharedcomponents.PasswordTextField
+import dk.scheduling.schedulingfrontend.sharedcomponents.StandardTextField
+import dk.scheduling.schedulingfrontend.sharedcomponents.Title
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 
 @Composable
@@ -47,12 +37,11 @@ fun LoginPage(
     var password by remember {
         mutableStateOf("")
     }
-    var showPassword by remember {
+    var isLoginFailed by remember {
         mutableStateOf(false)
     }
-    var loginFail by remember {
-        mutableStateOf(false)
-    }
+
+    Title(titleText = "Login")
 
     Column(
         modifier =
@@ -62,75 +51,47 @@ fun LoginPage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Column {
-            TextLabel("Username")
-            TextField(
-                value = username,
-                onValueChange = {
-                    username = it
-                    if (loginFail) loginFail = false
-                },
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .border(
-                            color = if (loginFail) MaterialTheme.colorScheme.error else Color.Black,
-                            width = 1.dp,
-                        ),
-                singleLine = true,
-            )
-        }
-        Spacer(modifier = Modifier.height(20.dp))
-        Column {
-            TextLabel("Password")
-            TextField(
-                value = password,
-                onValueChange = {
-                    password = it
-                    if (loginFail) loginFail = false
-                },
-                visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .border(
-                            color = if (loginFail) MaterialTheme.colorScheme.error else Color.Black,
-                            width = 1.dp,
-                        ),
-                trailingIcon = {
-                    PasswordVisibilityToggleIcon(
-                        showPassword = showPassword,
-                        onTogglePasswordVisibility = { showPassword = !showPassword },
-                    )
-                },
-            )
-        }
+        StandardTextField(
+            label = "Username",
+            value = username,
+            onValueChange = {
+                username = it
+                if (isLoginFailed) isLoginFailed = false
+            },
+            isError = isLoginFailed,
+        )
 
-        if (loginFail) {
+        Spacer(modifier = Modifier.height(20.dp))
+
+        PasswordTextField(
+            password,
+            onPasswordChange = {
+                password = it
+                if (isLoginFailed) isLoginFailed = false
+            },
+            isError = isLoginFailed,
+        )
+
+        if (isLoginFailed) {
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = "Wrong username or password",
                 color = MaterialTheme.colorScheme.error,
-                style =
-                    TextStyle(
-                        fontSize = 15.sp,
-                    ),
             )
         }
 
         Spacer(modifier = Modifier.height(30.dp))
 
-        Column {
-            Button(onClick = {
+        FilledButton(
+            onClick = {
                 if (login(username, password)) {
                     navigateOnValidLogin()
                 } else {
-                    loginFail = true
+                    isLoginFailed = true
                 }
-            }, modifier = Modifier.fillMaxWidth()) {
-                Text("Log In")
-            }
-        }
+            },
+            text = "Log In",
+        )
     }
 
     Column(
@@ -148,30 +109,6 @@ fun LoginPage(
     }
 }
 
-@Composable
-fun TextLabel(label: String) {
-    Text(
-        label,
-        style =
-            TextStyle(
-                fontSize = 15.sp,
-            ),
-    )
-}
-
-@Composable
-fun PasswordVisibilityToggleIcon(
-    showPassword: Boolean,
-    onTogglePasswordVisibility: () -> Unit,
-) {
-    val image = if (showPassword) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
-    val contentDescription = if (showPassword) "Hide password" else "Show password"
-
-    IconButton(onClick = onTogglePasswordVisibility) {
-        Icon(imageVector = image, contentDescription = contentDescription)
-    }
-}
-
 fun login(
     username: String,
     password: String,
@@ -183,7 +120,7 @@ fun login(
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
 fun LoginPagePreviewLightMode() {
-    SchedulingFrontendTheme(darkTheme = false) {
+    SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
         LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
     }
 }
@@ -191,7 +128,7 @@ fun LoginPagePreviewLightMode() {
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
 fun LoginPagePreviewDarkMode() {
-    SchedulingFrontendTheme(darkTheme = true) {
+    SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
         LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
     }
 }
