@@ -25,4 +25,4 @@ CREATE TABLE Devices(
   effect REAL NOT NULL,
   account_id INTEGER  NOT NULL
     REFERENCES Accounts(id) ON DELETE CASCADE
-)
+);

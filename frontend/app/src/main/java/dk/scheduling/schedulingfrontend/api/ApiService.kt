@@ -4,6 +4,7 @@ import dk.scheduling.schedulingfrontend.api.protocol.CreateTaskRequest
 import dk.scheduling.schedulingfrontend.api.protocol.DeleteDeviceRequest
 import dk.scheduling.schedulingfrontend.api.protocol.DeleteTaskRequest
 import dk.scheduling.schedulingfrontend.api.protocol.Device
+import dk.scheduling.schedulingfrontend.api.protocol.GetEventsResponse
 import dk.scheduling.schedulingfrontend.api.protocol.RegisterOrLoginRequest
 import dk.scheduling.schedulingfrontend.api.protocol.RegisterOrLoginResponse
 import dk.scheduling.schedulingfrontend.api.protocol.Task
@@ -67,4 +68,9 @@ interface ApiService {
         @Header("X-Auth-Token") authToken: String,
         @Body deleteTaskRequest: DeleteTaskRequest,
     ): Response<String>
+
+    @GET("events/all")
+    suspend fun getEvents(
+        @Header("X-Auth-Token") authToken: String,
+    ): Response<GetEventsResponse>
 }
