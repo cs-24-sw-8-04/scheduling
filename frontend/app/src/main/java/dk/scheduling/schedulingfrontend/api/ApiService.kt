@@ -1,8 +1,6 @@
 package dk.scheduling.schedulingfrontend.api
 import dk.scheduling.schedulingfrontend.api.protocol.CreateDeviceRequest
 import dk.scheduling.schedulingfrontend.api.protocol.CreateTaskRequest
-import dk.scheduling.schedulingfrontend.api.protocol.DeleteDeviceRequest
-import dk.scheduling.schedulingfrontend.api.protocol.DeleteTaskRequest
 import dk.scheduling.schedulingfrontend.api.protocol.Device
 import dk.scheduling.schedulingfrontend.api.protocol.GetEventsResponse
 import dk.scheduling.schedulingfrontend.api.protocol.RegisterOrLoginRequest
@@ -14,6 +12,7 @@ import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface ApiService {
     /*
@@ -46,8 +45,8 @@ interface ApiService {
     @DELETE("devices/delete")
     suspend fun deleteDevice(
         @Header("X-Auth-Token") authToken: String,
-        @Body deleteDeviceRequest: DeleteDeviceRequest,
-    ): Response<String>
+        @Query("id") deviceId: Long,
+    ): Response<Void>
 
     /*
      * Tasks
@@ -66,8 +65,8 @@ interface ApiService {
     @DELETE("tasks/delete")
     suspend fun deleteTask(
         @Header("X-Auth-Token") authToken: String,
-        @Body deleteTaskRequest: DeleteTaskRequest,
-    ): Response<String>
+        @Query("id") taskId: Long,
+    ): Response<Void>
 
     @GET("events/all")
     suspend fun getEvents(

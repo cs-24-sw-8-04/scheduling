@@ -76,6 +76,7 @@ mod tests {
         protocol::{
             accounts::{RegisterOrLoginRequest, RegisterOrLoginResponse},
             devices::CreateDeviceRequest,
+            tasks::CreateTaskRequest,
         },
     };
 
@@ -136,14 +137,112 @@ mod tests {
         response.auth_token
     }
 
-    async fn generate_device(app: &mut RouterIntoService<Body>, auth_token: String) -> Device {
+    async fn generate_task(
+        app: &mut RouterIntoService<Body>,
+        auth_token: String,
+        duration: i64,
+        device: &Device,
+    ) -> Task {
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/tasks/create")
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token.clone())
+            .body(Body::from(
+                serde_json::to_vec(&CreateTaskRequest {
+                    timespan: Timespan::new(
+                        Utc::now(),
+                        Utc::now().checked_add_days(Days::new(1)).unwrap(),
+                    ),
+                    duration: duration.into(),
+                    device_id: device.id,
+                })
+                .unwrap(),
+            ))
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(app)
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        if response.status() != StatusCode::OK {
+            let body = response.into_body().collect().await.unwrap().to_bytes();
+            let body = String::from_utf8_lossy(&body);
+            panic!("{}", body);
+        }
+
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let task: Task = serde_json::from_slice(&body).unwrap();
+
+        task
+    }
+
+    async fn get_tasks(app: &mut RouterIntoService<Body>, auth_token: String) -> Vec<Task> {
+        let request = Request::builder()
+            .method(Method::GET)
+            .uri("/tasks/all")
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token)
+            .body(Body::empty())
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(app)
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        if response.status() != StatusCode::OK {
+            let body = response.into_body().collect().await.unwrap().to_bytes();
+            let body = String::from_utf8_lossy(&body);
+            panic!("{}", body);
+        }
+
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let all_tasks: Vec<Task> = serde_json::from_slice(&body).unwrap();
+
+        all_tasks
+    }
+
+    async fn delete_task(app: &mut RouterIntoService<Body>, auth_token: String, task: Task) {
+        let request = Request::builder()
+            .method(Method::DELETE)
+            .uri(format!("/tasks/delete?id={}", task.id))
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token.clone())
+            .body(Body::empty())
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(app)
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        if response.status() != StatusCode::OK {
+            let body = response.into_body().collect().await.unwrap().to_bytes();
+            let body = String::from_utf8_lossy(&body);
+            panic!("{}", body);
+        }
+    }
+
+    async fn generate_device(
+        app: &mut RouterIntoService<Body>,
+        auth_token: String,
+        effect: f64,
+    ) -> Device {
         let request = Request::builder()
             .method(Method::POST)
             .uri("/devices/create")
             .header("Content-Type", "application/json")
             .header("X-Auth-Token", auth_token.clone())
             .body(Body::from(
-                serde_json::to_vec(&CreateDeviceRequest { effect: 1000.0 }).unwrap(),
+                serde_json::to_vec(&CreateDeviceRequest { effect }).unwrap(),
             ))
             .unwrap();
 
@@ -166,37 +265,16 @@ mod tests {
         device
     }
 
-    fn auth_token_to_uuid(auth_token: AuthToken) -> String {
-        let auth_token_json = serde_json::to_string(&auth_token).unwrap();
-        let uuid: Uuid = serde_json::from_str(&auth_token_json).unwrap();
-        uuid.hyphenated().to_string()
-    }
-
-    async fn generate_task(
-        app: &mut RouterIntoService<Body>,
-        auth_token: String,
-        device: &Device,
-    ) -> Task {
+    async fn get_devices(app: &mut RouterIntoService<Body>, auth_token: String) -> Vec<Device> {
         let request = Request::builder()
-            .method(Method::POST)
-            .uri("/tasks/create")
+            .method(Method::GET)
+            .uri("/devices/all")
             .header("Content-Type", "application/json")
             .header("X-Auth-Token", auth_token.clone())
-            .body(Body::from(
-                serde_json::to_vec(&Task {
-                    id: (-1).into(),
-                    timespan: Timespan::new(
-                        Utc::now(),
-                        Utc::now().checked_add_days(Days::new(1)).unwrap(),
-                    ),
-                    duration: 3600.into(),
-                    device_id: device.id,
-                })
-                .unwrap(),
-            ))
+            .body(Body::empty())
             .unwrap();
 
-        let response = ServiceExt::<Request<Body>>::ready(&mut app.clone())
+        let response = ServiceExt::<Request<Body>>::ready(app)
             .await
             .unwrap()
             .call(request)
@@ -210,9 +288,38 @@ mod tests {
         }
 
         let body = response.into_body().collect().await.unwrap().to_bytes();
-        let task: Task = serde_json::from_slice(&body).unwrap();
+        let all_devices: Vec<Device> = serde_json::from_slice(&body).unwrap();
 
-        task
+        all_devices
+    }
+
+    async fn delete_device(app: &mut RouterIntoService<Body>, auth_token: String, device: Device) {
+        let request = Request::builder()
+            .method(Method::DELETE)
+            .uri(format!("/devices/delete?id={}", device.id))
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token.clone())
+            .body(Body::empty())
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(app)
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        if response.status() != StatusCode::OK {
+            let body = response.into_body().collect().await.unwrap().to_bytes();
+            let body = String::from_utf8_lossy(&body);
+            panic!("{}", body);
+        }
+    }
+
+    fn auth_token_to_uuid(auth_token: AuthToken) -> String {
+        let auth_token_json = serde_json::to_string(&auth_token).unwrap();
+        let uuid: Uuid = serde_json::from_str(&auth_token_json).unwrap();
+        uuid.hyphenated().to_string()
     }
 
     #[tokio::test]
@@ -263,124 +370,96 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn create_task() {
+    async fn create_task_test() {
         let (router, _) = test_app().await;
         let mut app = router.into_service();
 
         // Registers an account
         let auth_token = get_account(&mut app).await;
         let auth_token = auth_token_to_uuid(auth_token);
-        let device = generate_device(&mut app, auth_token.clone()).await;
 
-        let request = Request::builder()
-            .method(Method::POST)
-            .uri("/tasks/create")
-            .header("Content-Type", "application/json")
-            .header("X-Auth-Token", auth_token.clone())
-            .body(Body::from(
-                serde_json::to_vec(&Task {
-                    id: (-1).into(),
-                    timespan: Timespan::new(
-                        Utc::now(),
-                        Utc::now().checked_add_days(Days::new(1)).unwrap(),
-                    ),
-                    duration: 3600.into(),
-                    device_id: device.id,
-                })
-                .unwrap(),
-            ))
-            .unwrap();
+        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        let task = generate_task(&mut app, auth_token, 3600, &device).await;
 
-        let response = ServiceExt::<Request<Body>>::ready(&mut app)
-            .await
-            .unwrap()
-            .call(request)
-            .await
-            .unwrap();
-
-        if response.status() != StatusCode::OK {
-            let body = response.into_body().collect().await.unwrap().to_bytes();
-            let body = String::from_utf8_lossy(&body);
-            panic!("{}", body);
-        }
-
-        let body = response.into_body().collect().await.unwrap().to_bytes();
-        let response: Task = serde_json::from_slice(&body).unwrap();
-
-        assert_ne!(response.id, (-1).into());
-        assert_eq!(response.duration, 3600.into());
+        assert_ne!(task.id, (-1).into());
+        assert_eq!(task.duration, 3600.into());
     }
 
     #[tokio::test]
-    async fn get_all_tasks() {
+    async fn get_tasks_test() {
         let (router, _) = test_app().await;
         let mut app = router.into_service();
 
         // Registers an account
         let auth_token = get_account(&mut app).await;
         let auth_token = auth_token_to_uuid(auth_token);
-        let device = generate_device(&mut app, auth_token.clone()).await;
 
-        let request = Request::builder()
-            .method(Method::POST)
-            .uri("/tasks/create")
-            .header("Content-Type", "application/json")
-            .header("X-Auth-Token", auth_token.clone())
-            .body(Body::from(
-                serde_json::to_vec(&Task {
-                    id: (-1).into(),
-                    timespan: Timespan::new(
-                        Utc::now(),
-                        Utc::now().checked_add_days(Days::new(1)).unwrap(),
-                    ),
-                    duration: 3600.into(),
-                    device_id: device.id,
-                })
-                .unwrap(),
-            ))
-            .unwrap();
+        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
+        let all_tasks = get_tasks(&mut app, auth_token).await;
 
-        let response = ServiceExt::<Request<Body>>::ready(&mut app)
-            .await
-            .unwrap()
-            .call(request)
-            .await
-            .unwrap();
+        assert_eq!(all_tasks.first().unwrap(), &task);
+    }
 
-        if response.status() != StatusCode::OK {
-            let body = response.into_body().collect().await.unwrap().to_bytes();
-            let body = String::from_utf8_lossy(&body);
-            panic!("{}", body);
-        }
+    #[tokio::test]
+    async fn delete_task_test() {
+        let (router, _) = test_app().await;
+        let mut app = router.into_service();
 
-        let body = response.into_body().collect().await.unwrap().to_bytes();
-        let created_task: Task = serde_json::from_slice(&body).unwrap();
+        let auth_token = get_account(&mut app).await;
+        let auth_token = auth_token_to_uuid(auth_token);
+        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
+        delete_task(&mut app, auth_token.clone(), task).await;
 
-        let request = Request::builder()
-            .method(Method::GET)
-            .uri("/tasks/all")
-            .header("Content-Type", "application/json")
-            .header("X-Auth-Token", auth_token)
-            .body(Body::empty())
-            .unwrap();
+        let all_tasks = get_tasks(&mut app, auth_token).await;
 
-        let response = ServiceExt::<Request<Body>>::ready(&mut app)
-            .await
-            .unwrap()
-            .call(request)
-            .await
-            .unwrap();
+        assert!(all_tasks.is_empty());
+    }
 
-        if response.status() != StatusCode::OK {
-            let body = response.into_body().collect().await.unwrap().to_bytes();
-            let body = String::from_utf8_lossy(&body);
-            panic!("{}", body);
-        }
+    #[tokio::test]
+    async fn get_devices_test() {
+        let (router, _) = test_app().await;
+        let mut app = router.into_service();
 
-        let body = response.into_body().collect().await.unwrap().to_bytes();
-        let all_tasks: Vec<Task> = serde_json::from_slice(&body).unwrap();
+        let auth_token = get_account(&mut app).await;
+        let auth_token = auth_token_to_uuid(auth_token);
+        let created_devices = vec![
+            generate_device(&mut app, auth_token.clone(), 1000.0).await,
+            generate_device(&mut app, auth_token.clone(), 1000.0).await,
+        ];
 
-        assert_eq!(all_tasks.first().unwrap(), &created_task);
+        let all_devices = get_devices(&mut app, auth_token).await;
+
+        assert_eq!(all_devices, created_devices);
+    }
+
+    #[tokio::test]
+    async fn create_device_test() {
+        let (router, _) = test_app().await;
+        let mut app = router.into_service();
+
+        // Registers an account
+        let auth_token = get_account(&mut app).await;
+        let auth_token = auth_token_to_uuid(auth_token);
+        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+
+        assert_eq!(device.effect, 1000.0);
+    }
+
+    #[tokio::test]
+    async fn delete_device_test() {
+        let (router, _) = test_app().await;
+        let mut app = router.into_service();
+
+        let auth_token = get_account(&mut app).await;
+        let auth_token = auth_token_to_uuid(auth_token);
+        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        delete_device(&mut app, auth_token.clone(), device).await;
+
+        let all_devices = get_devices(&mut app, auth_token).await;
+
+        assert!(all_devices.is_empty());
     }
 
     #[tokio::test]
@@ -389,8 +468,8 @@ mod tests {
         let mut app = router.into_service();
         let auth_token = get_account(&mut app).await;
         let auth_token = auth_token_to_uuid(auth_token);
-        let device = generate_device(&mut app, auth_token.clone()).await;
-        let task = generate_task(&mut app, auth_token.clone(), &device).await;
+        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
         let event = _create_event(&pool, &task, Utc::now()).await.unwrap();
 
         let request = Request::builder()

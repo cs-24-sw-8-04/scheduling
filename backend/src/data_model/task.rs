@@ -5,9 +5,11 @@ use super::{
     time::{Milliseconds, Timespan},
 };
 
-use derive_more::{From, Into};
+use derive_more::{Display, From, Into};
 
-#[derive(Deserialize, Serialize, Debug, sqlx::Type, PartialEq, Eq, From, Into, Clone, Copy)]
+#[derive(
+    Deserialize, Serialize, Debug, sqlx::Type, PartialEq, Eq, From, Into, Clone, Copy, Display,
+)]
 #[sqlx(transparent)]
 pub struct TaskId(i64);
 

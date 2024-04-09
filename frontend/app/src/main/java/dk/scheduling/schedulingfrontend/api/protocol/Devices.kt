@@ -9,7 +9,3 @@ data class Device(
 data class CreateDeviceRequest(
     val effect: Double,
 )
-
-data class DeleteDeviceRequest(
-    val id: Long,
-)
