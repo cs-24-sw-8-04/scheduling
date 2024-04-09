@@ -15,10 +15,20 @@ use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 use tokio::net::TcpListener;
 
 use handlers::{accounts::*, devices::*, events::*, tasks::*};
+use tower_http::trace::TraceLayer;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     dotenv().ok();
+
+    tracing_subscriber::registry()
+        .with(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| "tower_http=debug,axum::rejection=trace".into()),
+        )
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let db_connection_string = std::env::var("DATABASE_URL")?;
 
@@ -48,6 +58,7 @@ fn app(pool: SqlitePool) -> Router {
         .route("/accounts/register", post(register_account))
         .route("/accounts/login", post(login_to_account))
         .route("/events/all", get(get_events))
+        .layer(TraceLayer::new_for_http())
         .with_state(pool)
 }
 
