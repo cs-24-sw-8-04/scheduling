@@ -1,7 +1,6 @@
 mod data_model;
 mod extractors;
 mod handlers;
-mod protocol;
 mod scheduling;
 
 use std::error::Error;
@@ -64,21 +63,7 @@ fn app(pool: SqlitePool) -> Router {
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        data_model::{task::Task, time::Timespan},
-        protocol::events::GetEventsResponse,
-        scheduling::event_creation::_create_event,
-    };
-
-    use self::{
-        data_model::device::Device,
-        extractors::auth::AuthToken,
-        protocol::{
-            accounts::{RegisterOrLoginRequest, RegisterOrLoginResponse},
-            devices::CreateDeviceRequest,
-            tasks::CreateTaskRequest,
-        },
-    };
+    use crate::scheduling::event_creation::_create_event;
 
     use super::*;
     use axum::{
@@ -88,6 +73,13 @@ mod tests {
     };
     use chrono::{Days, Utc};
     use http_body_util::BodyExt;
+    use protocol::{
+        accounts::{AuthToken, RegisterOrLoginRequest, RegisterOrLoginResponse},
+        devices::{CreateDeviceRequest, CreateDeviceResponse, Device, GetDevicesResponse},
+        events::GetEventsResponse,
+        tasks::{CreateTaskRequest, GetTasksResponse, Task},
+        time::Timespan,
+    };
     use tower::{Service, ServiceExt};
     use uuid::Uuid;
 
@@ -203,9 +195,9 @@ mod tests {
         }
 
         let body = response.into_body().collect().await.unwrap().to_bytes();
-        let all_tasks: Vec<Task> = serde_json::from_slice(&body).unwrap();
+        let get_tasks_response: GetTasksResponse = serde_json::from_slice(&body).unwrap();
 
-        all_tasks
+        get_tasks_response.tasks
     }
 
     async fn delete_task(app: &mut RouterIntoService<Body>, auth_token: String, task: Task) {
@@ -260,9 +252,9 @@ mod tests {
         }
 
         let body = response.into_body().collect().await.unwrap().to_bytes();
-        let device: Device = serde_json::from_slice(&body).unwrap();
+        let create_device_response: CreateDeviceResponse = serde_json::from_slice(&body).unwrap();
 
-        device
+        create_device_response.device
     }
 
     async fn get_devices(app: &mut RouterIntoService<Body>, auth_token: String) -> Vec<Device> {
@@ -288,9 +280,9 @@ mod tests {
         }
 
         let body = response.into_body().collect().await.unwrap().to_bytes();
-        let all_devices: Vec<Device> = serde_json::from_slice(&body).unwrap();
+        let get_devices_response: GetDevicesResponse = serde_json::from_slice(&body).unwrap();
 
-        all_devices
+        get_devices_response.devices
     }
 
     async fn delete_device(app: &mut RouterIntoService<Body>, auth_token: String, device: Device) {

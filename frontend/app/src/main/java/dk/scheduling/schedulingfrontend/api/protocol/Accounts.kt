@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package dk.scheduling.schedulingfrontend.api.protocol
 
 import java.util.UUID

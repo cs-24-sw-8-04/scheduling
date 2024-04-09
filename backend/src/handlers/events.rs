@@ -1,16 +1,12 @@
 use axum::{debug_handler, extract::State, http::StatusCode, Json};
 use chrono::{TimeZone, Utc};
+use protocol::{
+    events::{Event, EventId, GetEventsResponse},
+    tasks::TaskId,
+};
 use sqlx::SqlitePool;
 
-use crate::{
-    data_model::{
-        event::{Event, EventId},
-        task::TaskId,
-    },
-    extractors::auth::Authentication,
-    handlers::util::internal_error,
-    protocol::events::GetEventsResponse,
-};
+use crate::{extractors::auth::Authentication, handlers::util::internal_error};
 
 #[debug_handler]
 pub async fn get_events(

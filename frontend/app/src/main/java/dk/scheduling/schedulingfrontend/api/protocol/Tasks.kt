@@ -1,3 +1,5 @@
+@file:Suppress("PropertyName")
+
 package dk.scheduling.schedulingfrontend.api.protocol
 
 data class Task(
@@ -5,6 +7,10 @@ data class Task(
     val timespan: Timespan,
     val duration: Long,
     val device_id: Long,
+)
+
+data class GetTasksResponse(
+    val tasks: List<Task>,
 )
 
 data class CreateTaskRequest(
