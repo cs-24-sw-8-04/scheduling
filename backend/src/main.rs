@@ -450,7 +450,7 @@ mod tests {
 
     #[tokio::test]
     async fn delete_device_test() {
-        let (router, pool) = test_app().await;
+        let (router, _) = test_app().await;
         let mut app = router.into_service();
 
         let auth_token = get_account(&mut app).await;
