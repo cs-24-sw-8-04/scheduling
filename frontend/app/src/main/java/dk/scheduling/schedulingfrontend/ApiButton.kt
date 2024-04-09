@@ -16,7 +16,7 @@ fun ApiButton() {
     Button(onClick = {
         coroutineScope.launch {
             try {
-                val response = apiService.getTasks("NOT_VALID")
+                val response = apiService.getAllTasks("NOT_VALID")
 
                 if (response.isSuccessful) {
                     // val post = response.body()
