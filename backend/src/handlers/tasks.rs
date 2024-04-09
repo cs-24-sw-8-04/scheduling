@@ -4,24 +4,20 @@ use axum::{
     http::StatusCode,
     Json,
 };
+use protocol::{
+    devices::DeviceId,
+    tasks::{CreateTaskRequest, DeleteTaskRequest, GetTasksResponse, Task, TaskId},
+    time::{Milliseconds, Timespan},
+};
 use sqlx::SqlitePool;
 
-use crate::{
-    data_model::{
-        device::DeviceId,
-        task::{Task, TaskId},
-        time::{Milliseconds, Timespan},
-    },
-    extractors::auth::Authentication,
-    handlers::util::internal_error,
-    protocol::tasks::{CreateTaskRequest, DeleteTaskRequest},
-};
+use crate::{extractors::auth::Authentication, handlers::util::internal_error};
 
 #[debug_handler]
 pub async fn get_tasks(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
-) -> Result<Json<Vec<Task>>, (StatusCode, String)> {
+) -> Result<Json<GetTasksResponse>, (StatusCode, String)> {
     let tasks = sqlx::query!(
         r#"
         SELECT Tasks.id as "id: TaskId", Tasks.timespan_start, Tasks.timespan_end, Tasks.duration as "duration: Milliseconds", Tasks.device_id as "device_id: DeviceId"
@@ -35,7 +31,7 @@ pub async fn get_tasks(
     .await
     .map_err(internal_error)?;
 
-    let my_tasks = tasks
+    let tasks = tasks
         .iter()
         .map(|t| Task {
             id: t.id,
@@ -45,7 +41,7 @@ pub async fn get_tasks(
         })
         .collect();
 
-    Ok(Json(my_tasks))
+    Ok(Json(GetTasksResponse { tasks }))
 }
 
 #[debug_handler]

@@ -3,13 +3,12 @@ use argon2::{
     Argon2, PasswordHash, PasswordHasher, PasswordVerifier,
 };
 use axum::{debug_handler, extract::State, http::StatusCode, Json};
+use protocol::accounts::{RegisterOrLoginRequest, RegisterOrLoginResponse};
 use sqlx::SqlitePool;
 
 use crate::{
-    data_model::account::AccountId,
-    extractors::auth::create_auth_token,
+    data_model::account::AccountId, extractors::auth::create_auth_token,
     handlers::util::internal_error,
-    protocol::accounts::{RegisterOrLoginRequest, RegisterOrLoginResponse},
 };
 
 #[debug_handler]

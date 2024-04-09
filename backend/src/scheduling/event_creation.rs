@@ -1,10 +1,9 @@
 use chrono::{DateTime, Utc};
-use sqlx::{Error, SqlitePool};
-
-use crate::data_model::{
-    event::{Event, EventId},
-    task::Task,
+use protocol::{
+    events::{Event, EventId},
+    tasks::Task,
 };
+use sqlx::{Error, SqlitePool};
 
 pub async fn _create_event(
     pool: &SqlitePool,

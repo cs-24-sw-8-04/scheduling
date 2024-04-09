@@ -82,3 +82,9 @@ ktlint {
         ktlintRuleset("com.twitter.compose.rules:ktlint:0.0.26")
     }
 }
+
+if (project.hasProperty("rerun-tests")) {
+    tasks.withType<Test> {
+        outputs.upToDateWhen { false }
+    }
+}

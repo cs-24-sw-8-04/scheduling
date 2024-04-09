@@ -3,26 +3,10 @@ use axum::{
     extract::FromRequestParts,
     http::{request::Parts, HeaderMap, StatusCode},
 };
-use serde::{Deserialize, Serialize};
+use protocol::accounts::AuthToken;
 use sqlx::SqlitePool;
-use uuid::Uuid;
 
 use crate::data_model::account::AccountId;
-
-#[derive(Deserialize, Serialize, sqlx::Type)]
-#[sqlx(transparent)]
-pub struct AuthToken(Uuid);
-
-impl AuthToken {
-    fn new() -> Self {
-        AuthToken(Uuid::new_v4())
-    }
-
-    fn try_parse(input: &str) -> Result<AuthToken, uuid::Error> {
-        let uuid = Uuid::try_parse(input)?;
-        Ok(AuthToken(uuid))
-    }
-}
 
 // Account id
 pub struct Authentication(pub AccountId);
