@@ -79,7 +79,7 @@ jobs:
       #     disable-animations: true
       #     script: ./gradlew connectedCheck
       - name: Report
-        uses: FlickerSoul/android-test-report-actions@v1.2
+        uses: FlickerSoul/android-test-report-actions@v1.3
         with:
           working-directory: "./frontend"
           show-skipped: "true"
