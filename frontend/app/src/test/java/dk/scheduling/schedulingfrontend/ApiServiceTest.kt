@@ -93,7 +93,7 @@ class ApiServiceTest {
     }
 
     @Test
-    fun testGetEvents() {
+    fun testGetAllEvents() {
         runBlocking {
             val (authToken, _) = createAccount("get_events_test")
 
