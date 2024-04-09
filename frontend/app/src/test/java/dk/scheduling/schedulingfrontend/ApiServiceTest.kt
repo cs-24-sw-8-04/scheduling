@@ -62,7 +62,7 @@ class ApiServiceTest {
     }
 
     @Test
-    fun testGetTasks() {
+    fun testGetAllTasks() {
         runBlocking {
             val (authToken, _) = createAccount("get_all_tasks_test")
 
@@ -130,7 +130,7 @@ class ApiServiceTest {
     }
 
     @Test
-    fun testGetDevices() {
+    fun testGetAllDevices() {
         runBlocking {
             val (authToken, _) = createAccount("get_all_devices_test")
             val device = createDevice(authToken)
