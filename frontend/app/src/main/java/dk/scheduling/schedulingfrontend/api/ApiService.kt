@@ -34,7 +34,7 @@ interface ApiService {
      * Devices
      */
     @GET("devices/all")
-    suspend fun getDevices(
+    suspend fun getAllDevices(
         @Header("X-Auth-Token") authToken: String,
     ): Response<GetDevicesResponse>
 
@@ -54,7 +54,7 @@ interface ApiService {
      * Tasks
      */
     @GET("tasks/all")
-    suspend fun getTasks(
+    suspend fun getAllTasks(
         @Header("X-Auth-Token") authToken: String,
     ): Response<GetTasksResponse>
 
@@ -71,7 +71,7 @@ interface ApiService {
     ): Response<Void>
 
     @GET("events/all")
-    suspend fun getEvents(
+    suspend fun getAllEvents(
         @Header("X-Auth-Token") authToken: String,
     ): Response<GetEventsResponse>
 }

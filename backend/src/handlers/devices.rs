@@ -13,7 +13,7 @@ use sqlx::SqlitePool;
 use crate::{extractors::auth::Authentication, handlers::util::internal_error};
 
 #[debug_handler]
-pub async fn get_devices(
+pub async fn get_all_devices(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
 ) -> Result<Json<GetDevicesResponse>, (StatusCode, String)> {

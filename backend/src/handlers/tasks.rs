@@ -14,7 +14,7 @@ use sqlx::SqlitePool;
 use crate::{extractors::auth::Authentication, handlers::util::internal_error};
 
 #[debug_handler]
-pub async fn get_tasks(
+pub async fn get_all_tasks(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
 ) -> Result<Json<GetTasksResponse>, (StatusCode, String)> {

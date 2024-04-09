@@ -62,14 +62,14 @@ class ApiServiceTest {
     }
 
     @Test
-    fun testGetTasks() {
+    fun testGetAllTasks() {
         runBlocking {
             val (authToken, _) = createAccount("get_all_tasks_test")
 
             val device = createDevice(authToken)
 
             val emptyResponse =
-                apiService.getTasks(
+                apiService.getAllTasks(
                     authToken.toString(),
                 )
             assert(emptyResponse.isSuccessful) { printErrorContext(emptyResponse) }
@@ -80,7 +80,7 @@ class ApiServiceTest {
 
             val task = createTask(authToken, device)
 
-            val taskResponse = apiService.getTasks(authToken.toString())
+            val taskResponse = apiService.getAllTasks(authToken.toString())
             assert(taskResponse.isSuccessful) { printErrorContext(taskResponse) }
 
             val fullTasks = taskResponse.body()!!.tasks
@@ -93,11 +93,11 @@ class ApiServiceTest {
     }
 
     @Test
-    fun testGetEvents() {
+    fun testGetAllEvents() {
         runBlocking {
             val (authToken, _) = createAccount("get_events_test")
 
-            val response = apiService.getEvents(authToken.toString())
+            val response = apiService.getAllEvents(authToken.toString())
             assert(response.isSuccessful) { printErrorContext(response) }
         }
     }
@@ -112,7 +112,7 @@ class ApiServiceTest {
             val deleteResponse = apiService.deleteTask(authToken.toString(), task.id)
             assert(deleteResponse.isSuccessful) { printErrorContext(deleteResponse) }
 
-            val getTasksResponse = apiService.getTasks(authToken.toString())
+            val getTasksResponse = apiService.getAllTasks(authToken.toString())
             assert(getTasksResponse.isSuccessful) { printErrorContext(getTasksResponse) }
 
             val tasks = getTasksResponse.body()!!.tasks
@@ -130,12 +130,12 @@ class ApiServiceTest {
     }
 
     @Test
-    fun testGetDevices() {
+    fun testGetAllDevices() {
         runBlocking {
             val (authToken, _) = createAccount("get_all_devices_test")
             val device = createDevice(authToken)
 
-            val response = apiService.getDevices(authToken.toString())
+            val response = apiService.getAllDevices(authToken.toString())
             assert(response.isSuccessful) { printErrorContext(response) }
 
             val devices = response.body()!!.devices
@@ -152,7 +152,7 @@ class ApiServiceTest {
             val deleteDeviceResponse = apiService.deleteDevice(authToken.toString(), device.id)
             assert(deleteDeviceResponse.isSuccessful) { printErrorContext(deleteDeviceResponse) }
 
-            val getDevicesResponse = apiService.getDevices(authToken.toString())
+            val getDevicesResponse = apiService.getAllDevices(authToken.toString())
             assert(getDevicesResponse.isSuccessful) { printErrorContext(getDevicesResponse) }
 
             val devices = getDevicesResponse.body()!!.devices
