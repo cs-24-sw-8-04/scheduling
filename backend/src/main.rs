@@ -413,9 +413,8 @@ mod tests {
         delete_task(&mut app, auth_token.clone(), task).await;
 
         let all_tasks = get_tasks(&mut app, auth_token).await;
-        let expected: Vec<Task> = Vec::new();
 
-        assert_eq!(all_tasks, expected);
+        assert!(all_tasks.is_empty());
     }
 
     #[tokio::test]
@@ -459,9 +458,8 @@ mod tests {
         delete_device(&mut app, auth_token.clone(), device).await;
 
         let all_devices = get_devices(&mut app, auth_token).await;
-        let expected: Vec<Device> = Vec::new();
 
-        assert_eq!(all_devices, expected);
+        assert!(all_devices.is_empty());
     }
 
     #[tokio::test]

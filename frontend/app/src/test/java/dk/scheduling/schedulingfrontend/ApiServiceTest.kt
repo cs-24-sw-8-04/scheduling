@@ -105,22 +105,17 @@ class ApiServiceTest {
     @Test
     fun testDeleteTask() {
         runBlocking {
-            val (authToken, _) = createAccount("get_all_tasks_test")
-
+            val (authToken, _) = createAccount("delete_task_test")
             val device = createDevice(authToken)
-
             val task = createTask(authToken, device)
 
             val deleteResponse = apiService.deleteTask(authToken.toString(), task.id)
-
             assert(deleteResponse.isSuccessful) { printErrorContext(deleteResponse) }
 
             val getTasksResponse = apiService.getTasks(authToken.toString())
-
             assert(getTasksResponse.isSuccessful) { printErrorContext(getTasksResponse) }
 
             val tasks = getTasksResponse.body()!!
-
             assert(tasks.isEmpty())
         }
     }
@@ -137,16 +132,13 @@ class ApiServiceTest {
     @Test
     fun testGetDevices() {
         runBlocking {
-            val (authToken, _) = createAccount("get_all_tasks_test")
-
+            val (authToken, _) = createAccount("get_all_devices_test")
             val device = createDevice(authToken)
 
             val response = apiService.getDevices(authToken.toString())
-
             assert(response.isSuccessful) { printErrorContext(response) }
 
             val devices = response.body()!!
-
             assert(devices.size == 1)
         }
     }
@@ -154,20 +146,16 @@ class ApiServiceTest {
     @Test
     fun testDeleteDevices() {
         runBlocking {
-            val (authToken, _) = createAccount("get_all_tasks_test")
-
+            val (authToken, _) = createAccount("delete_devices_test")
             val device = createDevice(authToken)
 
             val deleteResponse = apiService.deleteDevice(authToken.toString(), device.id)
-
             assert(deleteResponse.isSuccessful) { printErrorContext(deleteResponse) }
 
             val getTasksResponse = apiService.getDevices(authToken.toString())
-
             assert(getTasksResponse.isSuccessful) { printErrorContext(getTasksResponse) }
 
             val tasks = getTasksResponse.body()!!
-
             assert(tasks.isEmpty())
         }
     }
