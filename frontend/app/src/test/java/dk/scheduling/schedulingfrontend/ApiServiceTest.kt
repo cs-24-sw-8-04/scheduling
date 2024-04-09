@@ -152,7 +152,7 @@ class ApiServiceTest {
             val deleteDeviceResponse = apiService.deleteDevice(authToken.toString(), device.id)
             assert(deleteDeviceResponse.isSuccessful) { printErrorContext(deleteDeviceResponse) }
 
-            val getDevicesResponse = apiService.getDevices(authToken.toString())
+            val getDevicesResponse = apiService.getAllDevices(authToken.toString())
             assert(getDevicesResponse.isSuccessful) { printErrorContext(getDevicesResponse) }
 
             val devices = getDevicesResponse.body()!!.devices
