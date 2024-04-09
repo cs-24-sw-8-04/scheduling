@@ -102,6 +102,7 @@ class ApiServiceTest {
         }
     }
 
+    @Test
     fun testDeleteTask() {
         runBlocking {
             val (authToken, _) = createAccount("get_all_tasks_test")
