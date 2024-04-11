@@ -7,6 +7,14 @@ pub struct DescreteGraph {
 }
 
 impl DescreteGraph {
+    #[allow(dead_code)] // Used in the test for the scheduler, but clippy does #?%!
+    pub fn new(values: Vec<f64>, time_delta: Duration, start_time: DateTimeUtc) -> DescreteGraph {
+        DescreteGraph {
+            values,
+            time_delta,
+            start_time,
+        }
+    }
     pub fn get_values(&self) -> &Vec<f64> {
         &self.values
     }

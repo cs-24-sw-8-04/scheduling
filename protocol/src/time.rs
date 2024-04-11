@@ -8,6 +8,12 @@ pub type DateTimeUtc = DateTime<Utc>;
 #[sqlx(transparent)]
 pub struct Milliseconds(i64);
 
+impl From<Milliseconds> for i64 {
+    fn from(value: Milliseconds) -> Self {
+        value.0
+    }
+}
+
 impl From<Milliseconds> for Duration {
     fn from(val: Milliseconds) -> Self {
         Duration::try_milliseconds(val.0).unwrap()
