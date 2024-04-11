@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Deserialize, Serialize, sqlx::Type)]
+#[derive(Deserialize, Serialize, sqlx::Type, Debug)]
 #[sqlx(transparent)]
 pub struct AuthToken(Uuid);
 
