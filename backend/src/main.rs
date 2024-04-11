@@ -1,7 +1,6 @@
 mod data_model;
 mod extractors;
 mod handlers;
-mod protocol;
 mod scheduling;
 
 use std::error::Error;
@@ -49,36 +48,23 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
 fn app(pool: SqlitePool) -> Router {
     Router::new()
-        .route("/tasks/all", get(get_tasks))
+        .route("/tasks/all", get(get_all_tasks))
         .route("/tasks/create", post(create_task))
         .route("/tasks/delete", delete(delete_task))
-        .route("/devices/all", get(get_devices))
+        .route("/devices/all", get(get_all_devices))
         .route("/devices/create", post(create_device))
         .route("/devices/delete", delete(delete_device))
         .route("/accounts/register", post(register_account))
         .route("/accounts/login", post(login_to_account))
-        .route("/events/all", get(get_events))
+        .route("/events/all", get(get_all_events))
+        .route("/events/get", get(get_device_events))
         .layer(TraceLayer::new_for_http())
         .with_state(pool)
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::{
-        data_model::{task::Task, time::Timespan},
-        protocol::events::GetEventsResponse,
-        scheduling::event_creation::_create_event,
-    };
-
-    use self::{
-        data_model::device::Device,
-        extractors::auth::AuthToken,
-        protocol::{
-            accounts::{RegisterOrLoginRequest, RegisterOrLoginResponse},
-            devices::CreateDeviceRequest,
-            tasks::CreateTaskRequest,
-        },
-    };
+    use crate::scheduling::event_creation::_create_event;
 
     use super::*;
     use axum::{
@@ -88,6 +74,13 @@ mod tests {
     };
     use chrono::{Days, Utc};
     use http_body_util::BodyExt;
+    use protocol::{
+        accounts::{AuthToken, RegisterOrLoginRequest, RegisterOrLoginResponse},
+        devices::{CreateDeviceRequest, CreateDeviceResponse, Device, GetDevicesResponse},
+        events::{GetDeviceEventsRequest, GetEventsResponse},
+        tasks::{CreateTaskRequest, GetTasksResponse, Task},
+        time::Timespan,
+    };
     use tower::{Service, ServiceExt};
     use uuid::Uuid;
 
@@ -203,9 +196,9 @@ mod tests {
         }
 
         let body = response.into_body().collect().await.unwrap().to_bytes();
-        let all_tasks: Vec<Task> = serde_json::from_slice(&body).unwrap();
+        let get_tasks_response: GetTasksResponse = serde_json::from_slice(&body).unwrap();
 
-        all_tasks
+        get_tasks_response.tasks
     }
 
     async fn delete_task(app: &mut RouterIntoService<Body>, auth_token: String, task: Task) {
@@ -260,9 +253,9 @@ mod tests {
         }
 
         let body = response.into_body().collect().await.unwrap().to_bytes();
-        let device: Device = serde_json::from_slice(&body).unwrap();
+        let create_device_response: CreateDeviceResponse = serde_json::from_slice(&body).unwrap();
 
-        device
+        create_device_response.device
     }
 
     async fn get_devices(app: &mut RouterIntoService<Body>, auth_token: String) -> Vec<Device> {
@@ -288,9 +281,9 @@ mod tests {
         }
 
         let body = response.into_body().collect().await.unwrap().to_bytes();
-        let all_devices: Vec<Device> = serde_json::from_slice(&body).unwrap();
+        let get_devices_response: GetDevicesResponse = serde_json::from_slice(&body).unwrap();
 
-        all_devices
+        get_devices_response.devices
     }
 
     async fn delete_device(app: &mut RouterIntoService<Body>, auth_token: String, device: Device) {
@@ -478,6 +471,48 @@ mod tests {
             .header("Content-Type", "application/json")
             .header("X-Auth-Token", auth_token)
             .body(Body::empty())
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(&mut app)
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        if response.status() != StatusCode::OK {
+            let body = response.into_body().collect().await.unwrap().to_bytes();
+            let body = String::from_utf8_lossy(&body);
+            panic!("{}", body);
+        }
+
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let response: GetEventsResponse = serde_json::from_slice(&body).unwrap();
+
+        assert_eq!(response.events.first().unwrap(), &event);
+    }
+
+    #[tokio::test]
+    async fn get_device_events() {
+        let (router, pool) = test_app().await;
+        let mut app = router.into_service();
+        let auth_token = get_account(&mut app).await;
+        let auth_token = auth_token_to_uuid(auth_token);
+        let device = generate_device(&mut app, auth_token.clone(), 20.0).await;
+        let task = generate_task(&mut app, auth_token.clone(), 20, &device).await;
+        let event = _create_event(&pool, &task, Utc::now()).await.unwrap();
+
+        let request = Request::builder()
+            .method(Method::GET)
+            .uri("/events/get")
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token)
+            .body(Body::from(
+                serde_json::to_vec(&GetDeviceEventsRequest {
+                    device_id: device.id,
+                })
+                .unwrap(),
+            ))
             .unwrap();
 
         let response = ServiceExt::<Request<Body>>::ready(&mut app)

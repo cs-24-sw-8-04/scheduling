@@ -62,28 +62,28 @@ class ApiServiceTest {
     }
 
     @Test
-    fun testGetTasks() {
+    fun testGetAllTasks() {
         runBlocking {
             val (authToken, _) = createAccount("get_all_tasks_test")
 
             val device = createDevice(authToken)
 
             val emptyResponse =
-                apiService.getTasks(
+                apiService.getAllTasks(
                     authToken.toString(),
                 )
             assert(emptyResponse.isSuccessful) { printErrorContext(emptyResponse) }
 
-            val emptyTasks = emptyResponse.body()!!
+            val emptyTasks = emptyResponse.body()!!.tasks
 
             assert(emptyTasks.isEmpty())
 
             val task = createTask(authToken, device)
 
-            val taskResponse = apiService.getTasks(authToken.toString())
+            val taskResponse = apiService.getAllTasks(authToken.toString())
             assert(taskResponse.isSuccessful) { printErrorContext(taskResponse) }
 
-            val fullTasks = taskResponse.body()!!
+            val fullTasks = taskResponse.body()!!.tasks
             assert(fullTasks.size == 1)
 
             val gottenTask = fullTasks.single()
@@ -93,11 +93,11 @@ class ApiServiceTest {
     }
 
     @Test
-    fun testGetEvents() {
+    fun testGetAllEvents() {
         runBlocking {
             val (authToken, _) = createAccount("get_events_test")
 
-            val response = apiService.getEvents(authToken.toString())
+            val response = apiService.getAllEvents(authToken.toString())
             assert(response.isSuccessful) { printErrorContext(response) }
         }
     }
@@ -112,10 +112,10 @@ class ApiServiceTest {
             val deleteResponse = apiService.deleteTask(authToken.toString(), task.id)
             assert(deleteResponse.isSuccessful) { printErrorContext(deleteResponse) }
 
-            val getTasksResponse = apiService.getTasks(authToken.toString())
+            val getTasksResponse = apiService.getAllTasks(authToken.toString())
             assert(getTasksResponse.isSuccessful) { printErrorContext(getTasksResponse) }
 
-            val tasks = getTasksResponse.body()!!
+            val tasks = getTasksResponse.body()!!.tasks
             assert(tasks.isEmpty())
         }
     }
@@ -130,15 +130,15 @@ class ApiServiceTest {
     }
 
     @Test
-    fun testGetDevices() {
+    fun testGetAllDevices() {
         runBlocking {
             val (authToken, _) = createAccount("get_all_devices_test")
             val device = createDevice(authToken)
 
-            val response = apiService.getDevices(authToken.toString())
+            val response = apiService.getAllDevices(authToken.toString())
             assert(response.isSuccessful) { printErrorContext(response) }
 
-            val devices = response.body()!!
+            val devices = response.body()!!.devices
             assert(devices.size == 1)
         }
     }
@@ -149,14 +149,14 @@ class ApiServiceTest {
             val (authToken, _) = createAccount("delete_devices_test")
             val device = createDevice(authToken)
 
-            val deleteResponse = apiService.deleteDevice(authToken.toString(), device.id)
-            assert(deleteResponse.isSuccessful) { printErrorContext(deleteResponse) }
+            val deleteDeviceResponse = apiService.deleteDevice(authToken.toString(), device.id)
+            assert(deleteDeviceResponse.isSuccessful) { printErrorContext(deleteDeviceResponse) }
 
-            val getTasksResponse = apiService.getDevices(authToken.toString())
-            assert(getTasksResponse.isSuccessful) { printErrorContext(getTasksResponse) }
+            val getDevicesResponse = apiService.getAllDevices(authToken.toString())
+            assert(getDevicesResponse.isSuccessful) { printErrorContext(getDevicesResponse) }
 
-            val tasks = getTasksResponse.body()!!
-            assert(tasks.isEmpty())
+            val devices = getDevicesResponse.body()!!.devices
+            assert(devices.isEmpty())
         }
     }
 
@@ -177,7 +177,7 @@ class ApiServiceTest {
             val response = apiService.createDevice(authToken.toString(), CreateDeviceRequest(1000.0))
             assert(response.isSuccessful) { printErrorContext(response) }
 
-            val device = response.body()!!
+            val device = response.body()!!.device
             return@runBlocking device
         }
     }

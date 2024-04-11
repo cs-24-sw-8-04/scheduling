@@ -4,34 +4,33 @@ use axum::{
     http::StatusCode,
     Json,
 };
+use protocol::devices::{
+    CreateDeviceRequest, CreateDeviceResponse, DeleteDeviceRequest, Device, DeviceId,
+    GetDevicesResponse,
+};
 use sqlx::SqlitePool;
 
-use crate::{
-    data_model::device::{Device, DeviceId},
-    extractors::auth::Authentication,
-    handlers::util::internal_error,
-    protocol::devices::{CreateDeviceRequest, DeleteDeviceRequest},
-};
+use crate::{extractors::auth::Authentication, handlers::util::internal_error};
 
 #[debug_handler]
-pub async fn get_devices(
+pub async fn get_all_devices(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
-) -> Result<Json<Vec<Device>>, (StatusCode, String)> {
+) -> Result<Json<GetDevicesResponse>, (StatusCode, String)> {
     let devices = sqlx::query_as!(
         Device,
         r#"
-	SELECT id, effect, account_id
-	FROM Devices
-	WHERE account_id = ?
-	"#,
+        SELECT id, effect
+        FROM Devices
+        WHERE account_id = ?
+        "#,
         account_id
     )
     .fetch_all(&pool)
     .await
     .map_err(internal_error)?;
 
-    Ok(Json(devices))
+    Ok(Json(GetDevicesResponse { devices }))
 }
 
 #[debug_handler]
@@ -39,7 +38,7 @@ pub async fn create_device(
     State(pool): State<SqlitePool>,
     Authentication(account_id): Authentication,
     Json(create_device_request): Json<CreateDeviceRequest>,
-) -> Result<Json<Device>, (StatusCode, String)> {
+) -> Result<Json<CreateDeviceResponse>, (StatusCode, String)> {
     let id = sqlx::query_scalar!(
         r#"
         INSERT INTO Devices (effect, account_id)
@@ -56,10 +55,9 @@ pub async fn create_device(
     let device = Device {
         id,
         effect: create_device_request.effect,
-        account_id,
     };
 
-    Ok(Json(device))
+    Ok(Json(CreateDeviceResponse { device }))
 }
 
 #[debug_handler]

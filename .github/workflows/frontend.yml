@@ -51,7 +51,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build -x test
       - name: Test (local)
-        run: ./gradlew test -i
+        run: ./gradlew test -i -Prerun-tests
       # - name: AVD cache
       #   uses: actions/cache@v3
       #   id: avd-cache
@@ -79,7 +79,7 @@ jobs:
       #     disable-animations: true
       #     script: ./gradlew connectedCheck
       - name: Report
-        uses: FlickerSoul/android-test-report-actions@v1.2
+        uses: FlickerSoul/android-test-report-actions@v1.3
         with:
           working-directory: "./frontend"
           show-skipped: "true"

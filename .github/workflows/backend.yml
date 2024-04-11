@@ -16,24 +16,29 @@ env:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        project: ["backend", "protocol"]
 
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend
+        working-directory: ./${{ matrix.project }}
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - uses: Swatinem/rust-cache@v2
       with:
-        workspaces: "backend -> target"
+        workspaces: "${{ matrix.project }} -> target"
         cache-all-crates: true
     - name: Install sqlx-cli
       run: cargo install sqlx-cli --no-default-features --features sqlite
+      if: matrix.project == 'backend'
     - name: Setup local db
       run: |
         cargo sqlx db create
         cargo sqlx migrate run
+      if: matrix.project == 'backend'
     - name: Build
       run: cargo build --verbose
     - name: Run tests
@@ -43,7 +48,7 @@ jobs:
         reporter: 'github-pr-review'
         github_token: ${{ secrets.GITHUB_TOKEN }}
         clippy_flags: --all-features --all-targets -- -Dwarnings
-        workdir: ./backend
+        workdir: ./${{ matrix.project }}
         fail_on_error: true
     - name: Check formatting
       run: cargo fmt --all -- --check

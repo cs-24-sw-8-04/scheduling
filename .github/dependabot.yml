@@ -13,3 +13,11 @@ updates:
     directory: "./backend/" # Location of package manifests
     schedule:
       interval: "weekly"
+  - package-ecosystem: "cargo" # See documentation for possible values
+    directory: "./protocol/" # Location of package manifests
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

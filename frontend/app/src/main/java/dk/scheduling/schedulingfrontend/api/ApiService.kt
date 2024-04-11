@@ -1,8 +1,10 @@
 package dk.scheduling.schedulingfrontend.api
 import dk.scheduling.schedulingfrontend.api.protocol.CreateDeviceRequest
+import dk.scheduling.schedulingfrontend.api.protocol.CreateDeviceResponse
 import dk.scheduling.schedulingfrontend.api.protocol.CreateTaskRequest
-import dk.scheduling.schedulingfrontend.api.protocol.Device
+import dk.scheduling.schedulingfrontend.api.protocol.GetDevicesResponse
 import dk.scheduling.schedulingfrontend.api.protocol.GetEventsResponse
+import dk.scheduling.schedulingfrontend.api.protocol.GetTasksResponse
 import dk.scheduling.schedulingfrontend.api.protocol.RegisterOrLoginRequest
 import dk.scheduling.schedulingfrontend.api.protocol.RegisterOrLoginResponse
 import dk.scheduling.schedulingfrontend.api.protocol.Task
@@ -32,15 +34,15 @@ interface ApiService {
      * Devices
      */
     @GET("devices/all")
-    suspend fun getDevices(
+    suspend fun getAllDevices(
         @Header("X-Auth-Token") authToken: String,
-    ): Response<List<Device>>
+    ): Response<GetDevicesResponse>
 
     @POST("devices/create")
     suspend fun createDevice(
         @Header("X-Auth-Token") authToken: String,
         @Body createDeviceRequest: CreateDeviceRequest,
-    ): Response<Device>
+    ): Response<CreateDeviceResponse>
 
     @DELETE("devices/delete")
     suspend fun deleteDevice(
@@ -52,9 +54,9 @@ interface ApiService {
      * Tasks
      */
     @GET("tasks/all")
-    suspend fun getTasks(
+    suspend fun getAllTasks(
         @Header("X-Auth-Token") authToken: String,
-    ): Response<List<Task>>
+    ): Response<GetTasksResponse>
 
     @POST("tasks/create")
     suspend fun createTask(
@@ -69,7 +71,7 @@ interface ApiService {
     ): Response<Void>
 
     @GET("events/all")
-    suspend fun getEvents(
+    suspend fun getAllEvents(
         @Header("X-Auth-Token") authToken: String,
     ): Response<GetEventsResponse>
 }

@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 
 pub type DateTimeUtc = DateTime<Utc>;
 
-#[derive(Serialize, Deserialize, sqlx::Type, Debug, PartialEq, Eq, Clone, Copy)]
+#[derive(Deserialize, Serialize, sqlx::Type, Debug, PartialEq, Eq, Clone, Copy)]
 #[sqlx(transparent)]
 pub struct Milliseconds(i64);
 
@@ -25,7 +25,7 @@ impl From<i64> for Milliseconds {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, PartialEq, Eq)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Eq)]
 pub struct Timespan {
     pub start: DateTimeUtc,
     pub end: DateTimeUtc,
