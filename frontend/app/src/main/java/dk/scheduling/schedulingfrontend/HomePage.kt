@@ -20,11 +20,15 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -67,26 +72,41 @@ fun HomePagePreviewDarkMode() {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
     getDevices: () -> List<DeviceOverview> = { mutableListOf() },
 ) {
-    val devices = remember { getDevices().toMutableStateList() }
-
-    LazyColumn(
-        modifier =
-            modifier
-                .fillMaxSize(),
-    ) {
-        items(devices) { deviceOverview ->
-            DeviceCard(
-                deviceOverview = deviceOverview,
-                onRemove = {
-                    devices.remove(it)
-                },
-            )
+    var devices = getDevices().toMutableStateList()
+    val refreshState = rememberPullToRefreshState()
+    if (refreshState.isRefreshing) {
+        LaunchedEffect(true) {
+            devices = getDevices().toMutableStateList()
+            refreshState.endRefresh()
         }
+    }
+
+    Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
+        LazyColumn(
+            modifier =
+                modifier
+                    .fillMaxSize(),
+        ) {
+            items(devices) { deviceOverview ->
+                DeviceCard(
+                    deviceOverview = deviceOverview,
+                    onRemove = {
+                        devices.remove(it)
+                    },
+                )
+            }
+        }
+
+        PullToRefreshContainer(
+            modifier = Modifier.align(Alignment.TopCenter),
+            state = refreshState,
+        )
     }
 }
 
