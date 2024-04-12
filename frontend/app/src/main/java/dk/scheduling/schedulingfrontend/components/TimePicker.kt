@@ -44,7 +44,6 @@ fun StandardTimePickerDialog(
     if (openDialog) {
         val showingPicker = remember { mutableStateOf(true) }
         BasicAlertDialog(
-            // modifier = Modifier.fillMaxSize(),
             onDismissRequest = {
                 // Dismiss the dialog when the user clicks outside the dialog or on the back
                 // button. If you want to disable that functionality, simply use an empty
