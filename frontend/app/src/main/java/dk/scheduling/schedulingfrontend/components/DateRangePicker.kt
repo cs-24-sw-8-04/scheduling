@@ -38,7 +38,7 @@ private fun convertMillisToDate(millis: Long): String {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun Picker(
+fun StandardDateRangePicker(
     closeDialog: () -> Unit,
     passingDate: (LongRange) -> Unit,
     openDialog: Boolean,
@@ -119,7 +119,7 @@ fun PickerPreviewLightMode() {
         val openDialog = remember { mutableStateOf(true) }
         val datePickerState = remember { mutableStateOf(Long.MIN_VALUE..Long.MIN_VALUE) }
 
-        Picker(
+        StandardDateRangePicker(
             closeDialog = { openDialog.value = false },
             passingDate = { datePickerState.value = it },
             openDialog = openDialog.value,
