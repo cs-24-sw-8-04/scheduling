@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend
+package dk.scheduling.schedulingfrontend.pages
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -44,13 +44,13 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dk.scheduling.schedulingfrontend.device.Device
-import dk.scheduling.schedulingfrontend.device.DeviceOverview
-import dk.scheduling.schedulingfrontend.device.DeviceState
-import dk.scheduling.schedulingfrontend.device.getDeviceState
-import dk.scheduling.schedulingfrontend.sharedcomponents.DATE_FORMATTER
-import dk.scheduling.schedulingfrontend.sharedcomponents.FilledButton
-import dk.scheduling.schedulingfrontend.sharedcomponents.OutlinedButton
+import dk.scheduling.schedulingfrontend.components.DATE_FORMATTER
+import dk.scheduling.schedulingfrontend.components.FilledButton
+import dk.scheduling.schedulingfrontend.components.OutlinedButton
+import dk.scheduling.schedulingfrontend.model.Device
+import dk.scheduling.schedulingfrontend.model.DeviceOverview
+import dk.scheduling.schedulingfrontend.model.DeviceState
+import dk.scheduling.schedulingfrontend.model.getDeviceState
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import dk.scheduling.schedulingfrontend.ui.theme.scheduled
 import dk.scheduling.schedulingfrontend.ui.theme.success

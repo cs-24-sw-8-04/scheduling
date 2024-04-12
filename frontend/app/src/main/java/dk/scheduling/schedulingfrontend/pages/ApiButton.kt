@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend
+package dk.scheduling.schedulingfrontend.pages
 
 import android.util.Log
 import androidx.compose.material3.Button

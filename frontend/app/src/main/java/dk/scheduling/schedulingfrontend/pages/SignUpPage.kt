@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend.loginpage
+package dk.scheduling.schedulingfrontend.pages
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,17 +19,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dk.scheduling.schedulingfrontend.sharedcomponents.FilledButton
-import dk.scheduling.schedulingfrontend.sharedcomponents.PasswordTextField
-import dk.scheduling.schedulingfrontend.sharedcomponents.StandardTextField
-import dk.scheduling.schedulingfrontend.sharedcomponents.Title
+import dk.scheduling.schedulingfrontend.components.FilledButton
+import dk.scheduling.schedulingfrontend.components.PasswordTextField
+import dk.scheduling.schedulingfrontend.components.StandardTextField
+import dk.scheduling.schedulingfrontend.components.Title
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 
 @Composable
-fun LoginPage(
+fun SignUpPage(
     modifier: Modifier = Modifier,
-    navigateOnValidLogin: () -> Unit,
-    navigateToSignUpPage: () -> Unit,
+    navigateOnValidSignUp: () -> Unit,
+    navigateToLoginPage: () -> Unit,
 ) {
     var username by remember {
         mutableStateOf("")
@@ -37,17 +37,20 @@ fun LoginPage(
     var password by remember {
         mutableStateOf("")
     }
-    var isLoginFailed by remember {
+    var homeAddress by remember {
+        mutableStateOf("")
+    }
+    var isSignUpFailed by remember {
         mutableStateOf(false)
     }
 
-    Title(titleText = "Login")
+    Title(titleText = "Sign Up")
 
     Column(
         modifier =
             modifier
                 .fillMaxSize()
-                .padding(50.dp),
+                .padding(all = 50.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -56,9 +59,9 @@ fun LoginPage(
             value = username,
             onValueChange = {
                 username = it
-                if (isLoginFailed) isLoginFailed = false
+                if (isSignUpFailed) isSignUpFailed = false
             },
-            isError = isLoginFailed,
+            isError = isSignUpFailed,
         )
 
         Spacer(modifier = Modifier.height(20.dp))
@@ -67,15 +70,27 @@ fun LoginPage(
             password,
             onPasswordChange = {
                 password = it
-                if (isLoginFailed) isLoginFailed = false
+                if (isSignUpFailed) isSignUpFailed = false
             },
-            isError = isLoginFailed,
+            isError = isSignUpFailed,
         )
 
-        if (isLoginFailed) {
+        Spacer(modifier = Modifier.height(20.dp))
+
+        StandardTextField(
+            label = "Home Address",
+            value = homeAddress,
+            onValueChange = {
+                homeAddress = it
+                if (isSignUpFailed) isSignUpFailed = false
+            },
+            isError = isSignUpFailed,
+        )
+
+        if (isSignUpFailed) {
             Spacer(modifier = Modifier.height(20.dp))
             Text(
-                text = "Wrong username or password",
+                text = "Wrong sign up information",
                 color = MaterialTheme.colorScheme.error,
             )
         }
@@ -84,13 +99,13 @@ fun LoginPage(
 
         FilledButton(
             onClick = {
-                if (login(username, password)) {
-                    navigateOnValidLogin()
+                if (signUp(username, password, homeAddress)) {
+                    navigateOnValidSignUp()
                 } else {
-                    isLoginFailed = true
+                    isSignUpFailed = true
                 }
             },
-            text = "Log In",
+            text = "Sign up",
         )
     }
 
@@ -103,32 +118,33 @@ fun LoginPage(
         verticalArrangement = Arrangement.Bottom,
     ) {
         Row(horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            Text("Don't have an account?")
-            TextButton(onClick = { navigateToSignUpPage() }) { Text("Sign Up") }
+            Text("Have already an account?")
+            TextButton(onClick = { navigateToLoginPage() }) { Text("Sign In") }
         }
     }
 }
 
-fun login(
+fun signUp(
     username: String,
     password: String,
+    homeAddress: String,
 ): Boolean {
-    // TODO: Send to server and if the login is valid return true
+    // TODO: Send to server and if the signup is valid return true
     return false
 }
 
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
-fun LoginPagePreviewLightMode() {
+fun SignUpPagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
+        SignUpPage(navigateOnValidSignUp = {}, navigateToLoginPage = {})
     }
 }
 
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
-fun LoginPagePreviewDarkMode() {
+fun SignUpPagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
+        SignUpPage(navigateOnValidSignUp = {}, navigateToLoginPage = {})
     }
 }

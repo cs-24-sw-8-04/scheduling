@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend.device
+package dk.scheduling.schedulingfrontend.model
 
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit

@@ -8,7 +8,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
@@ -18,6 +17,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import dk.scheduling.schedulingfrontend.pages.ApiButton
+import dk.scheduling.schedulingfrontend.pages.HomePage
+import dk.scheduling.schedulingfrontend.pages.Page
+import dk.scheduling.schedulingfrontend.pages.Page3
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import testdata.testDeviceOverview
 

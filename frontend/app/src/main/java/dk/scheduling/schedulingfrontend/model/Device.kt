@@ -1,11 +1,11 @@
-package dk.scheduling.schedulingfrontend.device
+package dk.scheduling.schedulingfrontend.model
 
 import java.time.LocalDateTime
 
 data class Device(
-    var id: Int,
+    var id: Long,
     var name: String,
-    var effect: Int?,
+    var effect: Double?,
 )
 
 data class DeviceOverview(

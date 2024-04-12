@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend.sharedcomponents
+package dk.scheduling.schedulingfrontend.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
