@@ -75,7 +75,6 @@ fun StandardDateRangePicker(
                     )
 
                 Column(
-                    // modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.Top,
                 ) {
                     // Add a row with "Save" and dismiss actions.
