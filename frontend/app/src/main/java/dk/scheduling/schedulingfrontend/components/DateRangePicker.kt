@@ -103,7 +103,6 @@ fun StandardDateRangePicker(
                     }
                     DateRangePicker(
                         state = state,
-                        // modifier = Modifier.fillMaxSize()
                     )
                 }
             }
