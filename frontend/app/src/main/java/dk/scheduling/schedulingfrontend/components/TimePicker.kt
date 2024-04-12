@@ -40,7 +40,6 @@ fun StandardTimePickerDialog(
     openDialog: Boolean,
 ) {
     // val state = rememberTimePickerState()
-    // val showingPicker = remember { mutableStateOf(true) }
     if (openDialog) {
         val showingPicker = remember { mutableStateOf(true) }
         BasicAlertDialog(
