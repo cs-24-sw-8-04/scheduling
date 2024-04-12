@@ -18,9 +18,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import dk.scheduling.schedulingfrontend.pages.ApiButton
+import dk.scheduling.schedulingfrontend.pages.CreateTaskPage
 import dk.scheduling.schedulingfrontend.pages.HomePage
 import dk.scheduling.schedulingfrontend.pages.Page
-import dk.scheduling.schedulingfrontend.pages.Page3
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import testdata.testDeviceOverview
 
