@@ -1,7 +1,5 @@
 @file:OptIn(
     ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class,
-    ExperimentalMaterial3Api::class,
 )
 
 package dk.scheduling.schedulingfrontend
