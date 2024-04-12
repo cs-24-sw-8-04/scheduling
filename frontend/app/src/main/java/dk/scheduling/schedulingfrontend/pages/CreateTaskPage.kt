@@ -2,7 +2,7 @@
     ExperimentalMaterial3Api::class,
 )
 
-package dk.scheduling.schedulingfrontend
+package dk.scheduling.schedulingfrontend.pages
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
@@ -32,11 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import dk.scheduling.schedulingfrontend.sharedcomponents.FilledButton
+import dk.scheduling.schedulingfrontend.components.FilledButton
+import dk.scheduling.schedulingfrontend.components.Title
 import dk.scheduling.schedulingfrontend.sharedcomponents.StandardDateRangePicker
 import dk.scheduling.schedulingfrontend.sharedcomponents.StandardDropDownMenu
 import dk.scheduling.schedulingfrontend.sharedcomponents.StandardTimePickerDialog
-import dk.scheduling.schedulingfrontend.sharedcomponents.Title
 import dk.scheduling.schedulingfrontend.sharedcomponents.convertMillisToDate
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 
