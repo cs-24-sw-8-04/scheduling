@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -115,7 +116,7 @@ fun DeviceCard(
     deviceOverview: DeviceOverview,
     onRemove: (DeviceOverview) -> Unit,
 ) {
-    var expandedCard by remember { mutableStateOf(false) }
+    var expandedCard by rememberSaveable { mutableStateOf(false) }
 
     val rotationState by animateFloatAsState(
         targetValue = if (expandedCard) 180f else 0f,
