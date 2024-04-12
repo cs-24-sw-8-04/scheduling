@@ -6,8 +6,7 @@
 
 package dk.scheduling.schedulingfrontend
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,8 +15,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -31,7 +31,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -46,10 +45,8 @@ import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 fun CreateTaskPage(
     modifier: Modifier = Modifier,
     handleSubmission: () -> Unit,
+    handleCancellation: () -> Unit,
 ) {
-    var isLoginFailed by remember {
-        mutableStateOf(false)
-    }
     val options = listOf("Washer", "Dryer", "Toaster")
     var selectedItem by remember { mutableStateOf(options[0]) }
     Title(titleText = "Create Task", topMargin = 0.dp)
@@ -102,23 +99,9 @@ fun CreateTaskPage(
         )
         val dateRange = "${datePickerState.value.first}:${datePickerState.value.last}"
         val dateMsg: String = if (datePickerState.value.first == Long.MIN_VALUE) "no interval selected." else dateRange
-        Box(
-            modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(10.dp))
-                    .clickable { dateRangeDialog.value = true }
-                    .border(
-                        width = 3.dp,
-                        color = MaterialTheme.colorScheme.primary,
-                    ),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text(
-                text = "Date interval: $dateMsg",
-                maxLines = 1,
-            )
-        }
+
+        ClickableCard({ dateRangeDialog.value = true }, "Date interval: $dateMsg")
+
         Spacer(modifier = Modifier.height(30.dp))
 
         // start time
@@ -134,8 +117,7 @@ fun CreateTaskPage(
             },
             openDialog = startTimeDialog.value,
         )
-        DisplaySelectedTime(startHour.intValue, startMinute.intValue, true)
-        FilledButton(onClick = { startTimeDialog.value = true }, text = "Select start time")
+        ClickableCard({ startTimeDialog.value = true }, "Start time: ${formatTime(startHour.intValue, startMinute.intValue)}")
 
         // end time
         Spacer(modifier = Modifier.height(30.dp))
@@ -152,8 +134,7 @@ fun CreateTaskPage(
             },
             openDialog = endTimeDialog.value,
         )
-        DisplaySelectedTime(endHour.intValue, endMinute.intValue, false)
-        FilledButton(onClick = { endTimeDialog.value = true }, text = "Select end time")
+        ClickableCard({ endTimeDialog.value = true }, "End time: ${formatTime(startHour.intValue, startMinute.intValue)}")
 
         Spacer(modifier = Modifier.height(30.dp))
 
@@ -164,27 +145,45 @@ fun CreateTaskPage(
 
         FilledButton(
             onClick = {
-                handleSubmission()
-                      },
+                handleCancellation()
+            },
             text = "Cancel",
         )
     }
 }
 
 @Composable
-fun DisplaySelectedTime(
+fun ClickableCard(
+    onClick: () -> Unit,
+    text: String,
+) {
+    Card(
+        onClick = { onClick() },
+        modifier = Modifier.fillMaxWidth().size(width = 100.dp, height = 50.dp),
+        border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
+    ) {
+        Box(Modifier.fillMaxSize()) {
+            Text(
+                modifier = Modifier.align(Alignment.Center),
+                text = text,
+                maxLines = 1,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
+}
+
+fun formatTime(
     hour: Int,
     minute: Int,
-    isStartTime: Boolean,
-) {
-    var endTimeMsg: String
-    if (hour != -1 && minute != -1) {
-        endTimeMsg = "TimeEnd: $hour:$minute"
+): String {
+    return if (hour == -1 || minute == -1) {
+        "Unselected"
     } else {
-        endTimeMsg = "You have not yet selected a" + if (isStartTime) " start time" else " end time"
-        endTimeMsg += " for the task"
+        val hourStr = if (hour < 10) "0$hour" else hour
+        val minuteStr = if (minute < 10) "0$minute" else minute
+        "$hourStr:$minuteStr"
     }
-    Text(text = endTimeMsg)
 }
 
 fun numbersOnly(input: String): Boolean {
@@ -195,7 +194,7 @@ fun numbersOnly(input: String): Boolean {
 @Composable
 fun CreateTaskPagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        CreateTaskPage(Modifier, handleSubmission = {})
+        CreateTaskPage(Modifier, handleSubmission = {}, handleCancellation = {})
     }
 }
 
@@ -203,6 +202,6 @@ fun CreateTaskPagePreviewLightMode() {
 @Composable
 fun CreateTaskPagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        CreateTaskPage(Modifier, handleSubmission = {})
+        CreateTaskPage(Modifier, handleSubmission = {}, handleCancellation = {})
     }
 }
