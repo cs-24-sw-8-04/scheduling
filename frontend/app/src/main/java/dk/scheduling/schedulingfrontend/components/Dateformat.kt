@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend.sharedcomponents
+package dk.scheduling.schedulingfrontend.components
 
 import java.time.format.DateTimeFormatter
 

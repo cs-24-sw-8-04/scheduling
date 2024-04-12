@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend
+package dk.scheduling.schedulingfrontend.pages
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
