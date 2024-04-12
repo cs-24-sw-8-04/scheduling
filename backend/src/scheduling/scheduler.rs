@@ -14,11 +14,35 @@ fn make_unpublished_event(graph: &DiscreteGraph, task: &Task, timeslot: i32) -> 
     })
 }
 
+/// Same as add_event, but removes the energy used by the event from the [DiscreteGraph].values
+fn add_event_and_remove_from_graph(
+    graph: &mut DiscreteGraph,
+    task: &Task,
+    timeslot: usize,
+) -> Result<Event> {
+    // TODO: graph.sub_value(timeslot, $x) find $x as device effect * duration of the task
+    Ok(Event {
+        task_id: task.id,
+        start_time: graph.get_start_time() + graph.get_time_delta() * i32::try_from(timeslot)?,
+    })
+}
+
 fn adjust_graph_for_task_duration(timeslots: usize, graph_values: &[f64]) -> Vec<f64> {
     graph_values
         .windows(timeslots)
         .map(|window| window.iter().sum())
         .collect()
+}
+
+
+struct GlobalSchedulerAlgorithm {
+    scheduled_events: Vec<Event>,
+}
+
+impl SchedulerAlgorithm for GlobalSchedulerAlgorithm {
+    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>> {
+        todo!()
+    }
 }
 
 struct NaiveSchedulerAlgorithm;

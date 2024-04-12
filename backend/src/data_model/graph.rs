@@ -24,4 +24,7 @@ impl DiscreteGraph {
     pub fn get_start_time(&self) -> DateTimeUtc {
         self.start_time
     }
+    pub fn sub_value(&mut self, index: usize, value: f64) {
+        self.values[index] = self.values[index] - value;
+    }
 }
