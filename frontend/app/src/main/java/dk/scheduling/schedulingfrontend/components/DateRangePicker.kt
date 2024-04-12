@@ -31,7 +31,7 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-private fun convertMillisToDate(millis: Long): String {
+fun convertMillisToDate(millis: Long): String {
     val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.GERMANY)
     return formatter.format(Date(millis))
 }
@@ -108,7 +108,6 @@ fun StandardDateRangePicker(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
 fun PickerPreviewLightMode() {
@@ -121,8 +120,8 @@ fun PickerPreviewLightMode() {
             passingDate = { datePickerState.value = it },
             openDialog = openDialog.value,
         )
-        val dateRange: String = "${datePickerState.value.first}:${datePickerState.value.last}"
-        val dateMsg: String = if (datePickerState.value.first == Long.MIN_VALUE) "no interval selected." else dateRange
+        val dateRange = "${datePickerState.value.first}:${datePickerState.value.last}"
+        val dateMsg = if (datePickerState.value.first == Long.MIN_VALUE) "no interval selected." else dateRange
         Text(text = "Time: $dateMsg")
     }
 }

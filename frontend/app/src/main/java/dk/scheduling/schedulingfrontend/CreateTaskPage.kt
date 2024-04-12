@@ -37,6 +37,7 @@ import dk.scheduling.schedulingfrontend.sharedcomponents.StandardDateRangePicker
 import dk.scheduling.schedulingfrontend.sharedcomponents.StandardDropDownMenu
 import dk.scheduling.schedulingfrontend.sharedcomponents.StandardTimePickerDialog
 import dk.scheduling.schedulingfrontend.sharedcomponents.Title
+import dk.scheduling.schedulingfrontend.sharedcomponents.convertMillisToDate
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 
 @Composable
@@ -95,7 +96,7 @@ fun CreateTaskPage(
             passingDate = { datePickerState.value = it },
             openDialog = dateRangeDialog.value,
         )
-        val dateRange = "${datePickerState.value.first}:${datePickerState.value.last}"
+        val dateRange = "${convertMillisToDate(datePickerState.value.first)}:${convertMillisToDate(datePickerState.value.last)}"
         val dateMsg: String = if (datePickerState.value.first == Long.MIN_VALUE) "no interval selected." else dateRange
 
         ClickableCard({ dateRangeDialog.value = true }, "Date interval: $dateMsg")
