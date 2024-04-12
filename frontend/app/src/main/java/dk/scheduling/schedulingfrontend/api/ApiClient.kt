@@ -55,6 +55,6 @@ class RetrofitClient(val baseUrl: String) {
     }
 }
 
-fun getApiClient(baseUrl: String): ApiService {
+fun getApiClient(baseUrl: String = "http://10.0.2.2:2222"): ApiService {
     return RetrofitClient(baseUrl).retrofit.create<ApiService>()
 }

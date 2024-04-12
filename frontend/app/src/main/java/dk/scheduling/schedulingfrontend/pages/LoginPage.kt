@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -24,11 +25,12 @@ import dk.scheduling.schedulingfrontend.components.PasswordTextField
 import dk.scheduling.schedulingfrontend.components.StandardTextField
 import dk.scheduling.schedulingfrontend.components.Title
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
+import kotlinx.coroutines.launch
 
 @Composable
 fun LoginPage(
     modifier: Modifier = Modifier,
-    navigateOnValidLogin: () -> Unit,
+    login: suspend (String, String) -> Boolean,
     navigateToSignUpPage: () -> Unit,
 ) {
     var username by remember {
@@ -40,6 +42,8 @@ fun LoginPage(
     var isLoginFailed by remember {
         mutableStateOf(false)
     }
+
+    val coroutineScope = rememberCoroutineScope()
 
     Title(titleText = "Login")
 
@@ -84,10 +88,8 @@ fun LoginPage(
 
         FilledButton(
             onClick = {
-                if (login(username, password)) {
-                    navigateOnValidLogin()
-                } else {
-                    isLoginFailed = true
+                coroutineScope.launch {
+                    isLoginFailed = login(username, password)
                 }
             },
             text = "Log In",
@@ -109,19 +111,11 @@ fun LoginPage(
     }
 }
 
-fun login(
-    username: String,
-    password: String,
-): Boolean {
-    // TODO: Send to server and if the login is valid return true
-    return false
-}
-
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
 fun LoginPagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
+        LoginPage(login = { s: String, s1: String -> false }, navigateToSignUpPage = {})
     }
 }
 
@@ -129,6 +123,6 @@ fun LoginPagePreviewLightMode() {
 @Composable
 fun LoginPagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
+        LoginPage(login = { s: String, s1: String -> false }, navigateToSignUpPage = {})
     }
 }
