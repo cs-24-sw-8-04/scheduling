@@ -1,5 +1,7 @@
 use chrono::Duration;
 use protocol::time::DateTimeUtc;
+
+#[derive(Clone)]
 pub struct DiscreteGraph {
     values: Vec<f64>,
     time_delta: Duration,

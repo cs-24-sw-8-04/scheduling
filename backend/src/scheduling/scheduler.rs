@@ -20,7 +20,7 @@ fn add_event_and_remove_from_graph(
     task: &Task,
     timeslot: usize,
 ) -> Result<Event> {
-    // TODO: graph.sub_value(timeslot, $x) find $x as device effect * duration of the task
+    todo!("graph.sub_value(timeslot, $x) find $x as device effect * duration of the task");
     Ok(Event {
         task_id: task.id,
         start_time: graph.get_start_time() + graph.get_time_delta() * i32::try_from(timeslot)?,
@@ -34,53 +34,61 @@ fn adjust_graph_for_task_duration(timeslots: usize, graph_values: &[f64]) -> Vec
         .collect()
 }
 
+/// Best meaning where the energy available is at max
+fn find_best_event(task: &Task, graph: &DiscreteGraph) -> Result<usize> {
+    let time_delta = graph.get_time_delta().num_milliseconds();
+    let duration: i64 = task.duration.into();
+    let timeslots: usize = (duration / time_delta).try_into()?;
+
+    // Make a new graph containing all possible time intervals to place the event
+    let mapped_graph = adjust_graph_for_task_duration(timeslots, graph.get_values());
+
+    // Defining ranges for the task's timespan
+    let timeslot_start: usize =
+        ((task.timespan.start - graph.get_start_time()).num_milliseconds() / time_delta)
+            .try_into()?;
+    let timeslot_end: usize = ((task.timespan.end - graph.get_start_time()).num_milliseconds()
+        / time_delta)
+        .try_into()?;
+    assert!(
+        timeslot_start < timeslot_end,
+        "Invalid timespan for task with id: {:?}",
+        task
+    );
+
+    // Find the max of mapped_graph slice.
+    // Slice is made form the tasks timespan
+    let (greatest_index, _) = mapped_graph[timeslot_start..=timeslot_end - (timeslots - 1)]
+        .iter()
+        .enumerate()
+        .max_by(|(_, x), (_, y)| x.total_cmp(y))
+        .unwrap();
+
+    Ok(timeslot_start + greatest_index)
+}
 
 struct GlobalSchedulerAlgorithm {
     scheduled_events: Vec<Event>,
 }
 
 impl SchedulerAlgorithm for GlobalSchedulerAlgorithm {
-    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>> {
-        todo!()
+    fn schedule(&self, mut graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>> {
+        let mut events: Vec<Event> = Vec::new();
+        for task in &tasks {
+            let temp_graph = graph.clone();
+            events.push(add_event_and_remove_from_graph(
+                &mut graph,
+                task,
+                find_best_event(task, &temp_graph)?.try_into()?,
+            )?)
+        }
+
+        Ok(events)
     }
+
 }
 
 struct NaiveSchedulerAlgorithm;
-
-impl NaiveSchedulerAlgorithm {
-    /// Best meaning where the energy available is at max
-    fn find_best_event(task: &Task, graph: &DiscreteGraph) -> Result<usize> {
-        let time_delta = graph.get_time_delta().num_milliseconds();
-        let duration: i64 = task.duration.into();
-        let timeslots: usize = (duration / time_delta).try_into()?;
-
-        // Make a new graph containing all possible time intervals to place the event
-        let mapped_graph = adjust_graph_for_task_duration(timeslots, graph.get_values());
-
-        // Defining ranges for the task's timespan
-        let timeslot_start: usize =
-            ((task.timespan.start - graph.get_start_time()).num_milliseconds() / time_delta)
-                .try_into()?;
-        let timeslot_end: usize = ((task.timespan.end - graph.get_start_time()).num_milliseconds()
-            / time_delta)
-            .try_into()?;
-        assert!(
-            timeslot_start < timeslot_end,
-            "Invalid timespan for task with id: {:?}",
-            task
-        );
-
-        // Find the max of mapped_graph slice.
-        // Slice is made form the tasks timespan
-        let (greatest_index, _) = mapped_graph[timeslot_start..=timeslot_end - (timeslots - 1)]
-            .iter()
-            .enumerate()
-            .max_by(|(_, x), (_, y)| x.total_cmp(y))
-            .unwrap();
-
-        Ok(timeslot_start + greatest_index)
-    }
-}
 
 impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
     fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>> {
@@ -89,7 +97,7 @@ impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
             events.push(make_unpublished_event(
                 &graph,
                 task,
-                NaiveSchedulerAlgorithm::find_best_event(task, &graph)?.try_into()?,
+                find_best_event(task, &graph)?.try_into()?,
             )?);
         }
 
