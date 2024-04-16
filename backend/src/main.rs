@@ -97,14 +97,15 @@ mod tests {
         (app(pool.clone()), pool)
     }
 
-    async fn get_account(app: &mut RouterIntoService<Body>) -> AuthToken {
+    async fn get_account(app: &mut RouterIntoService<Body>, username: Option<String>) -> AuthToken {
+        let username = username.unwrap_or("test_user".to_string());
         let request = Request::builder()
             .method(Method::POST)
             .uri("/accounts/register")
             .header("Content-Type", "application/json")
             .body(Body::from(
                 serde_json::to_vec(&RegisterOrLoginRequest {
-                    username: "test_user".to_string(),
+                    username,
                     password: "test_password".to_string(),
                 })
                 .unwrap(),
@@ -320,7 +321,7 @@ mod tests {
         let (router, _) = test_app().await;
         let mut app = router.into_service();
 
-        get_account(&mut app).await;
+        get_account(&mut app, None).await;
     }
 
     #[tokio::test]
@@ -329,7 +330,7 @@ mod tests {
         let mut app = router.into_service();
 
         // Registers an account
-        get_account(&mut app).await;
+        get_account(&mut app, None).await;
 
         // Login to account
         let request = Request::builder()
@@ -368,7 +369,7 @@ mod tests {
         let mut app = router.into_service();
 
         // Registers an account
-        let auth_token = get_account(&mut app).await;
+        let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token_to_uuid(auth_token);
 
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
@@ -379,12 +380,84 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn create_task_fails_with_invalid_device() {
+        let (router, _) = test_app().await;
+        let mut app = router.into_service();
+
+        // Register an account
+        let auth_token = get_account(&mut app, None).await;
+        let auth_token = auth_token_to_uuid(auth_token);
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/tasks/create")
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token.clone())
+            .body(Body::from(
+                serde_json::to_vec(&CreateTaskRequest {
+                    timespan: Timespan::new(
+                        Utc::now(),
+                        Utc::now().checked_add_days(Days::new(1)).unwrap(),
+                    ),
+                    duration: 3600.into(),
+                    device_id: 99999.into(),
+                })
+                .unwrap(),
+            ))
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(&mut app)
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        // Cannot register task to non-existant device.
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+
+        let device = generate_device(&mut app, auth_token, 1234.0).await;
+
+        // Register a new account
+        let auth_token = get_account(&mut app, Some("test_user_2".to_string())).await;
+        let auth_token = auth_token_to_uuid(auth_token);
+
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/tasks/create")
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token.clone())
+            .body(Body::from(
+                serde_json::to_vec(&CreateTaskRequest {
+                    timespan: Timespan::new(
+                        Utc::now(),
+                        Utc::now().checked_add_days(Days::new(1)).unwrap(),
+                    ),
+                    duration: 3600.into(),
+                    device_id: device.id,
+                })
+                .unwrap(),
+            ))
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(&mut app)
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        // Cannot register task to a device not owned by the account.
+        assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
+    }
+
+    #[tokio::test]
     async fn get_tasks_test() {
         let (router, _) = test_app().await;
         let mut app = router.into_service();
 
         // Registers an account
-        let auth_token = get_account(&mut app).await;
+        let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token_to_uuid(auth_token);
 
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
@@ -399,7 +472,7 @@ mod tests {
         let (router, _) = test_app().await;
         let mut app = router.into_service();
 
-        let auth_token = get_account(&mut app).await;
+        let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token_to_uuid(auth_token);
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
@@ -415,7 +488,7 @@ mod tests {
         let (router, _) = test_app().await;
         let mut app = router.into_service();
 
-        let auth_token = get_account(&mut app).await;
+        let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token_to_uuid(auth_token);
         let created_devices = vec![
             generate_device(&mut app, auth_token.clone(), 1000.0).await,
@@ -433,7 +506,7 @@ mod tests {
         let mut app = router.into_service();
 
         // Registers an account
-        let auth_token = get_account(&mut app).await;
+        let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token_to_uuid(auth_token);
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
 
@@ -445,7 +518,7 @@ mod tests {
         let (router, _) = test_app().await;
         let mut app = router.into_service();
 
-        let auth_token = get_account(&mut app).await;
+        let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token_to_uuid(auth_token);
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         delete_device(&mut app, auth_token.clone(), device).await;
@@ -459,7 +532,7 @@ mod tests {
     async fn get_all_events() {
         let (router, pool) = test_app().await;
         let mut app = router.into_service();
-        let auth_token = get_account(&mut app).await;
+        let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token_to_uuid(auth_token);
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
@@ -496,7 +569,7 @@ mod tests {
     async fn get_device_events() {
         let (router, pool) = test_app().await;
         let mut app = router.into_service();
-        let auth_token = get_account(&mut app).await;
+        let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token_to_uuid(auth_token);
         let device = generate_device(&mut app, auth_token.clone(), 20.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 20, &device).await;
