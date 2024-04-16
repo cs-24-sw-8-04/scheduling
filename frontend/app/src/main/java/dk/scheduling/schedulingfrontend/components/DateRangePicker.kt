@@ -80,7 +80,7 @@ fun StandardDateRangePicker(
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         IconButton(onClick = { closeDialog() }) {
-                            Icon(Icons.Filled.Close, contentDescription = "Localized description")
+                            Icon(Icons.Filled.Close, contentDescription = "Close")
                         }
                         TextButton(
                             onClick = {
