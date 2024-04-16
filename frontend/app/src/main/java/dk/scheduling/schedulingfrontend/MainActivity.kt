@@ -23,8 +23,6 @@ import dk.scheduling.schedulingfrontend.pages.Page3
 import dk.scheduling.schedulingfrontend.pages.SignUpPage
 import dk.scheduling.schedulingfrontend.repositories.AccountDataSource
 import dk.scheduling.schedulingfrontend.repositories.AccountRepository
-import dk.scheduling.schedulingfrontend.repositories.AuthorizationRepository
-import dk.scheduling.schedulingfrontend.repositories.LoginRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import testdata.testDeviceOverview
 
@@ -38,9 +36,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             val accountDataStorage = AccountDataSource(accountDataStore)
-            val loginRepo = LoginRepository(accountDataStorage)
-            val authRepo = AuthorizationRepository(accountDataStorage)
-            val accountRepo = AccountRepository(loginRepo = loginRepo, authRepo = authRepo)
+            val accountRepo = AccountRepository(accountDataSource = accountDataStorage)
 
             SchedulingFrontendTheme {
                 val appState = rememberAppState()
@@ -59,21 +55,22 @@ class MainActivity : ComponentActivity() {
                         }
                     },
                 ) { innerPadding ->
-                    // Content of the current page
                     NavHost(
                         navController = appState.navHostController,
-                        startDestination = Page.Home.route,
+                        startDestination = Page.LoginPage.route,
                         modifier = Modifier.padding(innerPadding),
                     ) {
                         composable(Page.LoginPage.route) {
                             LoginPage(
-                                login = { username, password -> accountRepo.login(username, password) },
+                                accountRepo = accountRepo,
+                                navigateOnValidLogIn = { appState.navHostController.navigate(Page.Home.route) },
                                 navigateToSignUpPage = { appState.navHostController.navigate(Page.SignUpPage.route) },
                             )
                         }
                         composable(Page.SignUpPage.route) {
                             SignUpPage(
-                                navigateOnValidSignUp = { false },
+                                accountRepo = accountRepo,
+                                navigateOnValidSignUp = { appState.navHostController.navigate(Page.Home.route) },
                                 navigateToLoginPage = { appState.navHostController.navigate(Page.LoginPage.route) },
                             )
                         }
@@ -90,7 +87,7 @@ class MainActivity : ComponentActivity() {
 class AppState(
     val navHostController: NavHostController,
 ) {
-    val routes =
+    private val routes =
         listOf(
             Page.Home,
             Page.ApiButton,

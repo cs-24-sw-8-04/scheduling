@@ -24,13 +24,16 @@ import dk.scheduling.schedulingfrontend.components.FilledButton
 import dk.scheduling.schedulingfrontend.components.PasswordTextField
 import dk.scheduling.schedulingfrontend.components.StandardTextField
 import dk.scheduling.schedulingfrontend.components.Title
+import dk.scheduling.schedulingfrontend.repositories.DummyAccountRepository
+import dk.scheduling.schedulingfrontend.repositories.IAccountRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.launch
 
 @Composable
 fun LoginPage(
     modifier: Modifier = Modifier,
-    login: suspend (String, String) -> Boolean,
+    accountRepo: IAccountRepository,
+    navigateOnValidLogIn: () -> Unit,
     navigateToSignUpPage: () -> Unit,
 ) {
     var username by remember {
@@ -89,7 +92,11 @@ fun LoginPage(
         FilledButton(
             onClick = {
                 coroutineScope.launch {
-                    isLoginFailed = login(username, password)
+                    if (accountRepo.login(username, password)) {
+                        navigateOnValidLogIn()
+                    } else {
+                        isLoginFailed = true
+                    }
                 }
             },
             text = "Log In",
@@ -115,7 +122,7 @@ fun LoginPage(
 @Composable
 fun LoginPagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        LoginPage(login = { s: String, s1: String -> false }, navigateToSignUpPage = {})
+        LoginPage(navigateToSignUpPage = {}, navigateOnValidLogIn = {}, accountRepo = DummyAccountRepository())
     }
 }
 
@@ -123,6 +130,6 @@ fun LoginPagePreviewLightMode() {
 @Composable
 fun LoginPagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        LoginPage(login = { s: String, s1: String -> false }, navigateToSignUpPage = {})
+        LoginPage(navigateToSignUpPage = {}, navigateOnValidLogIn = {}, accountRepo = DummyAccountRepository())
     }
 }
