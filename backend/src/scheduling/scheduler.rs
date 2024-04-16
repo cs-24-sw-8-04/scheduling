@@ -1,64 +1,60 @@
 use super::unpublished_event::UnPublishedEvent as Event;
 use crate::data_model::graph::DiscreteGraph;
 use anyhow::Result;
-use chrono::Duration;
-use protocol::{tasks::Task, time::Milliseconds};
+use protocol::tasks::Task;
 
 trait SchedulerAlgorithm {
     fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>>;
 }
 
-fn add_event(
-    events: &mut Vec<Event>,
-    graph: &DiscreteGraph,
-    task: &Task,
-    timeslot: usize,
-) -> Result<()> {
-    events.push(Event {
+fn make_unpublished_event(graph: &DiscreteGraph, task: &Task, timeslot: i32) -> Result<Event> {
+    Ok(Event {
         task_id: task.id,
-        start_time: graph.get_start_time() + graph.get_time_delta() * i32::try_from(timeslot)?,
-    });
-    Ok(())
+        start_time: graph.get_start_time() + graph.get_time_delta() * timeslot,
+    })
 }
 
-fn adjust_graph_for_time_delta(timeslots: usize, graph_values: &[f64]) -> Vec<f64> {
+fn adjust_graph_for_task_duration(timeslots: usize, graph_values: &[f64]) -> Vec<f64> {
     graph_values
         .windows(timeslots)
         .map(|window| window.iter().sum())
         .collect()
 }
 
-fn checked_duration_to_i64(duration: Duration) -> i64 {
-    i64::from(Milliseconds::from(duration))
-}
-
 struct NaiveSchedulerAlgorithm;
 
 impl NaiveSchedulerAlgorithm {
+    /// Best meaning where the energy available is at max
     fn find_best_event(task: &Task, graph: &DiscreteGraph) -> Result<usize> {
-        let duration: i64 = task.duration.into();
         let time_delta = graph.get_time_delta().num_milliseconds();
-        let timeslots = usize::try_from(duration / time_delta)?;
+        let duration: i64 = task.duration.into();
+        let timeslots: usize = (duration / time_delta).try_into()?;
 
         // Make a new graph containing all possible time intervals to place the event
-        let mapped_graph = adjust_graph_for_time_delta(timeslots, graph.get_values());
+        let mapped_graph = adjust_graph_for_task_duration(timeslots, graph.get_values());
 
         // Defining ranges for the task's timespan
         let timeslot_start: usize =
-            (checked_duration_to_i64(task.timespan.start - graph.get_start_time()) / time_delta)
+            ((task.timespan.start - graph.get_start_time()).num_milliseconds() / time_delta)
                 .try_into()?;
-        let timeslot_end: usize =
-            (checked_duration_to_i64(task.timespan.end - graph.get_start_time()) / time_delta)
-                .try_into()?;
+        let timeslot_end: usize = ((task.timespan.end - graph.get_start_time()).num_milliseconds()
+            / time_delta)
+            .try_into()?;
+        assert!(
+            timeslot_start < timeslot_end,
+            "Invalid timespan for task with id: {:?}",
+            task
+        );
 
-        // Find the best interval
+        // Find the max of mapped_graph slice.
+        // Slice is made form the tasks timespan
         let (greatest_index, _) = mapped_graph[timeslot_start..=timeslot_end - (timeslots - 1)]
             .iter()
             .enumerate()
             .max_by(|(_, x), (_, y)| x.total_cmp(y))
-            .expect("Task timespan is invalid");
+            .unwrap();
 
-        Ok(greatest_index + timeslot_start)
+        Ok(timeslot_start + greatest_index)
     }
 }
 
@@ -66,12 +62,11 @@ impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
     fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>> {
         let mut events: Vec<Event> = Vec::new();
         for task in &tasks {
-            add_event(
-                &mut events,
+            events.push(make_unpublished_event(
                 &graph,
                 task,
-                NaiveSchedulerAlgorithm::find_best_event(task, &graph)?,
-            )?;
+                NaiveSchedulerAlgorithm::find_best_event(task, &graph)?.try_into()?,
+            )?);
         }
 
         Ok(events)
@@ -84,144 +79,212 @@ mod scheduler_test {
     use crate::data_model::graph::DiscreteGraph;
     use crate::scheduling::scheduler::NaiveSchedulerAlgorithm;
     use crate::scheduling::unpublished_event::UnPublishedEvent;
-    use chrono::{Duration, Utc};
-    use protocol::tasks::Task;
-    use protocol::time::Timespan;
+    use chrono::{DateTime, Duration, Utc};
+    use protocol::devices::DeviceId;
+    use protocol::tasks::{Task, TaskId};
+    use protocol::time::{Milliseconds, Timespan};
+
+    struct TaskFactory {
+        task_id: TaskId,
+        device_id: DeviceId,
+    }
+    impl TaskFactory {
+        fn get_task_id(&mut self) -> TaskId {
+            let res = self.task_id;
+            self.task_id += 1;
+            res
+        }
+        fn get_device_id(&mut self) -> DeviceId {
+            let res = self.device_id;
+            self.device_id += 1;
+            res
+        }
+        pub fn new() -> Self {
+            TaskFactory {
+                task_id: 0.into(),
+                device_id: 0.into(),
+            }
+        }
+        pub fn make_tasks(
+            &mut self,
+            amount: usize,
+            time_fixpoint: DateTime<Utc>,
+            duration: Milliseconds,
+            end_offset: Duration,
+            start_offset: Option<Duration>,
+        ) -> Vec<Task> {
+            let mut res = Vec::new();
+            for _ in 1..=amount {
+                res.push(Task {
+                    id: self.get_task_id(),
+                    timespan: Timespan {
+                        start: time_fixpoint + start_offset.unwrap_or_default(),
+                        end: time_fixpoint + end_offset,
+                    },
+                    duration,
+                    device_id: self.get_device_id(),
+                });
+            }
+            res
+        }
+    }
+
+    // Uses `Duration::seconds(n)` for input
+    macro_rules! make_expected_unpublished_events {
+        ( $start_time:expr, $($offset:expr),* ) =>  {
+            {
+                let mut vec = Vec::new();
+                let mut __id = 0; // __ is to avoid name clash since this is code in which will be written into the file
+                $(
+                    vec.push(UnPublishedEvent {
+                        task_id: __id.into(),
+                        start_time: $start_time + Duration::seconds($offset),
+                    });
+                    __id += 1;
+                )*
+                vec
+            }
+        }
+    }
 
     #[test]
     fn naive_scheduler_parabola_3elem() {
         let scheduler = NaiveSchedulerAlgorithm;
         let start = Utc::now();
-        let tasks = vec![Task {
-            id: 1.into(),
-            timespan: Timespan {
-                start,
-                end: start + Duration::seconds(2),
-            },
-            duration: Duration::seconds(2).into(),
-            device_id: 1.into(),
-        }];
-        let graph = DiscreteGraph::new(vec![3.0, 5.0, 4.0], Duration::seconds(1), start);
-        let events = scheduler.schedule(graph, tasks).unwrap();
 
-        assert_eq!(
-            events[0],
-            UnPublishedEvent {
-                task_id: 1.into(),
-                start_time: start + Duration::seconds(1),
-            }
-        )
+        let tasks = TaskFactory::new().make_tasks(
+            1,
+            start,
+            Duration::seconds(2).into(),
+            Duration::seconds(2),
+            None,
+        );
+
+        let graph = DiscreteGraph::new(vec![3.0, 5.0, 4.0], Duration::seconds(1), start);
+
+        let events = scheduler.schedule(graph, tasks).unwrap();
+        let expected = make_expected_unpublished_events!(start, 1);
+
+        assert_eq!(events, expected)
     }
     #[test]
     fn naive_scheduler_parabola_7elem() {
         let scheduler = NaiveSchedulerAlgorithm;
         let start = Utc::now();
-        let tasks = vec![Task {
-            id: 1.into(),
-            timespan: Timespan {
-                start,
-                end: start + Duration::seconds(6),
-            },
-            duration: Duration::seconds(3).into(),
-            device_id: 1.into(),
-        }];
+
+        let tasks = TaskFactory::new().make_tasks(
+            1,
+            start,
+            Duration::seconds(3).into(),
+            Duration::seconds(6),
+            None,
+        );
+
         let graph = DiscreteGraph::new(
             vec![0.0, 5.0, 8.0, 9.0, 8.0, 5.0, 0.0],
             Duration::seconds(1),
             start,
         );
-        let events = scheduler.schedule(graph, tasks).unwrap();
 
-        assert_eq!(
-            events[0],
-            UnPublishedEvent {
-                task_id: 1.into(),
-                start_time: start + Duration::seconds(2),
-            }
-        )
+        let events = scheduler.schedule(graph, tasks).unwrap();
+        let expected = make_expected_unpublished_events!(start, 2);
+
+        assert_eq!(events, expected)
     }
     #[test]
     fn naive_scheduler_linear_up() {
         let scheduler = NaiveSchedulerAlgorithm;
         let start = Utc::now();
-        let tasks = vec![Task {
-            id: 1.into(),
-            timespan: Timespan {
-                start,
-                end: start + Duration::seconds(6),
-            },
-            duration: Duration::seconds(3).into(),
-            device_id: 1.into(),
-        }];
+
+        let tasks = TaskFactory::new().make_tasks(
+            1,
+            start,
+            Duration::seconds(3).into(),
+            Duration::seconds(6),
+            None,
+        );
+
         let graph = DiscreteGraph::new(
             vec![2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0],
             Duration::seconds(1),
             start,
         );
-        let events = scheduler.schedule(graph, tasks).unwrap();
 
-        assert_eq!(
-            events[0],
-            UnPublishedEvent {
-                task_id: 1.into(),
-                start_time: start + Duration::seconds(4),
-            }
-        )
+        let events = scheduler.schedule(graph, tasks).unwrap();
+        let expected = make_expected_unpublished_events!(start, 4);
+
+        assert_eq!(events, expected)
     }
     #[test]
     fn naive_scheduler_linear_down() {
         let scheduler = NaiveSchedulerAlgorithm;
         let start = Utc::now();
-        let tasks = vec![Task {
-            id: 1.into(),
-            timespan: Timespan {
-                start,
-                end: start + Duration::seconds(6),
-            },
-            duration: Duration::seconds(3).into(),
-            device_id: 1.into(),
-        }];
+
+        let tasks = TaskFactory::new().make_tasks(
+            1,
+            start,
+            Duration::seconds(3).into(),
+            Duration::seconds(6),
+            None,
+        );
+
         let graph = DiscreteGraph::new(
             vec![8.0, 7.0, 6.0, 5.0, 4.0, 3.0, 2.0],
             Duration::seconds(1),
             start,
         );
-        let events = scheduler.schedule(graph, tasks).unwrap();
 
-        assert_eq!(
-            events[0],
-            UnPublishedEvent {
-                task_id: 1.into(),
-                start_time: start,
-            }
-        )
+        let events = scheduler.schedule(graph, tasks).unwrap();
+        let expected = make_expected_unpublished_events!(start, 0);
+
+        assert_eq!(events, expected)
     }
     #[test]
     fn naive_scheduler_time_span() {
         let scheduler = NaiveSchedulerAlgorithm;
         let start = Utc::now();
-        let tasks = vec![Task {
-            id: 1.into(),
-            timespan: Timespan {
-                start: start + Duration::seconds(2),
-                end: start + Duration::seconds(6),
-            },
-            duration: Duration::seconds(3).into(),
-            device_id: 1.into(),
-        }];
+
+        let tasks = TaskFactory::new().make_tasks(
+            1,
+            start,
+            Duration::seconds(3).into(),
+            Duration::seconds(6),
+            None,
+        );
+
         let graph = DiscreteGraph::new(
             vec![0.0, 5.0, 8.0, 9.0, 8.0, 5.0, 0.0],
             Duration::seconds(1),
             start,
         );
-        let events = scheduler.schedule(graph, tasks).unwrap();
 
-        assert_eq!(
-            events[0],
-            UnPublishedEvent {
-                task_id: 1.into(),
-                start_time: start + Duration::seconds(2),
-            }
-        )
+        let events = scheduler.schedule(graph, tasks).unwrap();
+        let expected = make_expected_unpublished_events!(start, 2);
+
+        assert_eq!(events, expected)
+    }
+    #[test]
+    fn naive_scheduler_multiple_tasks() {
+        let scheduler = NaiveSchedulerAlgorithm;
+        let start = Utc::now();
+
+        let tasks = TaskFactory::new().make_tasks(
+            3,
+            start,
+            Duration::seconds(3).into(),
+            Duration::seconds(5),
+            None,
+        );
+
+        let graph = DiscreteGraph::new(
+            vec![0.0, 5.0, 8.0, 9.0, 8.0, 5.0, 0.0],
+            Duration::seconds(1),
+            start,
+        );
+
+        let events = scheduler.schedule(graph, tasks).unwrap();
+        let expected = make_expected_unpublished_events!(start, 2, 2, 2);
+
+        assert_eq!(events, expected)
     }
 }
