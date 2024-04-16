@@ -77,6 +77,7 @@ class MainActivity : ComponentActivity() {
                         composable(Page.Home.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
                         composable(Page.ApiButton.route) { ApiButton() }
                         composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, handleSubmission = {}, handleCancellation = {}) }
+                        composable(Page.Account.route) { AccountPage(modifier = Modifier, username = "Bob", navigateOnLogout = {}) }
                     }
                 }
             }
