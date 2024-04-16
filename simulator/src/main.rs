@@ -148,7 +148,9 @@ mod tests {
         .await
         .expect("Could not create tasks");
 
-        let amount_of_generated_devices = device_ownership.values().fold(0, |acc, values| acc + values.len());
+        let amount_of_generated_devices = device_ownership
+            .values()
+            .fold(0, |acc, values| acc + values.len());
 
         assert!(amount_of_generated_devices == task_onwership.keys().count());
         task_onwership
