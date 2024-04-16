@@ -50,7 +50,7 @@ async fn main() -> Result<(), anyhow::Error> {
     //println!("Registered an account. Auth Token: {:?}", auth_tokens);
 
     println!("-------------------------------------------------------------");
-    println!("Auto tokens: {:?}", auth_tokens);
+    println!("Auth tokens: {:?}", auth_tokens);
     println!("-------------------------------------------------------------");
     println!("Device ownership: {:?}", device_ownership);
     println!("-------------------------------------------------------------");
