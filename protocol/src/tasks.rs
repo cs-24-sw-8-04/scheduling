@@ -1,3 +1,5 @@
+use std::ops::AddAssign;
+
 use derive_more::{Display, From, Into};
 use serde::{Deserialize, Serialize};
 
@@ -11,6 +13,12 @@ use crate::{
 )]
 #[sqlx(transparent)]
 pub struct TaskId(i64);
+
+impl AddAssign<i64> for TaskId {
+    fn add_assign(&mut self, rhs: i64) {
+        self.0 += rhs;
+    }
+}
 
 #[derive(Deserialize, Serialize)]
 pub struct GetTasksResponse {
