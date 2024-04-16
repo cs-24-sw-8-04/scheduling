@@ -15,14 +15,16 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.TimePickerState
+import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -32,12 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dk.scheduling.schedulingfrontend.components.DateRange
 import dk.scheduling.schedulingfrontend.components.FilledButton
+import dk.scheduling.schedulingfrontend.components.StandardDateRangePicker
+import dk.scheduling.schedulingfrontend.components.StandardTimePickerDialog
 import dk.scheduling.schedulingfrontend.components.Title
-import dk.scheduling.schedulingfrontend.sharedcomponents.StandardDateRangePicker
 import dk.scheduling.schedulingfrontend.sharedcomponents.StandardDropDownMenu
-import dk.scheduling.schedulingfrontend.sharedcomponents.StandardTimePickerDialog
-import dk.scheduling.schedulingfrontend.sharedcomponents.convertMillisToDate
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 
 @Composable
@@ -46,8 +48,6 @@ fun CreateTaskPage(
     handleSubmission: () -> Unit,
     handleCancellation: () -> Unit,
 ) {
-    val options = listOf("Washer", "Dryer", "Toaster")
-    var selectedItem by remember { mutableStateOf(options[0]) }
     Title(titleText = "Create Task", topMargin = 0.dp)
 
     Column(
@@ -58,7 +58,11 @@ fun CreateTaskPage(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
+        // Dropdown box of devices
         Spacer(modifier = Modifier.height(100.dp))
+
+        val options = listOf("Washer", "Dryer", "Toaster")
+        var selectedItem by remember { mutableStateOf(options[0]) }
         StandardDropDownMenu(
             modifier = Modifier,
             options = options,
@@ -67,6 +71,7 @@ fun CreateTaskPage(
             onSelect = { selectedItem = it },
         )
 
+        // Duration input field
         Spacer(modifier = Modifier.height(20.dp))
 
         var duration: String by rememberSaveable { mutableStateOf("") }
@@ -89,15 +94,15 @@ fun CreateTaskPage(
 
         // start date & end date
         val dateRangeDialog = remember { mutableStateOf(false) }
-        val datePickerState = remember { mutableStateOf(Long.MIN_VALUE..Long.MIN_VALUE) }
+        val datePickerValue = remember { mutableStateOf(DateRange()) }
 
         StandardDateRangePicker(
             closeDialog = { dateRangeDialog.value = false },
-            passingDate = { datePickerState.value = it },
+            passingDate = { datePickerValue.value = it },
             openDialog = dateRangeDialog.value,
         )
-        val dateRange = "${convertMillisToDate(datePickerState.value.first)}:${convertMillisToDate(datePickerState.value.last)}"
-        val dateMsg: String = if (datePickerState.value.first == Long.MIN_VALUE) "no interval selected." else dateRange
+
+        val dateMsg: String = if (datePickerValue.value.isValidRange()) "no interval selected." else datePickerValue.value.print()
 
         ClickableCard({ dateRangeDialog.value = true }, "Date interval: $dateMsg")
 
@@ -105,42 +110,38 @@ fun CreateTaskPage(
 
         // start time
         val startTimeDialog = remember { mutableStateOf(false) }
-        val startHour = remember { mutableIntStateOf(-1) }
-        val startMinute = remember { mutableIntStateOf(-1) }
+        val startTimeState = rememberTimePickerState()
 
         StandardTimePickerDialog(
             closeDialog = { startTimeDialog.value = false },
-            passValue = {
-                startHour.intValue = it.hour
-                startMinute.intValue = it.minute
-            },
+            state = startTimeState,
             openDialog = startTimeDialog.value,
         )
-        ClickableCard({ startTimeDialog.value = true }, "Start time: ${formatTime(startHour.intValue, startMinute.intValue)}")
+        ClickableCard({ startTimeDialog.value = true }, "Start time: ${formatTime(startTimeState.hour, startTimeState.minute)}")
 
         // end time
         Spacer(modifier = Modifier.height(30.dp))
 
         val endTimeDialog = remember { mutableStateOf(false) }
-        val endHour = remember { mutableIntStateOf(-1) }
-        val endMinute = remember { mutableIntStateOf(-1) }
+        val endTimeState = rememberTimePickerState()
 
         StandardTimePickerDialog(
             closeDialog = { endTimeDialog.value = false },
-            passValue = {
-                endHour.intValue = it.hour
-                endMinute.intValue = it.minute
-            },
+            state = endTimeState,
             openDialog = endTimeDialog.value,
         )
-        ClickableCard({ endTimeDialog.value = true }, "End time: ${formatTime(startHour.intValue, startMinute.intValue)}")
+        ClickableCard({ endTimeDialog.value = true }, "End time: ${formatTime(endTimeState.hour, endTimeState.minute)}")
 
+        // Submit or Cancel
         Spacer(modifier = Modifier.height(30.dp))
 
-        FilledButton(
+        Button(
             onClick = { handleSubmission() },
-            text = "Create task",
-        )
+            enabled = isValidInput(duration, datePickerValue.value, startTimeState, endTimeState),
+            modifier = modifier.fillMaxWidth(),
+        ) {
+            Text(text = "Create task")
+        }
 
         FilledButton(
             onClick = {
@@ -176,17 +177,30 @@ fun formatTime(
     hour: Int,
     minute: Int,
 ): String {
-    return if (hour == -1 || minute == -1) {
-        "Unselected"
-    } else {
-        val hourStr = if (hour < 10) "0$hour" else hour
-        val minuteStr = if (minute < 10) "0$minute" else minute
-        "$hourStr:$minuteStr"
-    }
+    val hourStr = if (hour < 10) "0$hour" else hour
+    val minuteStr = if (minute < 10) "0$minute" else minute
+    return "$hourStr:$minuteStr"
 }
 
 fun numbersOnly(input: String): Boolean {
     return input.all { char -> char.isDigit() }
+}
+
+fun isValidDuration(input: String): Boolean {
+    return numbersOnly(input) && input.isNotEmpty() && input.isNotBlank() && !input.all { char -> char == '0' }
+}
+
+fun isValidInput(
+    duration: String,
+    dateRange: DateRange,
+    startTime: TimePickerState,
+    endTime: TimePickerState,
+): Boolean {
+    // Max line length is violated if not split into two expressions.
+    val startIsBeforeEnd = dateRange.getStartDate() != dateRange.getEndDate() || startTime.hour <= endTime.hour && startTime.minute < endTime.minute
+    return isValidDuration(
+        duration,
+    ) && dateRange.isValidRange() && startIsBeforeEnd
 }
 
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")

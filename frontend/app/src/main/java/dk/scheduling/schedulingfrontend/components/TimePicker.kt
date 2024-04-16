@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend.sharedcomponents
+package dk.scheduling.schedulingfrontend.components
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +22,6 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -36,7 +35,7 @@ import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 @Composable
 fun StandardTimePickerDialog(
     closeDialog: () -> Unit,
-    passValue: (TimePickerState) -> Unit,
+    state: TimePickerState,
     openDialog: Boolean,
 ) {
     if (openDialog) {
@@ -65,7 +64,6 @@ fun StandardTimePickerDialog(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    val state = rememberTimePickerState()
                     if (showingPicker.value) {
                         TimePicker(
                             state = state,
@@ -84,7 +82,6 @@ fun StandardTimePickerDialog(
                             Text(text = "Close")
                         }
                         Button(onClick = {
-                            passValue(state)
                             closeDialog()
                         }) {
                             Text(text = "Confirm")
@@ -126,18 +123,14 @@ fun ChangeInput(
 fun StandardTimePickerDialogPreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
         val openDialog = remember { mutableStateOf(true) }
-        val hour = remember { mutableIntStateOf(1) }
-        val minute = remember { mutableIntStateOf(1) }
+        val state = rememberTimePickerState()
 
         StandardTimePickerDialog(
             closeDialog = { openDialog.value = false },
-            passValue = {
-                hour.intValue = it.hour
-                minute.intValue = it.minute
-            },
+            state = state,
             openDialog = openDialog.value,
         )
-        val dateMsg: String = "Time: $hour:$minute"
+        val dateMsg: String = "Time: ${state.hour}:${state.minute}"
         Text(text = dateMsg)
     }
 }
