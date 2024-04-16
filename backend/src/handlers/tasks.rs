@@ -50,44 +50,21 @@ pub async fn create_task(
     Authentication(account_id): Authentication,
     Json(create_task_request): Json<CreateTaskRequest>,
 ) -> Result<Json<Task>, (StatusCode, String)> {
-    let mut transaction = pool.begin().await.map_err(internal_error)?;
-
-    let id = match sqlx::query_scalar!(
+    let id = sqlx::query_scalar!(
         r#"
-        SELECT id
-        FROM Devices
-        WHERE account_id == ? AND id == ?
+        INSERT INTO Tasks (timespan_start, timespan_end, duration, device_id)
+        VALUES (?, ?, ?, (SELECT id FROM Devices WHERE account_id == ? AND id == ?))
+        RETURNING id as "id: TaskId"
         "#,
+        create_task_request.timespan.start,
+        create_task_request.timespan.end,
+        create_task_request.duration,
         account_id,
         create_task_request.device_id
     )
-    .fetch_optional(&mut *transaction)
+    .fetch_one(&pool)
     .await
-    .map_err(internal_error)?
-    {
-        Some(_) => sqlx::query_scalar!(
-            r#"
-            INSERT INTO Tasks (timespan_start, timespan_end, duration, device_id)
-            VALUES (?, ?, ?, ?)
-            RETURNING id as "id: TaskId"
-            "#,
-            create_task_request.timespan.start,
-            create_task_request.timespan.end,
-            create_task_request.duration,
-            create_task_request.device_id
-        )
-        .fetch_one(&mut *transaction)
-        .await
-        .map_err(internal_error)?,
-        None => {
-            return Err((
-                StatusCode::UNAUTHORIZED,
-                "Account does not own device".into(),
-            ))
-        }
-    };
-
-    transaction.commit().await.map_err(internal_error)?;
+    .map_err(internal_error)?;
 
     let task = Task {
         id,
