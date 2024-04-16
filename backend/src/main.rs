@@ -310,12 +310,6 @@ mod tests {
         }
     }
 
-    fn auth_token_to_uuid(auth_token: AuthToken) -> String {
-        let auth_token_json = serde_json::to_string(&auth_token).unwrap();
-        let uuid: Uuid = serde_json::from_str(&auth_token_json).unwrap();
-        uuid.hyphenated().to_string()
-    }
-
     #[tokio::test]
     async fn register_account() {
         let (router, _) = test_app().await;
@@ -370,7 +364,7 @@ mod tests {
 
         // Registers an account
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
 
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token, 3600, &device).await;
@@ -386,7 +380,7 @@ mod tests {
 
         // Register an account
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
 
         let request = Request::builder()
             .method(Method::POST)
@@ -420,7 +414,7 @@ mod tests {
 
         // Register a new account
         let auth_token = get_account(&mut app, Some("test_user_2".to_string())).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
 
         let request = Request::builder()
             .method(Method::POST)
@@ -458,7 +452,7 @@ mod tests {
 
         // Registers an account
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
 
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
@@ -473,7 +467,8 @@ mod tests {
         let mut app = router.into_service();
 
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
         delete_task(&mut app, auth_token.clone(), task).await;
@@ -489,7 +484,8 @@ mod tests {
         let mut app = router.into_service();
 
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let created_devices = vec![
             generate_device(&mut app, auth_token.clone(), 1000.0).await,
             generate_device(&mut app, auth_token.clone(), 1000.0).await,
@@ -507,7 +503,8 @@ mod tests {
 
         // Registers an account
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
 
         assert_eq!(device.effect, 1000.0);
@@ -519,7 +516,8 @@ mod tests {
         let mut app = router.into_service();
 
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         delete_device(&mut app, auth_token.clone(), device).await;
 
@@ -532,8 +530,10 @@ mod tests {
     async fn get_all_events() {
         let (router, pool) = test_app().await;
         let mut app = router.into_service();
+
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
         let event = _create_event(&pool, &task, Utc::now()).await.unwrap();
@@ -569,8 +569,10 @@ mod tests {
     async fn get_device_events() {
         let (router, pool) = test_app().await;
         let mut app = router.into_service();
+
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let device = generate_device(&mut app, auth_token.clone(), 20.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 20, &device).await;
         let event = _create_event(&pool, &task, Utc::now()).await.unwrap();
