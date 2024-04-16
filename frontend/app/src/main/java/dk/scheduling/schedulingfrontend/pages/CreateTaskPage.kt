@@ -54,7 +54,7 @@ fun CreateTaskPage(
         modifier =
             modifier
                 .fillMaxSize()
-                .padding(10.dp),
+                .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -72,8 +72,6 @@ fun CreateTaskPage(
         )
 
         // Duration input field
-        Spacer(modifier = Modifier.height(20.dp))
-
         var duration: String by rememberSaveable { mutableStateOf("") }
         var numbersOnly: Boolean by rememberSaveable { mutableStateOf(true) }
 
@@ -90,8 +88,6 @@ fun CreateTaskPage(
             isError = !numbersOnly,
         )
 
-        Spacer(modifier = Modifier.height(20.dp))
-
         // start date & end date
         val dateRangeDialog = remember { mutableStateOf(false) }
         val datePickerValue = remember { mutableStateOf(DateRange()) }
@@ -106,8 +102,6 @@ fun CreateTaskPage(
 
         ClickableCard({ dateRangeDialog.value = true }, "Date interval: $dateMsg")
 
-        Spacer(modifier = Modifier.height(30.dp))
-
         // start time
         val startTimeDialog = remember { mutableStateOf(false) }
         val startTimeState = rememberTimePickerState()
@@ -120,8 +114,6 @@ fun CreateTaskPage(
         ClickableCard({ startTimeDialog.value = true }, "Start time: ${formatTime(startTimeState.hour, startTimeState.minute)}")
 
         // end time
-        Spacer(modifier = Modifier.height(30.dp))
-
         val endTimeDialog = remember { mutableStateOf(false) }
         val endTimeState = rememberTimePickerState()
 
@@ -133,8 +125,6 @@ fun CreateTaskPage(
         ClickableCard({ endTimeDialog.value = true }, "End time: ${formatTime(endTimeState.hour, endTimeState.minute)}")
 
         // Submit or Cancel
-        Spacer(modifier = Modifier.height(30.dp))
-
         Button(
             onClick = { handleSubmission() },
             enabled = isValidInput(duration, datePickerValue.value, startTimeState, endTimeState),
