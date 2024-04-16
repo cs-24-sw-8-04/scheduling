@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import dk.scheduling.schedulingfrontend.pages.AccountPage
 import dk.scheduling.schedulingfrontend.pages.ApiButton
 import dk.scheduling.schedulingfrontend.pages.HomePage
 import dk.scheduling.schedulingfrontend.pages.Page
@@ -33,6 +34,7 @@ fun App() {
             Page.Home,
             Page.ApiButton,
             Page.Page3,
+            Page.Account,
         )
 
     Scaffold(
@@ -45,6 +47,7 @@ fun App() {
             composable(Page.Home.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
             composable(Page.ApiButton.route) { ApiButton() }
             composable(Page.Page3.route) { Page3() }
+            composable(Page.Account.route) { AccountPage(modifier = Modifier, username = "Bob", navigateOnLogout = {}) }
         }
     }
 }
