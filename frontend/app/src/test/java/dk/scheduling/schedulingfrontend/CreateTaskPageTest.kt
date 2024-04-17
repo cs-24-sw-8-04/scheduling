@@ -11,6 +11,7 @@ import org.junit.Test
 class CreateTaskPageTest {
     private val validTime = TimePickerState(0, 0, true)
     private val validTimeMidday = TimePickerState(12, 0, true)
+    private val validTimeOneMinutePastMidday = TimePickerState(12, 1, true)
 
     @Test
     fun isValidDurationTest() {
@@ -33,5 +34,11 @@ class CreateTaskPageTest {
 
         val result4 = isValidInput("1", DateRange(Long.MIN_VALUE, Long.MIN_VALUE), validTimeMidday, validTime)
         assert(!result4) { "Invalid, End time > start time and start date == end date" }
+
+        val result5 = isValidInput("1", DateRange(Long.MIN_VALUE, Long.MIN_VALUE), validTimeMidday, validTimeOneMinutePastMidday)
+        assert(result5) { "Valid, start date == end date, and end time hour == start time hour, and start time minute < end time minute" }
+
+        val result6 = isValidInput("1", DateRange(Long.MIN_VALUE, Long.MIN_VALUE), validTimeOneMinutePastMidday, validTimeMidday)
+        assert(!result6) { "Valid, start date == end date and end time hour == start time hour, and start time minute < end time minute" }
     }
 }

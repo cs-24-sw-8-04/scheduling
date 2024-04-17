@@ -185,7 +185,7 @@ fun isValidInput(
     endTime: TimePickerState,
 ): Boolean {
     // Max line length is violated if not split into two expressions.
-    val startTimeIsBeforeEndTime = startTime.hour <= endTime.hour && startTime.minute < endTime.minute
+    val startTimeIsBeforeEndTime = startTime.hour < endTime.hour || startTime.hour == endTime.hour && startTime.minute < endTime.minute
     val startIsBeforeEnd = dateRange.getStartDate() != dateRange.getEndDate() || startTimeIsBeforeEndTime
     return isValidDuration(
         duration,
