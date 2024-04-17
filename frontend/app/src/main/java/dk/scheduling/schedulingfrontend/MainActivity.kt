@@ -63,7 +63,7 @@ class MainActivity : ComponentActivity() {
                         composable(Page.LoginPage.route) {
                             LoginPage(
                                 accountRepo = accountRepo,
-                                navigateOnValidLogIn = { appState.navHostController.navigate(Page.Home.route) },
+                                navigateOnValidLogin = { appState.navHostController.navigate(Page.Home.route) },
                                 navigateToSignUpPage = { appState.navHostController.navigate(Page.SignUpPage.route) },
                             )
                         }

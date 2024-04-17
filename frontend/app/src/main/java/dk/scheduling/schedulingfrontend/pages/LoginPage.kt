@@ -33,7 +33,7 @@ import testdata.DummyAccountRepository
 fun LoginPage(
     modifier: Modifier = Modifier,
     accountRepo: IAccountRepository,
-    navigateOnValidLogIn: () -> Unit,
+    navigateOnValidLogin: () -> Unit,
     navigateToSignUpPage: () -> Unit,
 ) {
     var username by remember {
@@ -93,7 +93,7 @@ fun LoginPage(
             onClick = {
                 coroutineScope.launch {
                     if (accountRepo.login(username, password)) {
-                        navigateOnValidLogIn()
+                        navigateOnValidLogin()
                     } else {
                         isLoginFailed = true
                     }
@@ -122,7 +122,7 @@ fun LoginPage(
 @Composable
 fun LoginPagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        LoginPage(navigateToSignUpPage = {}, navigateOnValidLogIn = {}, accountRepo = DummyAccountRepository())
+        LoginPage(navigateToSignUpPage = {}, navigateOnValidLogin = {}, accountRepo = DummyAccountRepository())
     }
 }
 
@@ -130,6 +130,6 @@ fun LoginPagePreviewLightMode() {
 @Composable
 fun LoginPagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        LoginPage(navigateToSignUpPage = {}, navigateOnValidLogIn = {}, accountRepo = DummyAccountRepository())
+        LoginPage(navigateToSignUpPage = {}, navigateOnValidLogin = {}, accountRepo = DummyAccountRepository())
     }
 }
