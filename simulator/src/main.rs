@@ -1,25 +1,19 @@
-use anyhow::{anyhow, bail};
-
-use http::{header::USER_AGENT, HeaderValue, Request};
-use http_body_util::BodyExt;
-use hyper_util::{
-    client::legacy::{connect::HttpConnector, Client},
-    rt::TokioExecutor,
-};
-use protocol::accounts::{AuthToken, RegisterOrLoginRequest, RegisterOrLoginResponse};
-use tower::{Service, ServiceBuilder, ServiceExt};
+use http::{header::USER_AGENT, HeaderValue};
+use hyper_util::client::legacy::Client;
+use hyper_util::rt::TokioExecutor;
+use tower::ServiceBuilder;
 use tower_http::{
-    classify::{SharedClassifier, StatusInRangeAsFailures},
-    decompression::{Decompression, DecompressionLayer},
-    set_header::{SetRequestHeader, SetRequestHeaderLayer},
-    trace::{Trace, TraceLayer},
+    classify::StatusInRangeAsFailures, decompression::DecompressionLayer,
+    set_header::SetRequestHeaderLayer, trace::TraceLayer,
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-type HttpClient = Trace<
-    SetRequestHeader<Decompression<Client<HttpConnector, String>>, HeaderValue>,
-    SharedClassifier<StatusInRangeAsFailures>,
->;
+mod generate_data;
+mod http_client;
+
+const AMOUNT_OF_USERS: usize = 100;
+const MAX_AMOUNT_OF_DEVICES_PER_USER: usize = 3;
+const MAX_AMOUNT_OF_TASKS_PER_DEVICE: usize = 3;
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -43,43 +37,117 @@ async fn main() -> Result<(), anyhow::Error> {
         .layer(DecompressionLayer::new())
         .service(client);
 
-    let auth_token = get_account(&mut client).await?;
+    let auth_tokens = generate_data::generate_users(AMOUNT_OF_USERS, &mut client).await?;
+    let device_ownership =
+        generate_data::generate_devices(MAX_AMOUNT_OF_DEVICES_PER_USER, &mut client, &auth_tokens)
+            .await?;
+    let task_onwership = generate_data::generate_tasks(
+        MAX_AMOUNT_OF_TASKS_PER_DEVICE,
+        &mut client,
+        &device_ownership,
+    )
+    .await?;
 
-    println!("Registered an account. Auth Token: {:?}", auth_token);
+    println!("-------------------------------------------------------------");
+    println!("Auth tokens: {:?}", auth_tokens);
+    println!("-------------------------------------------------------------");
+    println!("Device ownership: {:?}", device_ownership);
+    println!("-------------------------------------------------------------");
+    println!("Task ownership: {:?}", task_onwership);
 
     Ok(())
 }
 
-async fn get_account(client: &mut HttpClient) -> Result<AuthToken, anyhow::Error> {
-    let body = serde_json::to_string(&RegisterOrLoginRequest {
-        username: "test_user".to_string(),
-        password: "test_password".to_string(),
-    })?;
+#[cfg(test)]
+mod tests {
+    use http::{header::USER_AGENT, HeaderValue};
+    use hyper_util::client::legacy::Client;
+    use hyper_util::rt::TokioExecutor;
+    use tower::ServiceBuilder;
+    use tower_http::{
+        classify::StatusInRangeAsFailures, decompression::DecompressionLayer,
+        set_header::SetRequestHeaderLayer, trace::TraceLayer,
+    };
 
-    let request = Request::builder()
-        .uri("http://localhost:3000/accounts/register")
-        .method("POST")
-        .header("Content-Type", "application/json")
-        .body(body)?;
+    use crate::generate_data;
+    use crate::http_client::HttpClient;
 
-    let response = client.ready().await?.call(request).await?;
-
-    if !response.status().is_success() {
-        let status = response.status();
-        let body = response
-            .into_body()
-            .collect()
-            .await
-            .map_err(|e| anyhow!(e))?;
-        bail!(
-            "status message: {} message: {:?}",
-            status,
-            String::from_utf8(body.to_bytes().to_vec())
-        );
+    fn make_client() -> HttpClient {
+        let client = Client::builder(TokioExecutor::new()).build_http();
+        ServiceBuilder::new()
+            .layer(TraceLayer::new(
+                StatusInRangeAsFailures::new(400..=599).into_make_classifier(),
+            ))
+            .layer(SetRequestHeaderLayer::overriding(
+                USER_AGENT,
+                HeaderValue::from_static("scheduling-simulator"),
+            ))
+            .layer(DecompressionLayer::new())
+            .service(client)
     }
 
-    let body = response.into_body().collect().await.unwrap().to_bytes();
-    let response: RegisterOrLoginResponse = serde_json::from_slice(&body).unwrap();
+    #[tokio::test]
+    async fn generate_users_test() {
+        let client = &mut make_client();
+        let amount_of_users = 10;
 
-    Ok(response.auth_token)
+        let auth_tokens = generate_data::generate_users(amount_of_users, client)
+            .await
+            .expect("Could not create users");
+        assert!(auth_tokens.len() == amount_of_users);
+    }
+
+    #[tokio::test]
+    async fn generate_devices_test() {
+        let client = &mut make_client();
+        let amount_of_users = 10;
+        let max_amount_of_devices_per_user = 3;
+
+        let auth_tokens = generate_data::generate_users(amount_of_users, client)
+            .await
+            .expect("Could not create users for devices");
+
+        let device_ownership =
+            generate_data::generate_devices(max_amount_of_devices_per_user, client, &auth_tokens)
+                .await
+                .expect("Could not create devices");
+
+        assert!(device_ownership.keys().count() == amount_of_users);
+        device_ownership
+            .values()
+            .for_each(|value| assert!(value.len() <= max_amount_of_devices_per_user));
+    }
+
+    #[tokio::test]
+    async fn generate_tasks_test() {
+        let client = &mut make_client();
+        let amount_of_users = 10;
+        let max_amount_of_devices_per_user = 3;
+        let max_amount_of_tasks_per_device = 3;
+
+        let auth_tokens = generate_data::generate_users(amount_of_users, client)
+            .await
+            .expect("Could not create users for devices");
+        let device_ownership =
+            generate_data::generate_devices(max_amount_of_devices_per_user, client, &auth_tokens)
+                .await
+                .expect("Could not create devices");
+
+        let task_ownership = generate_data::generate_tasks(
+            max_amount_of_tasks_per_device,
+            client,
+            &device_ownership,
+        )
+        .await
+        .expect("Could not create tasks");
+
+        let amount_of_generated_devices = device_ownership
+            .values()
+            .fold(0, |acc, values| acc + values.len());
+
+        assert!(amount_of_generated_devices == task_ownership.keys().count());
+        task_ownership
+            .values()
+            .for_each(|value| assert!(value.len() <= max_amount_of_tasks_per_device));
+    }
 }
