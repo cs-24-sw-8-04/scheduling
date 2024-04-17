@@ -24,10 +24,10 @@ import dk.scheduling.schedulingfrontend.components.FilledButton
 import dk.scheduling.schedulingfrontend.components.PasswordTextField
 import dk.scheduling.schedulingfrontend.components.StandardTextField
 import dk.scheduling.schedulingfrontend.components.Title
-import dk.scheduling.schedulingfrontend.repositories.DummyAccountRepository
 import dk.scheduling.schedulingfrontend.repositories.IAccountRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.launch
+import testdata.DummyAccountRepository
 
 @Composable
 fun SignUpPage(
