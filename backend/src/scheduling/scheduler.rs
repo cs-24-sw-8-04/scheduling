@@ -1,19 +1,29 @@
 use std::cmp::min;
 
-use super::task_for_scheduler::TaskForScheduler as Task;
-use super::unpublished_event::UnPublishedEvent as Event;
+use super::task_for_scheduler::TaskForScheduler;
+use super::unpublished_event::UnpublishedEvent;
 use crate::data_model::graph::DiscreteGraph;
 use anyhow::Result;
 
-trait SchedulerAlgorithm {
-    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>>;
+pub trait SchedulerAlgorithm {
+    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<TaskForScheduler>) -> Result<Vec<UnpublishedEvent>>;
 }
-struct GlobalSchedulerAlgorithm;
-struct NaiveSchedulerAlgorithm;
+pub struct GlobalSchedulerAlgorithm;
+pub struct NaiveSchedulerAlgorithm;
+
+impl NaiveSchedulerAlgorithm {
+    pub fn new() -> Self {
+        NaiveSchedulerAlgorithm
+    }
+}
 
 impl SchedulerAlgorithm for GlobalSchedulerAlgorithm {
-    fn schedule(&self, mut graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>> {
-        let mut events: Vec<Event> = Vec::new();
+    fn schedule(
+        &self,
+        mut graph: DiscreteGraph,
+        tasks: Vec<TaskForScheduler>,
+    ) -> Result<Vec<UnpublishedEvent>> {
+        let mut events: Vec<UnpublishedEvent> = Vec::new();
         for task in &tasks {
             let temp_graph = graph.clone();
             events.push(make_unpublished_event_and_remove_from_graph(
@@ -29,8 +39,8 @@ impl SchedulerAlgorithm for GlobalSchedulerAlgorithm {
 }
 
 impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
-    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>> {
-        let mut events: Vec<Event> = Vec::new();
+    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<TaskForScheduler>) -> Result<Vec<UnpublishedEvent>> {
+        let mut events: Vec<UnpublishedEvent> = Vec::new();
         for task in &tasks {
             events.push(make_unpublished_event(
                 &graph,
@@ -44,7 +54,7 @@ impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
 }
 
 /// Best meaning where the energy available is at max
-fn find_best_event(task: &Task, graph: &DiscreteGraph) -> Result<usize> {
+fn find_best_event(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usize> {
     let timeslots = tasks_duration_in_graph_timeslots(task, graph)?;
 
     // Make a new graph containing all possible time intervals to place the event
@@ -61,7 +71,9 @@ fn find_best_event(task: &Task, graph: &DiscreteGraph) -> Result<usize> {
 
     assert!(
         timeslot_start <= timeslot_end,
-        "Invalid timespan for task with id: {:?}",
+        "Invalid timespan timeslot_start: {} timeslot_end: {} for task with id: {:?}",
+        timeslot_start,
+        timeslot_end,
         task
     );
 
@@ -75,14 +87,28 @@ fn find_best_event(task: &Task, graph: &DiscreteGraph) -> Result<usize> {
 
     Ok(timeslot_start + greatest_index)
 }
+
+/// # Examples
+///
+/// ```
+/// let timeslots = 2;
+/// let graph_values = [1.0..=5.0];
+/// let res = adjust_graph_for_task_duration(timeslots, graph_values);
+///
+/// assert_eq!(res, [3.0, 5.0, 7.0, 9.0]);
+/// ```
 fn adjust_graph_for_task_duration(timeslots: usize, graph_values: &[f64]) -> Vec<f64> {
     graph_values
         .windows(timeslots)
         .map(|window| window.iter().sum())
         .collect()
 }
-fn make_unpublished_event(graph: &DiscreteGraph, task: &Task, timeslot: i32) -> Result<Event> {
-    Ok(Event {
+fn make_unpublished_event(
+    graph: &DiscreteGraph,
+    task: &TaskForScheduler,
+    timeslot: i32,
+) -> Result<UnpublishedEvent> {
+    Ok(UnpublishedEvent {
         task_id: task.id,
         start_time: graph.get_start_time() + graph.get_time_delta() * timeslot,
     })
@@ -91,35 +117,35 @@ fn make_unpublished_event(graph: &DiscreteGraph, task: &Task, timeslot: i32) -> 
 /// Same as add_event, but removes the energy used by the event from the [DiscreteGraph].values
 fn make_unpublished_event_and_remove_from_graph(
     graph: &mut DiscreteGraph,
-    task: &Task,
+    task: &TaskForScheduler,
     timeslot: usize,
     duration_in_timeslots: usize,
-) -> Result<Event> {
+) -> Result<UnpublishedEvent> {
     graph.sub_values(
         timeslot,
         task.effect, // `* (i64::from(task.duration)) as f64` if we chose to make effect be per 1 millisec
         duration_in_timeslots,
     );
 
-    Ok(Event {
+    Ok(UnpublishedEvent {
         task_id: task.id,
         start_time: graph.get_start_time() + graph.get_time_delta() * timeslot.try_into()?,
     })
 }
 
-fn tasks_duration_in_graph_timeslots(task: &Task, graph: &DiscreteGraph) -> Result<usize> {
+fn tasks_duration_in_graph_timeslots(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usize> {
     let time_delta = graph.get_time_delta().num_milliseconds() as usize;
     let duration = (i64::from(task.duration)) as usize;
     Ok(duration.div_ceil(time_delta))
 }
 
 #[cfg(test)]
-mod scheduler_test {
+mod tests {
     use super::SchedulerAlgorithm;
     use crate::data_model::graph::DiscreteGraph;
     use crate::scheduling::scheduler::{GlobalSchedulerAlgorithm, NaiveSchedulerAlgorithm};
     use crate::scheduling::task_for_scheduler::TaskForScheduler as Task;
-    use crate::scheduling::unpublished_event::UnPublishedEvent;
+    use crate::scheduling::unpublished_event::UnpublishedEvent;
     use chrono::{DateTime, Duration, Utc};
     use protocol::tasks::TaskId;
     use protocol::time::{Milliseconds, Timespan};
@@ -168,7 +194,7 @@ mod scheduler_test {
                 let mut vec = Vec::new();
                 let mut __id = 0; // __ is to avoid name clash since this is code in which will be written into the file
                 $(
-                    vec.push(UnPublishedEvent {
+                    vec.push(UnpublishedEvent {
                         task_id: __id.into(),
                         start_time: $start_time + Duration::seconds($offset),
                     });
@@ -226,6 +252,31 @@ mod scheduler_test {
 
         let events = scheduler.schedule(graph, tasks).unwrap();
         let expected = make_expected_unpublished_events!(start, 2, 1, 2, 1, 2);
+
+        assert_eq!(events, expected)
+    }
+    #[test]
+    fn global_scheduler_negative_graph() {
+        let scheduler = GlobalSchedulerAlgorithm;
+        let start = Utc::now();
+
+        let tasks = TaskFactory::new().make_tasks(
+            1,
+            start,
+            Duration::seconds(3).into(),
+            Duration::seconds(6),
+            None,
+            Some(1.0),
+        );
+
+        let graph = DiscreteGraph::new(
+            vec![0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+            Duration::seconds(1),
+            start,
+        );
+
+        let events = scheduler.schedule(graph, tasks).unwrap();
+        let expected = make_expected_unpublished_events!(start, 4);
 
         assert_eq!(events, expected)
     }

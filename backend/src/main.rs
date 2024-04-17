@@ -10,12 +10,29 @@ use axum::{
     Router,
 };
 use dotenv::dotenv;
+use scheduling::{background_service::background_service, scheduler::NaiveSchedulerAlgorithm};
 use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
-use tokio::net::TcpListener;
+use tokio::{
+    net::TcpListener,
+    sync::mpsc::{error::SendError, unbounded_channel, UnboundedSender},
+};
 
 use handlers::{accounts::*, devices::*, events::*, tasks::*};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+#[derive(Clone)]
+pub struct MyState {
+    pool: SqlitePool,
+    sender: UnboundedSender<()>,
+}
+
+impl MyState {
+    pub fn update_schedule(&self) -> Result<(), SendError<()>> {
+        self.sender.send(())?;
+        Ok(())
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -39,14 +56,29 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:3000").await?;
 
-    let app = app(pool);
+    let (sender, receiver) = unbounded_channel();
+
+    let state = MyState {
+        pool: pool.clone(),
+        sender,
+    };
+
+    let app = app(state);
+
+    let background_task = tokio::spawn(background_service(
+        receiver,
+        pool,
+        NaiveSchedulerAlgorithm::new,
+    ));
 
     axum::serve(listener, app).await?;
+
+    background_task.await?;
 
     Ok(())
 }
 
-fn app(pool: SqlitePool) -> Router {
+fn app(state: MyState) -> Router {
     Router::new()
         .route("/tasks/all", get(get_all_tasks))
         .route("/tasks/create", post(create_task))
@@ -59,7 +91,7 @@ fn app(pool: SqlitePool) -> Router {
         .route("/events/all", get(get_all_events))
         .route("/events/get", get(get_device_events))
         .layer(TraceLayer::new_for_http())
-        .with_state(pool)
+        .with_state(state)
 }
 
 #[cfg(test)]
@@ -82,7 +114,6 @@ mod tests {
         time::Timespan,
     };
     use tower::{Service, ServiceExt};
-    use uuid::Uuid;
 
     async fn test_app() -> (Router, SqlitePool) {
         let db_connection_string = "sqlite::memory:";
@@ -92,9 +123,20 @@ mod tests {
             .await
             .unwrap();
 
+        let (sender, receiver) = unbounded_channel();
+
+        // Leak the receiver to keep the channel open
+        let receiver = Box::new(receiver);
+        Box::leak(receiver);
+
+        let state = MyState {
+            pool: pool.clone(),
+            sender,
+        };
+
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
 
-        (app(pool.clone()), pool)
+        (app(state), pool)
     }
 
     async fn get_account(app: &mut RouterIntoService<Body>, username: Option<String>) -> AuthToken {
@@ -310,12 +352,6 @@ mod tests {
         }
     }
 
-    fn auth_token_to_uuid(auth_token: AuthToken) -> String {
-        let auth_token_json = serde_json::to_string(&auth_token).unwrap();
-        let uuid: Uuid = serde_json::from_str(&auth_token_json).unwrap();
-        uuid.hyphenated().to_string()
-    }
-
     #[tokio::test]
     async fn register_account() {
         let (router, _) = test_app().await;
@@ -370,7 +406,7 @@ mod tests {
 
         // Registers an account
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
 
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token, 3600, &device).await;
@@ -386,7 +422,7 @@ mod tests {
 
         // Register an account
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
 
         let request = Request::builder()
             .method(Method::POST)
@@ -420,7 +456,7 @@ mod tests {
 
         // Register a new account
         let auth_token = get_account(&mut app, Some("test_user_2".to_string())).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
 
         let request = Request::builder()
             .method(Method::POST)
@@ -458,7 +494,7 @@ mod tests {
 
         // Registers an account
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
 
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
@@ -473,7 +509,8 @@ mod tests {
         let mut app = router.into_service();
 
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
         delete_task(&mut app, auth_token.clone(), task).await;
@@ -489,7 +526,8 @@ mod tests {
         let mut app = router.into_service();
 
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let created_devices = vec![
             generate_device(&mut app, auth_token.clone(), 1000.0).await,
             generate_device(&mut app, auth_token.clone(), 1000.0).await,
@@ -507,7 +545,8 @@ mod tests {
 
         // Registers an account
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
 
         assert_eq!(device.effect, 1000.0);
@@ -519,7 +558,8 @@ mod tests {
         let mut app = router.into_service();
 
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         delete_device(&mut app, auth_token.clone(), device).await;
 
@@ -532,8 +572,10 @@ mod tests {
     async fn get_all_events() {
         let (router, pool) = test_app().await;
         let mut app = router.into_service();
+
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
         let event = _create_event(&pool, &task, Utc::now()).await.unwrap();
@@ -569,8 +611,10 @@ mod tests {
     async fn get_device_events() {
         let (router, pool) = test_app().await;
         let mut app = router.into_service();
+
         let auth_token = get_account(&mut app, None).await;
-        let auth_token = auth_token_to_uuid(auth_token);
+        let auth_token = auth_token.to_string();
+
         let device = generate_device(&mut app, auth_token.clone(), 20.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 20, &device).await;
         let event = _create_event(&pool, &task, Utc::now()).await.unwrap();

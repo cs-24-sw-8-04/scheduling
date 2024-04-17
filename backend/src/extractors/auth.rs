@@ -6,22 +6,22 @@ use axum::{
 use protocol::accounts::AuthToken;
 use sqlx::SqlitePool;
 
-use crate::data_model::account::AccountId;
+use crate::{data_model::account::AccountId, MyState};
 
 // Account id
 pub struct Authentication(pub AccountId);
 
 #[async_trait]
-impl FromRequestParts<SqlitePool> for Authentication {
+impl FromRequestParts<MyState> for Authentication {
     type Rejection = (StatusCode, String);
 
     async fn from_request_parts(
         parts: &mut Parts,
-        pool: &SqlitePool,
+        state: &MyState,
     ) -> Result<Self, Self::Rejection> {
         match get_auth_token(&parts.headers) {
             Some(token) => {
-                if let Some(account_id) = get_account_id_from_token(token, pool).await {
+                if let Some(account_id) = get_account_id_from_token(token, &state.pool).await {
                     Ok(Authentication(account_id))
                 } else {
                     Err((

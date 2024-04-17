@@ -9,13 +9,12 @@ use protocol::{
     tasks::{CreateTaskRequest, DeleteTaskRequest, GetTasksResponse, Task, TaskId},
     time::{Milliseconds, Timespan},
 };
-use sqlx::SqlitePool;
 
-use crate::{extractors::auth::Authentication, handlers::util::internal_error};
+use crate::{extractors::auth::Authentication, handlers::util::internal_error, MyState};
 
 #[debug_handler]
 pub async fn get_all_tasks(
-    State(pool): State<SqlitePool>,
+    State(state): State<MyState>,
     Authentication(account_id): Authentication,
 ) -> Result<Json<GetTasksResponse>, (StatusCode, String)> {
     let tasks = sqlx::query!(
@@ -27,7 +26,7 @@ pub async fn get_all_tasks(
         "#,
         account_id
     )
-    .fetch_all(&pool)
+    .fetch_all(&state.pool)
     .await
     .map_err(internal_error)?;
 
@@ -46,7 +45,7 @@ pub async fn get_all_tasks(
 
 #[debug_handler]
 pub async fn create_task(
-    State(pool): State<SqlitePool>,
+    State(state): State<MyState>,
     Authentication(account_id): Authentication,
     Json(create_task_request): Json<CreateTaskRequest>,
 ) -> Result<Json<Task>, (StatusCode, String)> {
@@ -62,9 +61,11 @@ pub async fn create_task(
         account_id,
         create_task_request.device_id
     )
-    .fetch_one(&pool)
+    .fetch_one(&state.pool)
     .await
     .map_err(internal_error)?;
+
+    state.update_schedule().map_err(internal_error)?;
 
     let task = Task {
         id,
@@ -81,7 +82,7 @@ pub async fn create_task(
 
 #[debug_handler]
 pub async fn delete_task(
-    State(pool): State<SqlitePool>,
+    State(state): State<MyState>,
     Authentication(account_id): Authentication,
     Query(delete_task_request): Query<DeleteTaskRequest>,
 ) -> Result<(), (StatusCode, String)> {
@@ -98,9 +99,11 @@ pub async fn delete_task(
         delete_task_request.id,
         account_id
     )
-    .execute(&pool)
+    .execute(&state.pool)
     .await
     .map_err(internal_error)?;
+
+    state.update_schedule().map_err(internal_error)?;
 
     Ok(())
 }

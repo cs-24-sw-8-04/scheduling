@@ -1,4 +1,5 @@
+pub mod background_service;
 pub mod event_creation;
-mod scheduler;
+pub mod scheduler;
 mod task_for_scheduler;
 pub mod unpublished_event;

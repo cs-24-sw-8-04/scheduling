@@ -9,7 +9,6 @@ pub struct DiscreteGraph {
 }
 
 impl DiscreteGraph {
-    #[allow(dead_code)] // Used in the test for the scheduler, but clippy does #?%!
     pub fn new(values: Vec<f64>, time_delta: Duration, start_time: DateTimeUtc) -> DiscreteGraph {
         DiscreteGraph {
             values,
