@@ -46,27 +46,3 @@ fun BottomNavigationBar(
         }
     }
 }
-/*
-@Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
-@Composable
-fun PreviewApp() {
-    SchedulingFrontendTheme {
-        App(accountDataStore)
-    }
-}
-
-@Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
-@Composable
-fun PreviewAppLightMode() {
-    SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        App(accountDataStore)
-    }
-}
-
-@Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
-@Composable
-fun PreviewAppDarkMode() {
-    SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        App(accountDataStore)
-    }
-}*/
