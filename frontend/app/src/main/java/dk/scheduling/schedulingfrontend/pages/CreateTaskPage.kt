@@ -98,7 +98,7 @@ fun CreateTaskPage(
             openDialog = dateRangeDialog.value,
         )
 
-        val dateMsg: String = if (datePickerValue.value.isValidRange()) "no interval selected." else datePickerValue.value.print()
+        val dateMsg: String = if (datePickerValue.value.isValidRange()) datePickerValue.value.print() else "no interval selected."
 
         ClickableCard({ dateRangeDialog.value = true }, "Date interval: $dateMsg")
 
