@@ -23,7 +23,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.components.FilledButton
 import dk.scheduling.schedulingfrontend.components.OutlinedButton
-import dk.scheduling.schedulingfrontend.repositories.IAccountRepository
+import dk.scheduling.schedulingfrontend.repositories.account.IAccountRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.launch
 import testdata.DummyAccountRepository

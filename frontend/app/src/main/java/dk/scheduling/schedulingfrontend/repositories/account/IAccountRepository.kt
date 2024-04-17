@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend.repositories
+package dk.scheduling.schedulingfrontend.repositories.account
 
 import java.util.UUID
 

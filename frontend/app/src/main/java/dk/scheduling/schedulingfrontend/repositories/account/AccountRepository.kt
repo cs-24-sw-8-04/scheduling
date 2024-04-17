@@ -1,11 +1,13 @@
-package dk.scheduling.schedulingfrontend.repositories
+package dk.scheduling.schedulingfrontend.repositories.account
 
-import dk.scheduling.schedulingfrontend.api.getApiClient
+import dk.scheduling.schedulingfrontend.api.ApiService
 import dk.scheduling.schedulingfrontend.api.protocol.RegisterOrLoginRequest
+import dk.scheduling.schedulingfrontend.datasources.AccountDataSource
 import java.util.UUID
 
 class AccountRepository(
     private val accountDataSource: AccountDataSource,
+    private val service: ApiService,
 ) : IAccountRepository {
     override suspend fun isLoggedIn(): Boolean {
         return try {
@@ -32,7 +34,7 @@ class AccountRepository(
         username: String,
         password: String,
     ): Boolean {
-        val response = getApiClient().loginToAccount(RegisterOrLoginRequest(username, password))
+        val response = service.loginToAccount(RegisterOrLoginRequest(username, password))
         if (response.isSuccessful) {
             val token = response.body()?.auth_token ?: return false
             accountDataSource.setAuthToken(token)
@@ -46,7 +48,7 @@ class AccountRepository(
         username: String,
         password: String,
     ): Boolean {
-        val response = getApiClient().registerAccount(RegisterOrLoginRequest(username, password))
+        val response = service.registerAccount(RegisterOrLoginRequest(username, password))
         if (response.isSuccessful) {
             val token = response.body()?.auth_token ?: return false
             accountDataSource.setAuthToken(token)

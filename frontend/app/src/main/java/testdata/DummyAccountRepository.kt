@@ -1,6 +1,6 @@
 package testdata
 
-import dk.scheduling.schedulingfrontend.repositories.IAccountRepository
+import dk.scheduling.schedulingfrontend.repositories.account.IAccountRepository
 import java.util.UUID
 
 class DummyAccountRepository : IAccountRepository {
