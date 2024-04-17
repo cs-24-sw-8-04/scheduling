@@ -71,7 +71,6 @@ fun StandardDateRangePicker(
                 Column(
                     verticalArrangement = Arrangement.Top,
                 ) {
-                    // Add a row with "Save" and dismiss actions.
                     Row(
                         modifier =
                             Modifier
