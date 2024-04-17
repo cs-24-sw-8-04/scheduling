@@ -47,8 +47,6 @@ async fn main() -> Result<(), anyhow::Error> {
     )
     .await?;
 
-    //println!("Registered an account. Auth Token: {:?}", auth_tokens);
-
     println!("-------------------------------------------------------------");
     println!("Auth tokens: {:?}", auth_tokens);
     println!("-------------------------------------------------------------");
