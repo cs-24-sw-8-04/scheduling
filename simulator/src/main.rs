@@ -9,6 +9,7 @@ use tower_http::{
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 mod generate_data;
+mod http_client;
 
 const AMOUNT_OF_USERS: usize = 100;
 const MAX_AMOUNT_OF_DEVICES_PER_USER: usize = 3;
@@ -60,22 +61,18 @@ async fn main() -> Result<(), anyhow::Error> {
 #[cfg(test)]
 mod tests {
     use http::{header::USER_AGENT, HeaderValue};
-    use hyper_util::client::legacy::{connect::HttpConnector, Client};
+    use hyper_util::client::legacy::Client;
     use hyper_util::rt::TokioExecutor;
     use tower::ServiceBuilder;
     use tower_http::{
-        classify::{SharedClassifier, StatusInRangeAsFailures},
-        decompression::{Decompression, DecompressionLayer},
-        set_header::{SetRequestHeader, SetRequestHeaderLayer},
-        trace::{Trace, TraceLayer},
+        classify::StatusInRangeAsFailures,
+        decompression::DecompressionLayer,
+        set_header::SetRequestHeaderLayer,
+        trace::TraceLayer,
     };
 
     use crate::generate_data;
-
-    type HttpClient = Trace<
-        SetRequestHeader<Decompression<Client<HttpConnector, String>>, HeaderValue>,
-        SharedClassifier<StatusInRangeAsFailures>,
-    >;
+    use crate::http_client::HttpClient;
 
     fn make_client() -> HttpClient {
         let client = Client::builder(TokioExecutor::new()).build_http();

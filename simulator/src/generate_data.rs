@@ -4,9 +4,8 @@ use uuid::Uuid;
 use anyhow::{anyhow, bail, Result};
 
 use chrono::{Duration, Utc};
-use http::{HeaderValue, Request};
+use http::Request;
 use http_body_util::BodyExt;
-use hyper_util::client::legacy::{connect::HttpConnector, Client};
 use protocol::time::Timespan;
 use protocol::{
     accounts::{AuthToken, RegisterOrLoginRequest, RegisterOrLoginResponse},
@@ -15,17 +14,7 @@ use protocol::{
 };
 use rand::Rng;
 use tower::{Service, ServiceExt};
-use tower_http::{
-    classify::{SharedClassifier, StatusInRangeAsFailures},
-    decompression::Decompression,
-    set_header::SetRequestHeader,
-    trace::Trace,
-};
-
-type HttpClient = Trace<
-    SetRequestHeader<Decompression<Client<HttpConnector, String>>, HeaderValue>,
-    SharedClassifier<StatusInRangeAsFailures>,
->;
+use crate::http_client::HttpClient;
 
 const BASE_URL: &str = "http://localhost:3000";
 const MIN_EFFECT: f64 = 10.0;
