@@ -58,7 +58,7 @@ class AccountDataSource(
             val stream = getValueFromKey(AccountDataStoreKeys.AUTH_TOKEN_KEY)
             return UUID.fromString(stream.first())
         } catch (e: Throwable) {
-            throw UserNotLoggedIn("The user is not logged in")
+            throw UserNotLoggedIn("The user is not logged in!")
         }
     }
 
