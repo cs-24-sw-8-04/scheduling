@@ -71,7 +71,7 @@ class AccountDataSource(
             val stream = getValueFromKey(AccountDataStoreKeys.USERNAME_KEY)
             return stream.first()
         } catch (e: Throwable) {
-            throw UserNotLoggedIn("The user is not logged in")
+            throw UserNotLoggedIn("The user is not logged in!")
         }
     }
 
