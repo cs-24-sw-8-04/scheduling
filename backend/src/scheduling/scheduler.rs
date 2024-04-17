@@ -1,14 +1,20 @@
-use super::unpublished_event::UnPublishedEvent as Event;
+use std::cmp::min;
+
+use super::unpublished_event::UnpublishedEvent;
 use crate::data_model::graph::DiscreteGraph;
 use anyhow::Result;
 use protocol::tasks::Task;
 
-trait SchedulerAlgorithm {
-    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>>;
+pub trait SchedulerAlgorithm {
+    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<UnpublishedEvent>>;
 }
 
-fn make_unpublished_event(graph: &DiscreteGraph, task: &Task, timeslot: i32) -> Result<Event> {
-    Ok(Event {
+fn make_unpublished_event(
+    graph: &DiscreteGraph,
+    task: &Task,
+    timeslot: i32,
+) -> Result<UnpublishedEvent> {
+    Ok(UnpublishedEvent {
         task_id: task.id,
         start_time: graph.get_start_time() + graph.get_time_delta() * timeslot,
     })
@@ -21,28 +27,35 @@ fn adjust_graph_for_task_duration(timeslots: usize, graph_values: &[f64]) -> Vec
         .collect()
 }
 
-struct NaiveSchedulerAlgorithm;
+pub struct NaiveSchedulerAlgorithm;
 
 impl NaiveSchedulerAlgorithm {
+    pub fn new() -> NaiveSchedulerAlgorithm {
+        NaiveSchedulerAlgorithm
+    }
+
     /// Best meaning where the energy available is at max
     fn find_best_event(task: &Task, graph: &DiscreteGraph) -> Result<usize> {
-        let time_delta = graph.get_time_delta().num_milliseconds();
-        let duration: i64 = task.duration.into();
-        let timeslots: usize = (duration / time_delta).try_into()?;
+        let time_delta = graph.get_time_delta().num_milliseconds() as usize;
+        let duration = i64::from(task.duration) as usize;
+        let timeslots = usize::div_ceil(duration, time_delta);
 
         // Make a new graph containing all possible time intervals to place the event
         let mapped_graph = adjust_graph_for_task_duration(timeslots, graph.get_values());
 
         // Defining ranges for the task's timespan
-        let timeslot_start: usize =
-            ((task.timespan.start - graph.get_start_time()).num_milliseconds() / time_delta)
-                .try_into()?;
-        let timeslot_end: usize = ((task.timespan.end - graph.get_start_time()).num_milliseconds()
-            / time_delta)
-            .try_into()?;
+        let start_time = min(task.timespan.start, graph.get_start_time());
+        let start = (task.timespan.start - start_time).num_milliseconds() as usize;
+        let timeslot_start = start / time_delta;
+
+        let end = (task.timespan.end - graph.get_start_time()).num_milliseconds() as usize;
+        let timeslot_end = end / time_delta;
+
         assert!(
-            timeslot_start < timeslot_end,
-            "Invalid timespan for task with id: {:?}",
+            timeslot_start <= timeslot_end,
+            "Invalid timespan timeslot_start: {} timeslot_end: {} for task with id: {:?}",
+            timeslot_start,
+            timeslot_end,
             task
         );
 
@@ -59,8 +72,8 @@ impl NaiveSchedulerAlgorithm {
 }
 
 impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
-    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<Event>> {
-        let mut events: Vec<Event> = Vec::new();
+    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<Task>) -> Result<Vec<UnpublishedEvent>> {
+        let mut events: Vec<UnpublishedEvent> = Vec::new();
         for task in &tasks {
             events.push(make_unpublished_event(
                 &graph,
@@ -74,11 +87,11 @@ impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
 }
 
 #[cfg(test)]
-mod scheduler_test {
+mod tests {
     use super::SchedulerAlgorithm;
     use crate::data_model::graph::DiscreteGraph;
     use crate::scheduling::scheduler::NaiveSchedulerAlgorithm;
-    use crate::scheduling::unpublished_event::UnPublishedEvent;
+    use crate::scheduling::unpublished_event::UnpublishedEvent;
     use chrono::{DateTime, Duration, Utc};
     use protocol::devices::DeviceId;
     use protocol::tasks::{Task, TaskId};
@@ -136,7 +149,7 @@ mod scheduler_test {
                 let mut vec = Vec::new();
                 let mut __id = 0; // __ is to avoid name clash since this is code in which will be written into the file
                 $(
-                    vec.push(UnPublishedEvent {
+                    vec.push(UnpublishedEvent {
                         task_id: __id.into(),
                         start_time: $start_time + Duration::seconds($offset),
                     });

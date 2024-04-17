@@ -4,16 +4,15 @@ use argon2::{
 };
 use axum::{debug_handler, extract::State, http::StatusCode, Json};
 use protocol::accounts::{RegisterOrLoginRequest, RegisterOrLoginResponse};
-use sqlx::SqlitePool;
 
 use crate::{
     data_model::account::AccountId, extractors::auth::create_auth_token,
-    handlers::util::internal_error,
+    handlers::util::internal_error, MyState,
 };
 
 #[debug_handler]
 pub async fn register_account(
-    State(pool): State<SqlitePool>,
+    State(state): State<MyState>,
     Json(register_request): Json<RegisterOrLoginRequest>,
 ) -> Result<Json<RegisterOrLoginResponse>, (StatusCode, String)> {
     let password = register_request.password;
@@ -36,11 +35,11 @@ pub async fn register_account(
         register_request.username,
         password_hash
     )
-    .fetch_one(&pool)
+    .fetch_one(&state.pool)
     .await
     .map_err(internal_error)?;
 
-    let auth_token = create_auth_token(account_id, &pool)
+    let auth_token = create_auth_token(account_id, &state.pool)
         .await
         .map_err(internal_error)?;
 
@@ -49,7 +48,7 @@ pub async fn register_account(
 
 #[debug_handler]
 pub async fn login_to_account(
-    State(pool): State<SqlitePool>,
+    State(state): State<MyState>,
     Json(login_request): Json<RegisterOrLoginRequest>,
 ) -> Result<Json<RegisterOrLoginResponse>, (StatusCode, String)> {
     let account = sqlx::query!(
@@ -60,7 +59,7 @@ pub async fn login_to_account(
         "#,
         login_request.username
     )
-    .fetch_optional(&pool)
+    .fetch_optional(&state.pool)
     .await
     .map_err(internal_error)?;
 
@@ -75,7 +74,7 @@ pub async fn login_to_account(
         .verify_password(login_request.password.as_bytes(), &password_hash)
         .map_err(|_| (StatusCode::UNAUTHORIZED, "Invalid password".to_string()))?;
 
-    let auth_token = create_auth_token(account.id, &pool)
+    let auth_token = create_auth_token(account.id, &state.pool)
         .await
         .map_err(internal_error)?;
     Ok(Json(RegisterOrLoginResponse { auth_token }))

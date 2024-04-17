@@ -8,13 +8,12 @@ use protocol::devices::{
     CreateDeviceRequest, CreateDeviceResponse, DeleteDeviceRequest, Device, DeviceId,
     GetDevicesResponse,
 };
-use sqlx::SqlitePool;
 
-use crate::{extractors::auth::Authentication, handlers::util::internal_error};
+use crate::{extractors::auth::Authentication, handlers::util::internal_error, MyState};
 
 #[debug_handler]
 pub async fn get_all_devices(
-    State(pool): State<SqlitePool>,
+    State(state): State<MyState>,
     Authentication(account_id): Authentication,
 ) -> Result<Json<GetDevicesResponse>, (StatusCode, String)> {
     let devices = sqlx::query_as!(
@@ -26,7 +25,7 @@ pub async fn get_all_devices(
         "#,
         account_id
     )
-    .fetch_all(&pool)
+    .fetch_all(&state.pool)
     .await
     .map_err(internal_error)?;
 
@@ -35,7 +34,7 @@ pub async fn get_all_devices(
 
 #[debug_handler]
 pub async fn create_device(
-    State(pool): State<SqlitePool>,
+    State(state): State<MyState>,
     Authentication(account_id): Authentication,
     Json(create_device_request): Json<CreateDeviceRequest>,
 ) -> Result<Json<CreateDeviceResponse>, (StatusCode, String)> {
@@ -48,7 +47,7 @@ pub async fn create_device(
         create_device_request.effect,
         account_id
     )
-    .fetch_one(&pool)
+    .fetch_one(&state.pool)
     .await
     .map_err(internal_error)?;
 
@@ -62,7 +61,7 @@ pub async fn create_device(
 
 #[debug_handler]
 pub async fn delete_device(
-    State(pool): State<SqlitePool>,
+    State(state): State<MyState>,
     Authentication(account_id): Authentication,
     Query(delete_device_request): Query<DeleteDeviceRequest>,
 ) -> Result<(), (StatusCode, String)> {
@@ -74,9 +73,11 @@ pub async fn delete_device(
         delete_device_request.id,
         account_id
     )
-    .execute(&pool)
+    .execute(&state.pool)
     .await
     .map_err(internal_error)?;
+
+    state.update_schedule().map_err(internal_error)?;
 
     Ok(())
 }
