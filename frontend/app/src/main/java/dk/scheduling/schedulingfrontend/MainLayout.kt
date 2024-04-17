@@ -33,7 +33,7 @@ fun App() {
         listOf(
             Page.Home,
             Page.ApiButton,
-            Page.Page3,
+            Page.CreateTaskPage,
             Page.Account,
         )
 
@@ -46,7 +46,7 @@ fun App() {
         NavHost(navController = navController, startDestination = Page.Home.route, modifier = Modifier.padding(innerPadding)) {
             composable(Page.Home.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
             composable(Page.ApiButton.route) { ApiButton() }
-            composable(Page.Page3.route) { CreateTaskPage(Modifier, handleSubmission = {}, handleCancellation = {}) }
+            composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, handleSubmission = {}, handleCancellation = {}) }
             composable(Page.Account.route) { AccountPage(modifier = Modifier, username = "Bob", navigateOnLogout = {}) }
         }
     }
