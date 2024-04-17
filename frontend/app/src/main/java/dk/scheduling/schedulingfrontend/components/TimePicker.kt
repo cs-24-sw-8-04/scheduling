@@ -41,12 +41,10 @@ fun StandardTimePickerDialog(
     if (openDialog) {
         val showingPicker = remember { mutableStateOf(true) }
         BasicAlertDialog(
-            onDismissRequest = {
-                // Dismiss the dialog when the user clicks outside the dialog or on the back
-                // button. If you want to disable that functionality, simply use an empty
-                // onDismissRequest.
-                closeDialog()
-            },
+            // Dismiss the dialog when the user clicks outside the dialog or on the back
+            // button. If you want to disable that functionality, simply use an empty
+            // onDismissRequest.
+            onDismissRequest = closeDialog,
             properties =
                 DialogProperties(
                     usePlatformDefaultWidth = false,
@@ -78,12 +76,10 @@ fun StandardTimePickerDialog(
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
                         ChangeInput({ showingPicker.value = !showingPicker.value }, showingPicker.value)
-                        Button(onClick = { closeDialog() }) {
+                        Button(onClick = closeDialog) {
                             Text(text = "Close")
                         }
-                        Button(onClick = {
-                            closeDialog()
-                        }) {
+                        Button(onClick = closeDialog) {
                             Text(text = "Confirm")
                         }
                     }
@@ -98,7 +94,7 @@ fun ChangeInput(
     changeInputType: () -> Unit,
     showingPicker: Boolean,
 ) {
-    IconButton(onClick = { changeInputType() }) {
+    IconButton(onClick = changeInputType) {
         val icon =
             if (showingPicker) {
                 Icons.Outlined.Keyboard

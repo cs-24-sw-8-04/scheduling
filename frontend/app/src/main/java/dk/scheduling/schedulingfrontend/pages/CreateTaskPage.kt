@@ -126,7 +126,7 @@ fun CreateTaskPage(
 
         // Submit or Cancel
         Button(
-            onClick = { handleSubmission() },
+            onClick = handleSubmission,
             enabled = isValidInput(duration, datePickerValue.value, startTimeState, endTimeState),
             modifier = modifier.fillMaxWidth(),
         ) {
@@ -134,9 +134,7 @@ fun CreateTaskPage(
         }
 
         FilledButton(
-            onClick = {
-                handleCancellation()
-            },
+            onClick = handleCancellation,
             text = "Cancel",
         )
     }
@@ -148,7 +146,7 @@ fun ClickableCard(
     text: String,
 ) {
     Card(
-        onClick = { onClick() },
+        onClick = onClick,
         modifier = Modifier.fillMaxWidth().size(width = 100.dp, height = 50.dp),
         border = BorderStroke(2.dp, MaterialTheme.colorScheme.primary),
     ) {

@@ -40,12 +40,10 @@ fun StandardDateRangePicker(
 ) {
     if (openDialog) {
         BasicAlertDialog(
-            onDismissRequest = {
-                // Dismiss the dialog when the user clicks outside the dialog or on the back
-                // button. If you want to disable that functionality, simply use an empty
-                // onDismissRequest.
-                closeDialog()
-            },
+            // Dismiss the dialog when the user clicks outside the dialog or on the back
+            // button. If you want to disable that functionality, simply use an empty
+            // onDismissRequest.
+            onDismissRequest = closeDialog,
             properties =
                 DialogProperties(
                     usePlatformDefaultWidth = false,
