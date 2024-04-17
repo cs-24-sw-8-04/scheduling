@@ -82,7 +82,7 @@ fun CreateTaskPage(
                 duration = it
                 numbersOnly = numbersOnly(duration)
             },
-            label = { Text("Duration (m)") },
+            label = { Text("Duration (min.)") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             isError = !numbersOnly,
