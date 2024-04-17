@@ -31,10 +31,7 @@ const BASE_URL: &str = "http://localhost:3000";
 const MIN_EFFECT: f64 = 10.0;
 const MAX_EFFECT: f64 = 5000.0;
 
-pub async fn generate_users(
-    amount: usize,
-    client: &mut HttpClient,
-) -> Result<Vec<AuthToken>> {
+pub async fn generate_users(amount: usize, client: &mut HttpClient) -> Result<Vec<AuthToken>> {
     let mut users_auth_tokens: Vec<AuthToken> = vec![];
 
     for _ in 0..amount {
@@ -124,10 +121,7 @@ async fn generate_user(client: &mut HttpClient) -> Result<AuthToken> {
     Ok(response.auth_token)
 }
 
-async fn generate_device(
-    client: &mut HttpClient,
-    auth_token: AuthToken,
-) -> Result<Device> {
+async fn generate_device(client: &mut HttpClient, auth_token: AuthToken) -> Result<Device> {
     let mut rng = rand::thread_rng();
 
     let body = serde_json::to_string(&CreateDeviceRequest {
