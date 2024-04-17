@@ -3,6 +3,7 @@ use uuid::Uuid;
 
 use anyhow::{anyhow, bail, Result};
 
+use crate::http_client::HttpClient;
 use chrono::{Duration, Utc};
 use http::Request;
 use http_body_util::BodyExt;
@@ -14,7 +15,6 @@ use protocol::{
 };
 use rand::Rng;
 use tower::{Service, ServiceExt};
-use crate::http_client::HttpClient;
 
 const BASE_URL: &str = "http://localhost:3000";
 const MIN_EFFECT: f64 = 10.0;
@@ -56,7 +56,7 @@ pub async fn generate_tasks(
     client: &mut HttpClient,
     device_ownership: &HashMap<AuthToken, Vec<Device>>,
 ) -> Result<HashMap<Device, Vec<Task>>> {
-    let mut task_onwership: HashMap<Device, Vec<Task>> = HashMap::new();
+    let mut task_ownership: HashMap<Device, Vec<Task>> = HashMap::new();
     let mut rng = rand::thread_rng();
 
     for auth_token in device_ownership.keys() {
@@ -69,11 +69,11 @@ pub async fn generate_tasks(
             for _ in 0..amount {
                 tasks.push(generate_task(client, auth_token.clone(), device.clone()).await?);
             }
-            task_onwership.insert(device.clone(), tasks);
+            task_ownership.insert(device.clone(), tasks);
         }
     }
 
-    Ok(task_onwership)
+    Ok(task_ownership)
 }
 
 async fn generate_user(client: &mut HttpClient) -> Result<AuthToken> {

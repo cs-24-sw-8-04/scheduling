@@ -65,10 +65,8 @@ mod tests {
     use hyper_util::rt::TokioExecutor;
     use tower::ServiceBuilder;
     use tower_http::{
-        classify::StatusInRangeAsFailures,
-        decompression::DecompressionLayer,
-        set_header::SetRequestHeaderLayer,
-        trace::TraceLayer,
+        classify::StatusInRangeAsFailures, decompression::DecompressionLayer,
+        set_header::SetRequestHeaderLayer, trace::TraceLayer,
     };
 
     use crate::generate_data;
@@ -135,7 +133,7 @@ mod tests {
                 .await
                 .expect("Could not create devices");
 
-        let task_onwership = generate_data::generate_tasks(
+        let task_ownership = generate_data::generate_tasks(
             max_amount_of_tasks_per_device,
             client,
             &device_ownership,
@@ -147,8 +145,8 @@ mod tests {
             .values()
             .fold(0, |acc, values| acc + values.len());
 
-        assert!(amount_of_generated_devices == task_onwership.keys().count());
-        task_onwership
+        assert!(amount_of_generated_devices == task_ownership.keys().count());
+        task_ownership
             .values()
             .for_each(|value| assert!(value.len() <= max_amount_of_tasks_per_device));
     }
