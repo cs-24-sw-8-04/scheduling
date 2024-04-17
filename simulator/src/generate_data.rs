@@ -1,7 +1,7 @@
 use std::{collections::HashMap, mem::swap};
 use uuid::Uuid;
 
-use anyhow::{anyhow, bail};
+use anyhow::{anyhow, bail, Result};
 
 use chrono::{Duration, Utc};
 use http::{HeaderValue, Request};
@@ -34,7 +34,7 @@ const MAX_EFFECT: f64 = 5000.0;
 pub async fn generate_users(
     amount: usize,
     client: &mut HttpClient,
-) -> Result<Vec<AuthToken>, anyhow::Error> {
+) -> Result<Vec<AuthToken>> {
     let mut users_auth_tokens: Vec<AuthToken> = vec![];
 
     for _ in 0..amount {
@@ -48,7 +48,7 @@ pub async fn generate_devices(
     max_amount: usize,
     client: &mut HttpClient,
     auth_tokens: &Vec<AuthToken>,
-) -> Result<HashMap<AuthToken, Vec<Device>>, anyhow::Error> {
+) -> Result<HashMap<AuthToken, Vec<Device>>> {
     let mut device_onwership: HashMap<AuthToken, Vec<Device>> = HashMap::new();
     let mut rng = rand::thread_rng();
 
@@ -69,7 +69,7 @@ pub async fn generate_tasks(
     max_amount: usize,
     client: &mut HttpClient,
     device_ownership: &HashMap<AuthToken, Vec<Device>>,
-) -> Result<HashMap<Device, Vec<Task>>, anyhow::Error> {
+) -> Result<HashMap<Device, Vec<Task>>> {
     let mut task_onwership: HashMap<Device, Vec<Task>> = HashMap::new();
     let mut rng = rand::thread_rng();
 
@@ -90,7 +90,7 @@ pub async fn generate_tasks(
     Ok(task_onwership)
 }
 
-async fn generate_user(client: &mut HttpClient) -> Result<AuthToken, anyhow::Error> {
+async fn generate_user(client: &mut HttpClient) -> Result<AuthToken> {
     let body = serde_json::to_string(&RegisterOrLoginRequest {
         username: format!("test_user{}", Uuid::new_v4()).to_string(),
         password: "test_password".to_string(),
@@ -127,7 +127,7 @@ async fn generate_user(client: &mut HttpClient) -> Result<AuthToken, anyhow::Err
 async fn generate_device(
     client: &mut HttpClient,
     auth_token: AuthToken,
-) -> Result<Device, anyhow::Error> {
+) -> Result<Device> {
     let mut rng = rand::thread_rng();
 
     let body = serde_json::to_string(&CreateDeviceRequest {
@@ -167,7 +167,7 @@ async fn generate_task(
     client: &mut HttpClient,
     auth_token: AuthToken,
     device: Device,
-) -> Result<Task, anyhow::Error> {
+) -> Result<Task> {
     let mut rng = rand::thread_rng();
     let mut start = Utc::now() + Duration::hours(rng.gen_range(0..10));
     let mut end = Utc::now() + Duration::hours(rng.gen_range(0..10));
