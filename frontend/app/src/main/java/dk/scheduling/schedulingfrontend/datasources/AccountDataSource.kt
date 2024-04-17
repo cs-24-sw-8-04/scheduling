@@ -40,7 +40,7 @@ class AccountDataSource(
 
     private fun getValueFromKey(key: Preferences.Key<String>): Flow<String> {
         return getData().map { account ->
-            account[key] ?: throw UserNotLoggedIn("The user is not logged in")
+            account[key] ?: throw UserNotLoggedIn("The user is not logged in!")
         }
     }
 
