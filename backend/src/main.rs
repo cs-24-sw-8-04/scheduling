@@ -10,12 +10,29 @@ use axum::{
     Router,
 };
 use dotenv::dotenv;
+use scheduling::{background_service::background_service, scheduler::NaiveSchedulerAlgorithm};
 use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
-use tokio::net::TcpListener;
+use tokio::{
+    net::TcpListener,
+    sync::mpsc::{error::SendError, unbounded_channel, UnboundedSender},
+};
 
 use handlers::{accounts::*, devices::*, events::*, tasks::*};
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+#[derive(Clone)]
+pub struct MyState {
+    pool: SqlitePool,
+    sender: UnboundedSender<()>,
+}
+
+impl MyState {
+    pub fn update_schedule(&self) -> Result<(), SendError<()>> {
+        self.sender.send(())?;
+        Ok(())
+    }
+}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -39,14 +56,29 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let listener = TcpListener::bind("127.0.0.1:3000").await?;
 
-    let app = app(pool);
+    let (sender, receiver) = unbounded_channel();
+
+    let state = MyState {
+        pool: pool.clone(),
+        sender,
+    };
+
+    let app = app(state);
+
+    let background_task = tokio::spawn(background_service(
+        receiver,
+        pool,
+        NaiveSchedulerAlgorithm::new,
+    ));
 
     axum::serve(listener, app).await?;
+
+    background_task.await?;
 
     Ok(())
 }
 
-fn app(pool: SqlitePool) -> Router {
+fn app(state: MyState) -> Router {
     Router::new()
         .route("/tasks/all", get(get_all_tasks))
         .route("/tasks/create", post(create_task))
@@ -59,7 +91,7 @@ fn app(pool: SqlitePool) -> Router {
         .route("/events/all", get(get_all_events))
         .route("/events/get", get(get_device_events))
         .layer(TraceLayer::new_for_http())
-        .with_state(pool)
+        .with_state(state)
 }
 
 #[cfg(test)]
@@ -92,9 +124,20 @@ mod tests {
             .await
             .unwrap();
 
+        let (sender, receiver) = unbounded_channel();
+
+        // Leak the receiver to keep the channel open
+        let receiver = Box::new(receiver);
+        Box::leak(receiver);
+
+        let state = MyState {
+            pool: pool.clone(),
+            sender,
+        };
+
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
 
-        (app(pool.clone()), pool)
+        (app(state), pool)
     }
 
     async fn get_account(app: &mut RouterIntoService<Body>, username: Option<String>) -> AuthToken {

@@ -4,13 +4,12 @@ use protocol::{
     events::{Event, EventId, GetDeviceEventsRequest, GetEventsResponse},
     tasks::TaskId,
 };
-use sqlx::SqlitePool;
 
-use crate::{extractors::auth::Authentication, handlers::util::internal_error};
+use crate::{extractors::auth::Authentication, handlers::util::internal_error, MyState};
 
 #[debug_handler]
 pub async fn get_all_events(
-    State(pool): State<SqlitePool>,
+    State(state): State<MyState>,
     Authentication(account_id): Authentication,
 ) -> Result<Json<GetEventsResponse>, (StatusCode, String)> {
     let events = sqlx::query!(
@@ -23,7 +22,7 @@ pub async fn get_all_events(
         "#,
         account_id
     )
-    .fetch_all(&pool)
+    .fetch_all(&state.pool)
     .await
     .map_err(internal_error)?;
 
@@ -41,7 +40,7 @@ pub async fn get_all_events(
 
 #[debug_handler]
 pub async fn get_device_events(
-    State(pool): State<SqlitePool>,
+    State(state): State<MyState>,
     Authentication(account_id): Authentication,
     Json(get_device_event_request): Json<GetDeviceEventsRequest>,
 ) -> Result<Json<GetEventsResponse>, (StatusCode, String)> {
@@ -56,7 +55,7 @@ pub async fn get_device_events(
         account_id,
         get_device_event_request.device_id
     )
-    .fetch_all(&pool)
+    .fetch_all(&state.pool)
     .await
     .map_err(internal_error)?;
 
