@@ -2,9 +2,10 @@ use std::ops::AddAssign;
 
 use derive_more::{Display, From, Into};
 use serde::{Deserialize, Serialize};
+use std::hash::{Hash, Hasher};
 
 #[derive(
-    Deserialize, Serialize, Debug, sqlx::Type, PartialEq, Eq, From, Into, Clone, Copy, Display,
+    Deserialize, Serialize, Debug, sqlx::Type, PartialEq, Eq, From, Into, Clone, Copy, Display, Hash,
 )]
 #[sqlx(transparent)]
 pub struct DeviceId(i64);
@@ -35,8 +36,22 @@ pub struct DeleteDeviceRequest {
     pub id: DeviceId,
 }
 
-#[derive(Deserialize, Serialize, Debug, PartialEq)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Device {
     pub id: DeviceId,
     pub effect: f64,
 }
+
+impl Hash for Device {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+}
+
+impl PartialEq for Device {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+    }
+}
+
+impl Eq for Device {}

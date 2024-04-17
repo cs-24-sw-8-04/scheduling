@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-#[derive(Deserialize, Serialize, sqlx::Type, Debug)]
+#[derive(Deserialize, Serialize, sqlx::Type, Debug, Clone, PartialEq, Eq, Hash)]
 #[sqlx(transparent)]
 pub struct AuthToken(Uuid);
 
@@ -13,6 +13,12 @@ impl AuthToken {
     pub fn try_parse(input: &str) -> Result<AuthToken, uuid::Error> {
         let uuid = Uuid::try_parse(input)?;
         Ok(AuthToken(uuid))
+    }
+}
+
+impl ToString for AuthToken {
+    fn to_string(&self) -> String {
+        self.0.to_string()
     }
 }
 
