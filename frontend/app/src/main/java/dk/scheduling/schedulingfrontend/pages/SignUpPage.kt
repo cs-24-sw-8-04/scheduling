@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,11 +24,15 @@ import dk.scheduling.schedulingfrontend.components.FilledButton
 import dk.scheduling.schedulingfrontend.components.PasswordTextField
 import dk.scheduling.schedulingfrontend.components.StandardTextField
 import dk.scheduling.schedulingfrontend.components.Title
+import dk.scheduling.schedulingfrontend.repositories.account.IAccountRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
+import kotlinx.coroutines.launch
+import testdata.DummyAccountRepository
 
 @Composable
 fun SignUpPage(
     modifier: Modifier = Modifier,
+    accountRepo: IAccountRepository,
     navigateOnValidSignUp: () -> Unit,
     navigateToLoginPage: () -> Unit,
 ) {
@@ -43,6 +48,8 @@ fun SignUpPage(
     var isSignUpFailed by remember {
         mutableStateOf(false)
     }
+
+    val coroutineScope = rememberCoroutineScope()
 
     Title(titleText = "Sign Up")
 
@@ -99,10 +106,12 @@ fun SignUpPage(
 
         FilledButton(
             onClick = {
-                if (signUp(username, password, homeAddress)) {
-                    navigateOnValidSignUp()
-                } else {
-                    isSignUpFailed = true
+                coroutineScope.launch {
+                    if (accountRepo.signUp(username, password)) {
+                        navigateOnValidSignUp()
+                    } else {
+                        isSignUpFailed = true
+                    }
                 }
             },
             text = "Sign up",
@@ -137,7 +146,7 @@ fun signUp(
 @Composable
 fun SignUpPagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        SignUpPage(navigateOnValidSignUp = {}, navigateToLoginPage = {})
+        SignUpPage(navigateOnValidSignUp = {}, navigateToLoginPage = {}, accountRepo = DummyAccountRepository())
     }
 }
 
@@ -145,6 +154,6 @@ fun SignUpPagePreviewLightMode() {
 @Composable
 fun SignUpPagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        SignUpPage(navigateOnValidSignUp = {}, navigateToLoginPage = {})
+        SignUpPage(navigateOnValidSignUp = {}, navigateToLoginPage = {}, accountRepo = DummyAccountRepository())
     }
 }

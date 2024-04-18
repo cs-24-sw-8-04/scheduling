@@ -1,56 +1,17 @@
 package dk.scheduling.schedulingfrontend
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import dk.scheduling.schedulingfrontend.pages.AccountPage
-import dk.scheduling.schedulingfrontend.pages.ApiButton
-import dk.scheduling.schedulingfrontend.pages.CreateTaskPage
-import dk.scheduling.schedulingfrontend.pages.HomePage
 import dk.scheduling.schedulingfrontend.pages.Page
-import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
-import testdata.testDeviceOverview
-
-@Composable
-fun App() {
-    val navController = rememberNavController()
-
-    val pages =
-        listOf(
-            Page.Home,
-            Page.ApiButton,
-            Page.CreateTaskPage,
-            Page.Account,
-        )
-
-    Scaffold(
-        bottomBar = {
-            BottomNavigationBar(navController = navController, pages = pages)
-        },
-    ) { innerPadding ->
-        // Content of the current page
-        NavHost(navController = navController, startDestination = Page.Home.route, modifier = Modifier.padding(innerPadding)) {
-            composable(Page.Home.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
-            composable(Page.ApiButton.route) { ApiButton() }
-            composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, handleSubmission = {}, handleCancellation = {}) }
-            composable(Page.Account.route) { AccountPage(modifier = Modifier, username = "Bob", navigateOnLogout = {}) }
-        }
-    }
-}
 
 @Composable
 fun BottomNavigationBar(
@@ -83,29 +44,5 @@ fun BottomNavigationBar(
                 },
             )
         }
-    }
-}
-
-@Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
-@Composable
-fun PreviewApp() {
-    SchedulingFrontendTheme {
-        App()
-    }
-}
-
-@Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
-@Composable
-fun PreviewAppLightMode() {
-    SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        App()
-    }
-}
-
-@Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
-@Composable
-fun PreviewAppDarkMode() {
-    SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        App()
     }
 }

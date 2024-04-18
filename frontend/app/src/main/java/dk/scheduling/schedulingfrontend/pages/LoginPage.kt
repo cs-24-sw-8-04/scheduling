@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,11 +24,15 @@ import dk.scheduling.schedulingfrontend.components.FilledButton
 import dk.scheduling.schedulingfrontend.components.PasswordTextField
 import dk.scheduling.schedulingfrontend.components.StandardTextField
 import dk.scheduling.schedulingfrontend.components.Title
+import dk.scheduling.schedulingfrontend.repositories.account.IAccountRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
+import kotlinx.coroutines.launch
+import testdata.DummyAccountRepository
 
 @Composable
 fun LoginPage(
     modifier: Modifier = Modifier,
+    accountRepo: IAccountRepository,
     navigateOnValidLogin: () -> Unit,
     navigateToSignUpPage: () -> Unit,
 ) {
@@ -40,6 +45,8 @@ fun LoginPage(
     var isLoginFailed by remember {
         mutableStateOf(false)
     }
+
+    val coroutineScope = rememberCoroutineScope()
 
     Title(titleText = "Login")
 
@@ -84,10 +91,12 @@ fun LoginPage(
 
         FilledButton(
             onClick = {
-                if (login(username, password)) {
-                    navigateOnValidLogin()
-                } else {
-                    isLoginFailed = true
+                coroutineScope.launch {
+                    if (accountRepo.login(username, password)) {
+                        navigateOnValidLogin()
+                    } else {
+                        isLoginFailed = true
+                    }
                 }
             },
             text = "Log In",
@@ -109,19 +118,11 @@ fun LoginPage(
     }
 }
 
-fun login(
-    username: String,
-    password: String,
-): Boolean {
-    // TODO: Send to server and if the login is valid return true
-    return false
-}
-
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
 fun LoginPagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
+        LoginPage(navigateToSignUpPage = {}, navigateOnValidLogin = {}, accountRepo = DummyAccountRepository())
     }
 }
 
@@ -129,6 +130,6 @@ fun LoginPagePreviewLightMode() {
 @Composable
 fun LoginPagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        LoginPage(navigateOnValidLogin = {}, navigateToSignUpPage = {})
+        LoginPage(navigateToSignUpPage = {}, navigateOnValidLogin = {}, accountRepo = DummyAccountRepository())
     }
 }
