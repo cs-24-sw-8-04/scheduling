@@ -32,7 +32,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SchedulingFrontendTheme {
-                val service = getApiClient(baseUrl = "http://10.0.2.2:3000")
+                val service = getApiClient(baseUrl = getString(R.string.base_url))
                 val accountDataStorage = AccountDataSource(this)
                 val accountRepo = AccountRepository(accountDataSource = accountDataStorage, service = service)
 

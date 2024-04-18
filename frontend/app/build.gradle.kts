@@ -22,12 +22,16 @@ android {
     }
 
     buildTypes {
+        debug {
+            resValue("string", "base_url", "\"http://10.0.2.2:3000\"")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            resValue("string", "base_url", "\"http://10.0.2.2:3000\"")
         }
     }
     compileOptions {
