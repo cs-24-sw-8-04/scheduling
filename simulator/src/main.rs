@@ -3,6 +3,7 @@ use generate_data::BASE_URL;
 use http::{header::USER_AGENT, HeaderValue, Request};
 use http_body_util::BodyExt;
 use http_client::HttpClient;
+use anyhow::Result;
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::TokioExecutor;
 use tower::ServiceBuilder;
@@ -21,7 +22,7 @@ const MAX_AMOUNT_OF_DEVICES_PER_USER: usize = 3;
 const MAX_AMOUNT_OF_TASKS_PER_DEVICE: usize = 3;
 
 #[tokio::main]
-async fn main() -> Result<(), anyhow::Error> {
+async fn main() -> Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
@@ -95,31 +96,8 @@ async fn run_scheduler(client: &mut HttpClient) -> Result<(), anyhow::Error> {
 
 #[cfg(test)]
 mod tests {
-    use http::{header::USER_AGENT, HeaderValue};
-    use hyper_util::client::legacy::Client;
-    use hyper_util::rt::TokioExecutor;
-    use tower::ServiceBuilder;
-    use tower_http::{
-        classify::StatusInRangeAsFailures, decompression::DecompressionLayer,
-        set_header::SetRequestHeaderLayer, trace::TraceLayer,
-    };
-
     use crate::generate_data;
-    use crate::http_client::HttpClient;
-
-    fn make_client() -> HttpClient {
-        let client = Client::builder(TokioExecutor::new()).build_http();
-        ServiceBuilder::new()
-            .layer(TraceLayer::new(
-                StatusInRangeAsFailures::new(400..=599).into_make_classifier(),
-            ))
-            .layer(SetRequestHeaderLayer::overriding(
-                USER_AGENT,
-                HeaderValue::from_static("scheduling-simulator"),
-            ))
-            .layer(DecompressionLayer::new())
-            .service(client)
-    }
+    use crate::http_client::make_client;
 
     #[tokio::test]
     async fn generate_users_test() {
