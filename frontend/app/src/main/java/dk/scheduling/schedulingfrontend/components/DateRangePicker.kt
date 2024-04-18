@@ -152,7 +152,7 @@ fun PickerPreviewLightMode() {
             passingDate = { datePickerState.value = it },
             openDialog = openDialog.value,
         )
-        val dateRange = "${datePickerState.value.getStartDate()}:${datePickerState.value.getEndDate()}"
+        val dateRange = datePickerState.value.print()
         val dateMsg = if (datePickerState.value.isValidRange()) "no interval selected." else dateRange
         Text(text = "Time: $dateMsg")
     }
