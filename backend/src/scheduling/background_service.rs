@@ -3,8 +3,7 @@ use std::time::Duration;
 use anyhow::Result;
 use chrono::{TimeDelta, Utc};
 use protocol::{
-    devices::DeviceId,
-    tasks::{Task, TaskId},
+    tasks::TaskId,
     time::{Milliseconds, Timespan},
 };
 use sqlx::SqlitePool;
@@ -12,7 +11,7 @@ use tokio::{select, sync::mpsc::UnboundedReceiver, time::sleep};
 
 use crate::data_model::graph::DiscreteGraph;
 
-use super::scheduler::SchedulerAlgorithm;
+use super::{scheduler::SchedulerAlgorithm, task_for_scheduler::TaskForScheduler};
 
 pub async fn background_service<F, TAlg>(
     mut receiver: UnboundedReceiver<()>,
@@ -52,19 +51,20 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
     // TODO: Filter out tasks that have a started event
     let tasks = sqlx::query!(
         r#"
-        SELECT id as "id: TaskId", timespan_start, timespan_end, duration as "duration: Milliseconds", device_id as "device_id: DeviceId"
+        SELECT Tasks.id as "id: TaskId", Tasks.timespan_start, Tasks.timespan_end, Tasks.duration as "duration: Milliseconds", Devices.effect as "effect: f64"
         FROM Tasks
+        JOIN Devices ON Tasks.device_id == Devices.id
         "#)
         .fetch_all(pool)
         .await?;
 
     let tasks = tasks
         .iter()
-        .map(|t| Task {
+        .map(|t| TaskForScheduler {
             id: t.id,
             timespan: Timespan::new_from_naive(t.timespan_start, t.timespan_end),
             duration: t.duration,
-            device_id: t.device_id,
+            effect: t.effect,
         })
         .collect();
 

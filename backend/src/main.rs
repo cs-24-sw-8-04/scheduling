@@ -114,7 +114,6 @@ mod tests {
         time::Timespan,
     };
     use tower::{Service, ServiceExt};
-    use uuid::Uuid;
 
     async fn test_app() -> (Router, SqlitePool) {
         let db_connection_string = "sqlite::memory:";
