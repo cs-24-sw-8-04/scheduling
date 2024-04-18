@@ -116,7 +116,7 @@ class DateRange {
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     fun isValidRange(): Boolean {
-        return rangeStart != null && rangeEnd != null && rangeStart.isBefore(rangeEnd)
+        return rangeStart != null && rangeEnd != null && (rangeStart.isBefore(rangeEnd) || rangeStart.isEqual(rangeEnd))
     }
 
     fun getStartDate(): String {
@@ -125,7 +125,7 @@ class DateRange {
 
     fun getEndDate(): String {
         return if (rangeEnd != null && rangeStart != null) {
-            if (rangeStart.isBefore(rangeEnd)) {
+            if (rangeStart.isBefore(rangeEnd) || rangeStart.isEqual(rangeEnd)) {
                 rangeEnd.format(formatter)
             } else {
                 "Start date must be before end date"
