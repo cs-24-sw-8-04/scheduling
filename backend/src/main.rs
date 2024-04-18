@@ -270,6 +270,7 @@ mod tests {
     async fn generate_device(
         app: &mut RouterIntoService<Body>,
         auth_token: String,
+        name: String,
         effect: f64,
     ) -> Device {
         let request = Request::builder()
@@ -278,7 +279,7 @@ mod tests {
             .header("Content-Type", "application/json")
             .header("X-Auth-Token", auth_token.clone())
             .body(Body::from(
-                serde_json::to_vec(&CreateDeviceRequest { effect }).unwrap(),
+                serde_json::to_vec(&CreateDeviceRequest { name, effect }).unwrap(),
             ))
             .unwrap();
 
@@ -408,7 +409,7 @@ mod tests {
         let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token.to_string();
 
-        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
         let task = generate_task(&mut app, auth_token, 3600, &device).await;
 
         assert_ne!(task.id, (-1).into());
@@ -452,7 +453,7 @@ mod tests {
         // Cannot register task to non-existant device.
         assert_eq!(response.status(), StatusCode::INTERNAL_SERVER_ERROR);
 
-        let device = generate_device(&mut app, auth_token, 1234.0).await;
+        let device = generate_device(&mut app, auth_token, "test".into(), 1234.0).await;
 
         // Register a new account
         let auth_token = get_account(&mut app, Some("test_user_2".to_string())).await;
@@ -496,7 +497,7 @@ mod tests {
         let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token.to_string();
 
-        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
         let all_tasks = get_tasks(&mut app, auth_token).await;
 
@@ -511,7 +512,7 @@ mod tests {
         let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token.to_string();
 
-        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
         delete_task(&mut app, auth_token.clone(), task).await;
 
@@ -529,8 +530,8 @@ mod tests {
         let auth_token = auth_token.to_string();
 
         let created_devices = vec![
-            generate_device(&mut app, auth_token.clone(), 1000.0).await,
-            generate_device(&mut app, auth_token.clone(), 1000.0).await,
+            generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await,
+            generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await,
         ];
 
         let all_devices = get_devices(&mut app, auth_token).await;
@@ -547,7 +548,7 @@ mod tests {
         let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token.to_string();
 
-        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
 
         assert_eq!(device.effect, 1000.0);
     }
@@ -560,7 +561,7 @@ mod tests {
         let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token.to_string();
 
-        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
         delete_device(&mut app, auth_token.clone(), device).await;
 
         let all_devices = get_devices(&mut app, auth_token).await;
@@ -576,7 +577,7 @@ mod tests {
         let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token.to_string();
 
-        let device = generate_device(&mut app, auth_token.clone(), 1000.0).await;
+        let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
         let event = _create_event(&pool, &task, Utc::now()).await.unwrap();
 
@@ -615,7 +616,7 @@ mod tests {
         let auth_token = get_account(&mut app, None).await;
         let auth_token = auth_token.to_string();
 
-        let device = generate_device(&mut app, auth_token.clone(), 20.0).await;
+        let device = generate_device(&mut app, auth_token.clone(), "test".into(), 20.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 20, &device).await;
         let event = _create_event(&pool, &task, Utc::now()).await.unwrap();
 

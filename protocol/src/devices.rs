@@ -23,6 +23,7 @@ pub struct GetDevicesResponse {
 
 #[derive(Deserialize, Serialize)]
 pub struct CreateDeviceRequest {
+    pub name: String,
     pub effect: f64,
 }
 
@@ -39,6 +40,7 @@ pub struct DeleteDeviceRequest {
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct Device {
     pub id: DeviceId,
+    pub name: String,
     pub effect: f64,
 }
 

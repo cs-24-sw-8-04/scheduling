@@ -114,6 +114,7 @@ async fn generate_device(client: &mut HttpClient, auth_token: AuthToken) -> Resu
     let mut rng = rand::thread_rng();
 
     let body = serde_json::to_string(&CreateDeviceRequest {
+        name: "test".into(),
         effect: rng.gen_range(MIN_EFFECT..=MAX_EFFECT),
     })?;
 
