@@ -17,10 +17,10 @@ import dk.scheduling.schedulingfrontend.api.getApiClient
 import dk.scheduling.schedulingfrontend.datasources.AccountDataSource
 import dk.scheduling.schedulingfrontend.pages.AccountPage
 import dk.scheduling.schedulingfrontend.pages.ApiButton
+import dk.scheduling.schedulingfrontend.pages.CreateTaskPage
 import dk.scheduling.schedulingfrontend.pages.HomePage
 import dk.scheduling.schedulingfrontend.pages.LoginPage
 import dk.scheduling.schedulingfrontend.pages.Page
-import dk.scheduling.schedulingfrontend.pages.Page3
 import dk.scheduling.schedulingfrontend.pages.SignUpPage
 import dk.scheduling.schedulingfrontend.repositories.account.AccountRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
@@ -98,7 +98,6 @@ class AppState(
         listOf(
             Page.Home,
             Page.ApiButton,
-            Page.Page3,
         ).map { it.route }
 
     val shouldShowBottomBar: Boolean
