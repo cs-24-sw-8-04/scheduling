@@ -6,7 +6,11 @@ use crate::data_model::graph::DiscreteGraph;
 use anyhow::Result;
 
 pub trait SchedulerAlgorithm {
-    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<TaskForScheduler>) -> Result<Vec<UnpublishedEvent>>;
+    fn schedule(
+        &self,
+        graph: DiscreteGraph,
+        tasks: Vec<TaskForScheduler>,
+    ) -> Result<Vec<UnpublishedEvent>>;
 }
 pub struct GlobalSchedulerAlgorithm;
 pub struct NaiveSchedulerAlgorithm;
@@ -39,7 +43,11 @@ impl SchedulerAlgorithm for GlobalSchedulerAlgorithm {
 }
 
 impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
-    fn schedule(&self, graph: DiscreteGraph, tasks: Vec<TaskForScheduler>) -> Result<Vec<UnpublishedEvent>> {
+    fn schedule(
+        &self,
+        graph: DiscreteGraph,
+        tasks: Vec<TaskForScheduler>,
+    ) -> Result<Vec<UnpublishedEvent>> {
         let mut events: Vec<UnpublishedEvent> = Vec::new();
         for task in &tasks {
             events.push(make_unpublished_event(
@@ -133,7 +141,10 @@ fn make_unpublished_event_and_remove_from_graph(
     })
 }
 
-fn tasks_duration_in_graph_timeslots(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usize> {
+fn tasks_duration_in_graph_timeslots(
+    task: &TaskForScheduler,
+    graph: &DiscreteGraph,
+) -> Result<usize> {
     let time_delta = graph.get_time_delta().num_milliseconds() as usize;
     let duration = (i64::from(task.duration)) as usize;
     Ok(duration.div_ceil(time_delta))

@@ -12,7 +12,7 @@ sealed class Page(val route: String, val icon: ImageVector, val description: Str
 
     data object ApiButton : Page("ApiButton", Icons.Default.Favorite, "Api Button")
 
-    data object Page3 : Page("Settings", Icons.Default.Settings, "Settings")
+    data object CreateTaskPage : Page("Settings", Icons.Default.Settings, "Settings")
 
     data object Account : Page("Account", Icons.Default.AccountCircle, "Account")
 }
