@@ -66,7 +66,6 @@ fun StandardDateRangePicker(
                                 }
                             },
                     )
-
                 Column(
                     verticalArrangement = Arrangement.Top,
                 ) {
