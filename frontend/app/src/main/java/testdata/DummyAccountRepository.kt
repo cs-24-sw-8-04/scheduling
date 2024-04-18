@@ -5,7 +5,7 @@ import java.util.UUID
 
 class DummyAccountRepository : IAccountRepository {
     override suspend fun getAuthToken(): UUID {
-        return UUID.randomUUID()
+        return UUID.fromString("1619fd8e-e393-4b93-bca5-c36ed1bab15c")
     }
 
     override suspend fun login(

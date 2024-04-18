@@ -7,7 +7,7 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
-import dk.scheduling.schedulingfrontend.exceptions.UserNotLoggedIn
+import dk.scheduling.schedulingfrontend.exceptions.UserNotLoggedInException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.first
@@ -40,7 +40,7 @@ class AccountDataSource(
 
     private fun getValueFromKey(key: Preferences.Key<String>): Flow<String> {
         return getData().map { account ->
-            account[key] ?: throw UserNotLoggedIn("The user is not logged in!")
+            account[key] ?: throw UserNotLoggedInException("The user is not logged in!")
         }
     }
 
@@ -58,7 +58,7 @@ class AccountDataSource(
             val stream = getValueFromKey(AccountDataStoreKeys.AUTH_TOKEN_KEY)
             return UUID.fromString(stream.first())
         } catch (e: Throwable) {
-            throw UserNotLoggedIn("The user is not logged in!")
+            throw UserNotLoggedInException("The user is not logged in!", e)
         }
     }
 
@@ -71,7 +71,7 @@ class AccountDataSource(
             val stream = getValueFromKey(AccountDataStoreKeys.USERNAME_KEY)
             return stream.first()
         } catch (e: Throwable) {
-            throw UserNotLoggedIn("The user is not logged in!")
+            throw UserNotLoggedInException("The user is not logged in!", e)
         }
     }
 
