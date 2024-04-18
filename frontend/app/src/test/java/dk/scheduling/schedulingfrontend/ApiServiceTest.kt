@@ -174,7 +174,7 @@ class ApiServiceTest {
 
     private fun createDevice(authToken: UUID): Device {
         return runBlocking {
-            val response = apiService.createDevice(authToken.toString(), CreateDeviceRequest(1000.0))
+            val response = apiService.createDevice(authToken.toString(), CreateDeviceRequest("test", 1000.0))
             assert(response.isSuccessful) { printErrorContext(response) }
 
             val device = response.body()!!.device
