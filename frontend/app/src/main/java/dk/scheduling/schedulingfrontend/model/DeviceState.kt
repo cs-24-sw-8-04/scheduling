@@ -13,11 +13,11 @@ fun getDeviceState(deviceOverview: DeviceOverview): DeviceState {
     val dateTimeNow = LocalDateTime.now()
     val event = deviceOverview.event ?: return DeviceState.Inactive
 
-    if (event.startTime.isAfter(dateTimeNow)) {
+    if (event.start_time.isAfter(dateTimeNow)) {
         return DeviceState.Scheduled
     }
 
-    if (event.startTime.isBefore(dateTimeNow) && dateTimeNow.isBefore(event.startTime.plus(event.duration, ChronoUnit.MILLIS))) {
+    if (event.start_time.isBefore(dateTimeNow) && dateTimeNow.isBefore(event.start_time.plus(10, ChronoUnit.MILLIS))) {
         return DeviceState.Active
     }
 

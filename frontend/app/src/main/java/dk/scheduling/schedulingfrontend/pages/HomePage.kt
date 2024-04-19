@@ -44,10 +44,10 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dk.scheduling.schedulingfrontend.api.protocol.Device
 import dk.scheduling.schedulingfrontend.components.DATE_FORMATTER
 import dk.scheduling.schedulingfrontend.components.FilledButton
 import dk.scheduling.schedulingfrontend.components.OutlinedButton
-import dk.scheduling.schedulingfrontend.model.Device
 import dk.scheduling.schedulingfrontend.model.DeviceOverview
 import dk.scheduling.schedulingfrontend.model.DeviceState
 import dk.scheduling.schedulingfrontend.model.getDeviceState
@@ -237,7 +237,7 @@ fun DeviceStatus(
             if (event != null) {
                 Text(
                     modifier = modifier,
-                    text = "This device ends at " + event.startTime.plus(event.duration, ChronoUnit.MILLIS).format(DATE_FORMATTER),
+                    text = "This device ends at " + event.start_time.plus(10, ChronoUnit.MILLIS).format(DATE_FORMATTER),
                 )
             }
         }
@@ -248,7 +248,7 @@ fun DeviceStatus(
                     modifier = modifier,
                     text =
                         "This device starts in " +
-                            event.startTime.format(
+                            event.start_time.format(
                                 DATE_FORMATTER,
                             ),
                 )

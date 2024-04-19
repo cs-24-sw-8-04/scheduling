@@ -22,10 +22,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import dk.scheduling.schedulingfrontend.api.protocol.Device
 import dk.scheduling.schedulingfrontend.components.FilledButton
 import dk.scheduling.schedulingfrontend.components.OutlinedButton
 import dk.scheduling.schedulingfrontend.components.StandardTextField
-import dk.scheduling.schedulingfrontend.model.Device
 
 @Composable
 fun CreateDevicePage(
@@ -34,7 +34,7 @@ fun CreateDevicePage(
     navigateOnCancelCreation: () -> Unit,
 ) {
     var device by remember {
-        mutableStateOf(Device(-1, "", 1000.0))
+        mutableStateOf(Device(-1, "", 0.0))
     }
 
     var isEffectSet by remember {
@@ -76,12 +76,12 @@ fun CreateDevicePage(
 
         StandardTextField(
             label = "Effect (W)",
-            value = if (device.effect != null) device.effect.toString() else "",
+            value = device.effect.toString(),
             onValueChange = {
                 val effect = it.toDoubleOrNull()
                 isEffectSet = effect != null
 
-                device = Device(device.id, device.name, effect)
+                device = Device(device.id, device.name, effect ?: 0.0)
             },
             keyboardOptions =
                 KeyboardOptions(
