@@ -1,29 +1,24 @@
 package dk.scheduling.schedulingfrontend.model
 
-import dk.scheduling.schedulingfrontend.api.protocol.Event
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-sealed class DeviceState {
-    data class Active(val event: Event, val duration: Long) : DeviceState()
-
-    data class Scheduled(val event: Event) : DeviceState()
-
-    data object Inactive : DeviceState()
+enum class DeviceState {
+    Active,
+    Scheduled,
+    Inactive,
 }
 
 fun getDeviceState(deviceOverview: DeviceOverview): DeviceState {
     val dateTimeNow = LocalDateTime.now()
-
-    val taskEvent = deviceOverview.taskEvent ?: return DeviceState.Inactive
-    val event = taskEvent.event ?: return DeviceState.Inactive
+    val event = deviceOverview.event ?: return DeviceState.Inactive
 
     if (event.start_time.isAfter(dateTimeNow)) {
-        return DeviceState.Scheduled(event)
+        return DeviceState.Scheduled
     }
 
-    if (event.start_time.isBefore(dateTimeNow) && dateTimeNow.isBefore(event.start_time.plus(taskEvent.duration, ChronoUnit.MILLIS))) {
-        return DeviceState.Active(event, taskEvent.duration)
+    if (event.start_time.isBefore(dateTimeNow) && dateTimeNow.isBefore(event.start_time.plus(10, ChronoUnit.MILLIS))) {
+        return DeviceState.Active
     }
 
     return DeviceState.Inactive

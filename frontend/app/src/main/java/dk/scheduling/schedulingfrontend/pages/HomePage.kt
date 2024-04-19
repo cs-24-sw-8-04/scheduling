@@ -173,6 +173,8 @@ fun DeviceCard(
                 DeviceInfo(modifier = Modifier, deviceOverview.device)
 
                 DeviceStatus(
+                    modifier = Modifier,
+                    deviceOverview = deviceOverview,
                     state = deviceState,
                 )
 
@@ -193,13 +195,13 @@ fun DeviceCard(
 @Composable
 fun DeviceStateIcon(state: DeviceState) {
     when (state) {
-        is DeviceState.Active -> {
+        DeviceState.Active -> {
             Circle(MaterialTheme.colorScheme.success)
         }
-        is DeviceState.Scheduled -> {
+        DeviceState.Scheduled -> {
             Circle(MaterialTheme.colorScheme.scheduled)
         }
-        is DeviceState.Inactive -> {
+        DeviceState.Inactive -> {
             Circle(MaterialTheme.colorScheme.error)
         }
     }
@@ -226,28 +228,33 @@ fun DeviceInfo(
 @Composable
 fun DeviceStatus(
     modifier: Modifier = Modifier,
+    deviceOverview: DeviceOverview,
     state: DeviceState,
 ) {
     when (state) {
-        is DeviceState.Active -> {
-            Text(
-                modifier = modifier,
-                text =
-                    "This device ends at " +
-                        state.event.start_time
-                            .plus(state.duration, ChronoUnit.MILLIS)
-                            .format(DATE_FORMATTER),
-            )
+        DeviceState.Active -> {
+            val event = deviceOverview.event
+            if (event != null) {
+                Text(
+                    modifier = modifier,
+                    text = "This device ends at " + event.start_time.plus(10, ChronoUnit.MILLIS).format(DATE_FORMATTER),
+                )
+            }
         }
-        is DeviceState.Scheduled -> {
-            Text(
-                modifier = modifier,
-                text =
-                    "This device starts at " +
-                        state.event.start_time.format(DATE_FORMATTER),
-            )
+        DeviceState.Scheduled -> {
+            val event = deviceOverview.event
+            if (event != null) {
+                Text(
+                    modifier = modifier,
+                    text =
+                        "This device starts in " +
+                            event.start_time.format(
+                                DATE_FORMATTER,
+                            ),
+                )
+            }
         }
-        is DeviceState.Inactive -> {
+        DeviceState.Inactive -> {
             Text(
                 modifier = modifier,
                 text = "No events",
