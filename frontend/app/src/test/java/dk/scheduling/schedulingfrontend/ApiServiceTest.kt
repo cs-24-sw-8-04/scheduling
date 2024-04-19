@@ -13,6 +13,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
 import retrofit2.Response
+import java.time.LocalDateTime
 import java.util.UUID
 import kotlin.random.Random
 import kotlin.random.nextULong
@@ -186,11 +187,14 @@ class ApiServiceTest {
         authToken: UUID,
         device: Device,
     ): Task {
+        val startTime = LocalDateTime.now()
+        val endTime = startTime.plusHours(1)
+
         return runBlocking {
             val response =
                 apiService.createTask(
                     authToken.toString(),
-                    CreateTaskRequest(Timespan("2024-04-04T14:13:14.587Z", "2024-04-04T15:13:14.587Z"), 30 * 60 * 1000, device.id),
+                    CreateTaskRequest(Timespan(startTime, endTime), 30 * 60 * 1000, device.id),
                 )
             assert(response.isSuccessful) { printErrorContext(response) }
 

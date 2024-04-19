@@ -2,11 +2,12 @@
 
 package dk.scheduling.schedulingfrontend.api.protocol
 
+import java.time.LocalDateTime
+
 data class Event(
     val id: Long,
     val task_id: Long,
-    // TODO: Change to Date
-    val start_time: String,
+    val start_time: LocalDateTime,
 )
 
 data class GetEventsResponse(
