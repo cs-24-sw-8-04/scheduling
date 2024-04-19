@@ -27,9 +27,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.DialogProperties
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,7 +66,6 @@ fun StandardDateRangePicker(
                                 }
                             },
                     )
-
                 Column(
                     verticalArrangement = Arrangement.Top,
                 ) {
@@ -101,32 +101,38 @@ fun StandardDateRangePicker(
 
 class DateRange {
     constructor(startTime: Long, endTime: Long) {
-        rangeStart = startTime
-        rangeEnd = endTime
+        val startInstant = Instant.ofEpochMilli(startTime)
+        rangeStart = LocalDateTime.ofInstant(startInstant, ZoneId.systemDefault())
+        val endInstant = Instant.ofEpochMilli(endTime)
+        rangeEnd = LocalDateTime.ofInstant(endInstant, ZoneId.systemDefault())
     }
     constructor() {
         rangeStart = null
         rangeEnd = null
     }
 
-    private val rangeStart: Long?
-    private val rangeEnd: Long?
+    private val rangeStart: LocalDateTime?
+    private val rangeEnd: LocalDateTime?
+    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
     fun isValidRange(): Boolean {
-        return rangeStart != null && rangeEnd != null && rangeStart <= rangeEnd
-    }
-
-    private fun convertMillisToDate(millis: Long): String {
-        val formatter = SimpleDateFormat("dd/MM/yyyy", Locale.GERMANY)
-        return formatter.format(Date(millis))
+        return rangeStart != null && rangeEnd != null && (rangeStart.isBefore(rangeEnd) || rangeStart.isEqual(rangeEnd))
     }
 
     fun getStartDate(): String {
-        return if (isValidRange()) convertMillisToDate(rangeStart!!) else "No start date"
+        return if (rangeStart != null) rangeStart.format(formatter) else "No start date"
     }
 
     fun getEndDate(): String {
-        return if (isValidRange()) convertMillisToDate(rangeEnd!!) else "No end date"
+        return if (rangeEnd != null && rangeStart != null) {
+            if (rangeStart.isBefore(rangeEnd) || rangeStart.isEqual(rangeEnd)) {
+                rangeEnd.format(formatter)
+            } else {
+                "Start date must be before end date"
+            }
+        } else {
+            "No end date"
+        }
     }
 
     fun print(): String {
@@ -146,7 +152,7 @@ fun PickerPreviewLightMode() {
             passingDate = { datePickerState.value = it },
             openDialog = openDialog.value,
         )
-        val dateRange = "${datePickerState.value.getStartDate()}:${datePickerState.value.getEndDate()}"
+        val dateRange = datePickerState.value.print()
         val dateMsg = if (datePickerState.value.isValidRange()) "no interval selected." else dateRange
         Text(text = "Time: $dateMsg")
     }
