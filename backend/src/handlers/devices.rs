@@ -19,7 +19,7 @@ pub async fn get_all_devices(
     let devices = sqlx::query_as!(
         Device,
         r#"
-        SELECT id, effect
+        SELECT id, name, effect
         FROM Devices
         WHERE account_id = ?
         "#,
@@ -40,10 +40,11 @@ pub async fn create_device(
 ) -> Result<Json<CreateDeviceResponse>, (StatusCode, String)> {
     let id = sqlx::query_scalar!(
         r#"
-        INSERT INTO Devices (effect, account_id)
-        VALUES (?, ?)
+        INSERT INTO Devices (name, effect, account_id)
+        VALUES (?, ?, ?)
         RETURNING id as "id: DeviceId"
         "#,
+        create_device_request.name,
         create_device_request.effect,
         account_id
     )
@@ -53,6 +54,7 @@ pub async fn create_device(
 
     let device = Device {
         id,
+        name: create_device_request.name,
         effect: create_device_request.effect,
     };
 
