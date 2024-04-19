@@ -26,7 +26,7 @@ impl From<Duration> for Milliseconds {
     }
 }
 
-#[derive(Deserialize, Serialize, Debug, PartialEq, Eq)]
+#[derive(Deserialize, Serialize, Debug, PartialEq, Eq, Clone)]
 pub struct Timespan {
     pub start: DateTimeUtc,
     pub end: DateTimeUtc,

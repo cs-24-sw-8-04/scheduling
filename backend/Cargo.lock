@@ -1385,6 +1385,7 @@ dependencies = [
  "derive_more",
  "dotenv",
  "http-body-util",
+ "itertools",
  "protocol",
  "serde",
  "serde_json",

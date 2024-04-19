@@ -5,7 +5,8 @@ package dk.scheduling.schedulingfrontend.api.protocol
 data class Device(
     val id: Long,
     val name: String,
-    val effect: Double, // Watts
+    // Watts
+    val effect: Double,
 )
 
 data class GetDevicesResponse(
@@ -14,7 +15,8 @@ data class GetDevicesResponse(
 
 data class CreateDeviceRequest(
     val name: String,
-    val effect: Double, // Watts
+    // Watts
+    val effect: Double,
 )
 
 data class CreateDeviceResponse(

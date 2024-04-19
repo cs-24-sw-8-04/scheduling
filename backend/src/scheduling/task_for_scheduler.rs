@@ -3,7 +3,7 @@ use protocol::{
     time::{Milliseconds, Timespan},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct TaskForScheduler {
     pub id: TaskId,
     pub timespan: Timespan,
