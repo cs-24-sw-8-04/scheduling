@@ -1,6 +1,10 @@
 package testdata
 
+import dk.scheduling.schedulingfrontend.api.protocol.Device
+import dk.scheduling.schedulingfrontend.api.protocol.Event
 import dk.scheduling.schedulingfrontend.model.DeviceOverview
+import dk.scheduling.schedulingfrontend.model.DeviceTask
+import dk.scheduling.schedulingfrontend.model.EventTask
 import java.time.LocalDateTime
 
 fun testDeviceOverview(dateTime: LocalDateTime = LocalDateTime.now()): List<DeviceOverview> {
@@ -8,8 +12,8 @@ fun testDeviceOverview(dateTime: LocalDateTime = LocalDateTime.now()): List<Devi
 
     val dest: MutableList<DeviceOverview> = mutableListOf()
     deviceTasks.mapTo(dest) {
-        val taskEvent = it.tasks.firstOrNull()?.takeIf { taskEvent -> taskEvent.event != null }
-        DeviceOverview(it.device, taskEvent)
+        val event = if (it.tasks.isNotEmpty()) it.tasks[0].event else null
+        DeviceOverview(it.device, event)
     }
 
     return dest
