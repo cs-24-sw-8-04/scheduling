@@ -18,6 +18,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -40,11 +41,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.api.protocol.Device
-import dk.scheduling.schedulingfrontend.components.ConfirmAlertDialog
 import dk.scheduling.schedulingfrontend.components.DATE_FORMATTER
+import dk.scheduling.schedulingfrontend.components.FilledButton
+import dk.scheduling.schedulingfrontend.components.OutlinedButton
 import dk.scheduling.schedulingfrontend.model.DeviceOverview
 import dk.scheduling.schedulingfrontend.model.DeviceState
 import dk.scheduling.schedulingfrontend.model.getDeviceState
@@ -170,6 +173,8 @@ fun DeviceCard(
                 DeviceInfo(modifier = Modifier, deviceOverview.device)
 
                 DeviceStatus(
+                    modifier = Modifier,
+                    deviceOverview = deviceOverview,
                     state = deviceState,
                 )
 
@@ -190,13 +195,13 @@ fun DeviceCard(
 @Composable
 fun DeviceStateIcon(state: DeviceState) {
     when (state) {
-        is DeviceState.Active -> {
+        DeviceState.Active -> {
             Circle(MaterialTheme.colorScheme.success)
         }
-        is DeviceState.Scheduled -> {
+        DeviceState.Scheduled -> {
             Circle(MaterialTheme.colorScheme.scheduled)
         }
-        is DeviceState.Inactive -> {
+        DeviceState.Inactive -> {
             Circle(MaterialTheme.colorScheme.error)
         }
     }
@@ -223,28 +228,33 @@ fun DeviceInfo(
 @Composable
 fun DeviceStatus(
     modifier: Modifier = Modifier,
+    deviceOverview: DeviceOverview,
     state: DeviceState,
 ) {
     when (state) {
-        is DeviceState.Active -> {
-            Text(
-                modifier = modifier,
-                text =
-                    "This device ends at " +
-                        state.event.start_time
-                            .plus(state.duration, ChronoUnit.MILLIS)
-                            .format(DATE_FORMATTER),
-            )
+        DeviceState.Active -> {
+            val event = deviceOverview.event
+            if (event != null) {
+                Text(
+                    modifier = modifier,
+                    text = "This device ends at " + event.start_time.plus(10, ChronoUnit.MILLIS).format(DATE_FORMATTER),
+                )
+            }
         }
-        is DeviceState.Scheduled -> {
-            Text(
-                modifier = modifier,
-                text =
-                    "This device starts at " +
-                        state.event.start_time.format(DATE_FORMATTER),
-            )
+        DeviceState.Scheduled -> {
+            val event = deviceOverview.event
+            if (event != null) {
+                Text(
+                    modifier = modifier,
+                    text =
+                        "This device starts in " +
+                            event.start_time.format(
+                                DATE_FORMATTER,
+                            ),
+                )
+            }
         }
-        is DeviceState.Inactive -> {
+        DeviceState.Inactive -> {
             Text(
                 modifier = modifier,
                 text = "No events",
@@ -261,15 +271,43 @@ fun DeleteDeviceIconButton(
 ) {
     var openConfirmDialog by remember { mutableStateOf(false) }
 
-    ConfirmAlertDialog(
-        openConfirmDialog = openConfirmDialog,
-        setOpenConfirmDialog = { openConfirmDialog = it },
-        title = "Remove " + device.name,
-        text = "Are you sure that you want to remove " + device.name + "?",
-        onConfirm = { // TODO: Call API to remove a device
-            onRemove()
-        },
-    )
+    if (openConfirmDialog) {
+        AlertDialog(
+            title = {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Remove " + device.name,
+                    textAlign = TextAlign.Center,
+                )
+            },
+            text = {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = "Are you sure that you want to remove " + device.name + "?",
+                    textAlign = TextAlign.Center,
+                )
+            },
+            confirmButton = {
+                FilledButton(
+                    onClick = {
+                        openConfirmDialog = false
+                        // TODO: Call API to remove a device
+                        onRemove()
+                    },
+                    text = "Confirm",
+                )
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = {
+                        openConfirmDialog = false
+                    },
+                    text = "Cancel",
+                )
+            },
+            onDismissRequest = { openConfirmDialog = false },
+        )
+    }
 
     IconButton(
         onClick = {
