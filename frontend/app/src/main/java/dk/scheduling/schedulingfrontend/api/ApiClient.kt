@@ -1,12 +1,15 @@
 package dk.scheduling.schedulingfrontend.api
 
+import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import dk.scheduling.schedulingfrontend.api.typeadapters.LocalDateTimeTypeAdapter
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.create
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
+import java.time.LocalDateTime
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
@@ -17,7 +20,12 @@ class RetrofitClient(val baseUrl: String) {
      * 10.0.2.2 is a special alias to your host loopback interface (127.0.0.1 on your development machine)
      * 2222 is the port where the server is running
      */
-    private val gson = GsonBuilder().setLenient().create()
+
+    private val gson =
+        GsonBuilder()
+            .setLenient()
+            .create()
+
     private val okHttpClient: OkHttpClient by lazy {
         val trustAllCertificates =
             arrayOf<TrustManager>(
@@ -50,11 +58,19 @@ class RetrofitClient(val baseUrl: String) {
         Retrofit.Builder()
             .baseUrl(baseUrl)
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addConverterFactory(GsonConverterFactory.create(createGson()))
             .build()
     }
 }
 
 fun getApiClient(baseUrl: String): ApiService {
     return RetrofitClient(baseUrl).retrofit.create<ApiService>()
+}
+
+fun createGson(): Gson {
+    val builder = GsonBuilder().setLenient()
+
+    builder.registerTypeAdapter(LocalDateTime::class.java, LocalDateTimeTypeAdapter())
+
+    return builder.create()
 }

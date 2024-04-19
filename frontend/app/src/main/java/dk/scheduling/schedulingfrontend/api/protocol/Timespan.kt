@@ -1,7 +1,8 @@
 package dk.scheduling.schedulingfrontend.api.protocol
 
-// TODO: This should not be strings
+import java.time.LocalDateTime
+
 data class Timespan(
-    val start: String,
-    val end: String,
+    val start: LocalDateTime,
+    val end: LocalDateTime,
 )
