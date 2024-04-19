@@ -73,9 +73,9 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
         1393.0, 1271.0, 1044.0, 754.0, 445.0, 154.0, 10.0, 0.0, 0.0, 0.0,
     ];
 
-    let graph = DiscreteGraph::new(values, TimeDelta::hours(1), Utc::now());
+    let mut graph = DiscreteGraph::new(values, TimeDelta::hours(1), Utc::now());
 
-    let events = algorithm.schedule(graph, tasks)?;
+    let events = algorithm.schedule(&mut graph, tasks)?;
 
     // TODO: Save events (db or hashmap?)
     events.iter().for_each(|e| {
