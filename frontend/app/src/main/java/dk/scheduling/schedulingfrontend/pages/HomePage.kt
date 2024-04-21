@@ -233,25 +233,33 @@ fun DeviceStatus(
 ) {
     when (state) {
         DeviceState.Active -> {
-            val event = deviceOverview.event
-            if (event != null) {
-                Text(
-                    modifier = modifier,
-                    text = "This device ends at " + event.start_time.plus(10, ChronoUnit.MILLIS).format(DATE_FORMATTER),
-                )
+            val taskEvent = deviceOverview.taskEvent
+            if (taskEvent != null) {
+                val event = taskEvent.event
+                if (event != null) {
+                    Text(
+                        modifier = modifier,
+                        text =
+                            "This device ends at " + event.start_time
+                                    .plus(taskEvent.task.duration, ChronoUnit.MILLIS)
+                                    .format(DATE_FORMATTER),
+                    )
+                }
             }
         }
         DeviceState.Scheduled -> {
-            val event = deviceOverview.event
-            if (event != null) {
-                Text(
-                    modifier = modifier,
-                    text =
-                        "This device starts in " +
-                            event.start_time.format(
-                                DATE_FORMATTER,
-                            ),
-                )
+            val taskEvent = deviceOverview.taskEvent
+            if (taskEvent != null) {
+                val event = taskEvent.event
+                if (event != null) {
+                    Text(
+                        modifier = modifier,
+                        text =
+                            "This device starts in " + event.start_time.format(
+                                    DATE_FORMATTER,
+                                ),
+                    )
+                }
             }
         }
         DeviceState.Inactive -> {
