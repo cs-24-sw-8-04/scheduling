@@ -18,8 +18,8 @@ fun deviceTaskTestData(dateTime: LocalDateTime = LocalDateTime.now()): List<Devi
     val deviceTasks: MutableList<DeviceTask> = mutableListOf()
 
     devicesTestData().mapTo(deviceTasks) {
-        val taskEvents = groupTaskEventsToDevice[it.id] ?: mutableListOf()
-        DeviceTask(it, taskEvents)
+        val deviceTaskEvents = groupTaskEventsToDevice[it.id] ?: mutableListOf()
+        DeviceTask(it, deviceTaskEvents.toMutableList())
     }
 
     return deviceTasks
