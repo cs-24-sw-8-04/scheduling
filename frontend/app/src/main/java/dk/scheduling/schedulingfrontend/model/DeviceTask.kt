@@ -6,7 +6,7 @@ import dk.scheduling.schedulingfrontend.api.protocol.Task
 
 data class DeviceTask(
     val device: Device,
-    val tasks: List<EventTask>,
+    val tasks: MutableList<EventTask>,
 )
 
 data class EventTask(
