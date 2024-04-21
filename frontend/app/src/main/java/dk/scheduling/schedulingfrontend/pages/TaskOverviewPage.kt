@@ -165,8 +165,7 @@ fun TaskViewer(
 fun TaskScheduled(event: Event?) {
     if (event != null) {
         Text(text = "Scheduled to start " + event.start_time.format(dateAndTimeFormat))
-    }
-    else {
+    } else {
         Text(text = "Not scheduled yet")
     }
 }
