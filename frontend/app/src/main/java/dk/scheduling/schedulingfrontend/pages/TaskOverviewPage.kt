@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.api.protocol.Timespan
 import dk.scheduling.schedulingfrontend.model.DeviceTask
-import dk.scheduling.schedulingfrontend.model.EventTask
+import dk.scheduling.schedulingfrontend.model.TaskEvent
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import testdata.deviceTaskTestData
 import java.time.LocalDateTime
@@ -130,7 +130,7 @@ fun DeviceTaskCard(
 
 @Composable
 fun TaskViewer(
-    taskEvent: EventTask,
+    taskEvent: TaskEvent,
     onRemove: () -> Unit,
 ) {
     Card(
