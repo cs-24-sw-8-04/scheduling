@@ -11,7 +11,9 @@ enum class DeviceState {
 
 fun getDeviceState(deviceOverview: DeviceOverview): DeviceState {
     val dateTimeNow = LocalDateTime.now()
-    val event = deviceOverview.event ?: return DeviceState.Inactive
+
+    val taskEvent = deviceOverview.taskEvent ?: return DeviceState.Inactive
+    val event = taskEvent.event ?: return DeviceState.Inactive
 
     if (event.start_time.isAfter(dateTimeNow)) {
         return DeviceState.Scheduled
