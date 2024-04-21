@@ -172,17 +172,6 @@ fun TaskScheduled(event: Event?) {
 
 @Composable
 fun Duration(durationMills: Long) {
-    val displayText = @Composable
-    fun (text: String, fontSize: Float) {
-        Text(
-            text = text,
-            textAlign = TextAlign.Center,
-            fontSize = TextUnit(fontSize, TextUnitType.Sp),
-            modifier =
-            Modifier.fillMaxWidth(),
-        )
-    }
-
     val fontSizeNumber = 25f
     val fontSizeUnitLabel = 12f
     val (hours, minutes) = milliSecondToHourMinute(durationMills)
@@ -199,8 +188,8 @@ fun Duration(durationMills: Long) {
                     modifier =
                         Modifier.fillMaxWidth(),
                 ) {
-                    displayText("$hours", fontSizeNumber)
-                    displayText("hr", fontSizeUnitLabel)
+                    DisplayText("$hours", fontSizeNumber)
+                    DisplayText("hr", fontSizeUnitLabel)
                 }
             }
 
@@ -208,11 +197,24 @@ fun Duration(durationMills: Long) {
                 modifier =
                     Modifier.fillMaxWidth(if (hours != 0L) 0.35f else 1f),
             ) {
-                displayText("$minutes", fontSizeNumber)
-                displayText("min", fontSizeUnitLabel)
+                DisplayText("$minutes", fontSizeNumber)
+                DisplayText("min", fontSizeUnitLabel)
             }
         }
     }
+}
+
+@Composable
+fun DisplayText(
+    text: String,
+    fontSize: Float,
+) {
+    Text(
+        text = text,
+        textAlign = TextAlign.Center,
+        fontSize = TextUnit(fontSize, TextUnitType.Sp),
+        modifier = Modifier.fillMaxWidth(),
+    )
 }
 
 fun milliSecondToHourMinute(millis: Long): Pair<Long, Long> {
