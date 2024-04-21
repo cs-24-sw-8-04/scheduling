@@ -172,34 +172,35 @@ fun TaskScheduled(event: Event?) {
 
 @Composable
 fun Duration(durationMills: Long) {
+    val displayText = @Composable
+    fun (text: String, fontSize: Float) {
+        Text(
+            text = text,
+            textAlign = TextAlign.Center,
+            fontSize = TextUnit(fontSize, TextUnitType.Sp),
+            modifier =
+            Modifier.fillMaxWidth(),
+        )
+    }
+
+    val fontSizeNumber = 25f
+    val fontSizeUnitLabel = 12f
+    val (hours, minutes) = milliSecondToHourMinute(durationMills)
+
     Column(
         modifier =
             Modifier.fillMaxWidth(0.35f),
     ) {
         SectionTitleLabel("Duration")
-        val (hours, minutes) = milliSecondToHourMinute(durationMills)
-        val fontSizeNumber = 25f
-        val fontSizeUnitLabel = 12f
+
         Row {
             if (hours != 0L) {
                 Column(
                     modifier =
                         Modifier.fillMaxWidth(),
                 ) {
-                    Text(
-                        text = "$hours",
-                        textAlign = TextAlign.Center,
-                        fontSize = TextUnit(fontSizeNumber, TextUnitType.Sp),
-                        modifier =
-                            Modifier.fillMaxWidth(),
-                    )
-                    Text(
-                        text = "hr",
-                        textAlign = TextAlign.Center,
-                        fontSize = TextUnit(fontSizeUnitLabel, TextUnitType.Sp),
-                        modifier =
-                            Modifier.fillMaxWidth(),
-                    )
+                    displayText("$hours", fontSizeNumber)
+                    displayText("hr", fontSizeUnitLabel)
                 }
             }
 
@@ -207,20 +208,8 @@ fun Duration(durationMills: Long) {
                 modifier =
                     Modifier.fillMaxWidth(if (hours != 0L) 0.35f else 1f),
             ) {
-                Text(
-                    text = "$minutes",
-                    textAlign = TextAlign.Center,
-                    fontSize = TextUnit(fontSizeNumber, TextUnitType.Sp),
-                    modifier =
-                        Modifier.fillMaxWidth(),
-                )
-                Text(
-                    text = "min",
-                    textAlign = TextAlign.Center,
-                    fontSize = TextUnit(fontSizeUnitLabel, TextUnitType.Sp),
-                    modifier =
-                        Modifier.fillMaxWidth(),
-                )
+                displayText("$minutes", fontSizeNumber)
+                displayText("min", fontSizeUnitLabel)
             }
         }
     }
