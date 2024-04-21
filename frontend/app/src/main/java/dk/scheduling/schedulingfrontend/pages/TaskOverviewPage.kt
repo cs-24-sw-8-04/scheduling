@@ -44,6 +44,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import dk.scheduling.schedulingfrontend.api.protocol.Event
 import dk.scheduling.schedulingfrontend.api.protocol.Timespan
 import dk.scheduling.schedulingfrontend.model.DeviceTask
 import dk.scheduling.schedulingfrontend.model.TaskEvent
@@ -52,6 +53,10 @@ import testdata.deviceTaskTestData
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+
+val dateFormat = DateTimeFormatter.ofPattern("MMM dd", Locale.ENGLISH)
+val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
+val dateAndTimeFormat = DateTimeFormatter.ofPattern("MMM dd hh:mm a", Locale.ENGLISH)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -143,19 +148,32 @@ fun TaskViewer(
                 .fillMaxSize()
                 .padding(horizontal = 12.dp).padding(bottom = 12.dp),
     ) {
-        Row(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Row {
-                Duration(taskEvent.task.duration)
-                Interval(taskEvent.task.timespan)
+            Row(
+                modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Row {
+                    Duration(taskEvent.task.duration)
+                    Interval(taskEvent.task.timespan)
+                }
+                TaskMenu(
+                    onRemove = onRemove,
+                )
             }
-            TaskMenu(
-                onRemove = onRemove,
-            )
+            TaskScheduled(taskEvent.event)
         }
     }
+}
+
+@Composable
+fun TaskScheduled(event: Event?) {
+    if (event != null)
+        Text(text = "Scheduled to start " + event.start_time.format(dateAndTimeFormat))
+    else
+        Text(text = "Not scheduled yet")
 }
 
 @Composable
@@ -251,8 +269,6 @@ fun Dash() {
 
 @Composable
 fun DateAndTimeViewer(dateTime: LocalDateTime) {
-    val dateFormat = DateTimeFormatter.ofPattern("MMM dd", Locale.ENGLISH)
-    val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.fillMaxHeight(),

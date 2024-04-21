@@ -8,8 +8,13 @@ fun testDeviceOverview(dateTime: LocalDateTime = LocalDateTime.now()): List<Devi
 
     val dest: MutableList<DeviceOverview> = mutableListOf()
     deviceTasks.mapTo(dest) {
-        val event = if (it.tasks.isNotEmpty()) it.tasks[0].event else null
-        DeviceOverview(it.device, event)
+        val taskEvent = if (it.tasks.isNotEmpty()) {
+            if (it.tasks[0].event != null) {
+                it.tasks[0]
+            }
+            else null
+        } else null
+        DeviceOverview(it.device, taskEvent)
     }
 
     return dest
