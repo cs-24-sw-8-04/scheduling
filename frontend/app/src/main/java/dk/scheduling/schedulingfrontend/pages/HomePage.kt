@@ -245,7 +245,8 @@ fun DeviceStatus(
                     Text(
                         modifier = modifier,
                         text =
-                            "This device ends at " + event.start_time
+                            "This device ends at " +
+                                event.start_time
                                     .plus(taskEvent.task.duration, ChronoUnit.MILLIS)
                                     .format(DATE_FORMATTER),
                     )
@@ -260,9 +261,8 @@ fun DeviceStatus(
                     Text(
                         modifier = modifier,
                         text =
-                            "This device starts in " + event.start_time.format(
-                                    DATE_FORMATTER,
-                                ),
+                            "This device starts in " +
+                                event.start_time.format(DATE_FORMATTER),
                     )
                 }
             }
