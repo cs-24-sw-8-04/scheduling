@@ -20,6 +20,8 @@ sealed class Page(val route: String, val icon: ImageVector, val description: Str
 
     data object CreateDevicePage : Page("CreateDevicePage", Icons.Default.Add, "Device")
 
+    data object CreateDevicePage : Page("CreateDevicePage", Icons.Default.Add, "Create Device")
+
     data object TaskOverview : Page("TaskOverview", Icons.Default.Task, "Tasks")
 
     data object ApiButton : Page("ApiButton", Icons.Default.Favorite, "Api Button")
