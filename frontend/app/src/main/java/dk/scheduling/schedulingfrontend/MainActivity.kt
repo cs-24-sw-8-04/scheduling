@@ -4,8 +4,13 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -17,6 +22,7 @@ import dk.scheduling.schedulingfrontend.api.getApiClient
 import dk.scheduling.schedulingfrontend.datasources.AccountDataSource
 import dk.scheduling.schedulingfrontend.pages.AccountPage
 import dk.scheduling.schedulingfrontend.pages.ApiButton
+import dk.scheduling.schedulingfrontend.pages.CreateDevicePage
 import dk.scheduling.schedulingfrontend.pages.CreateTaskPage
 import dk.scheduling.schedulingfrontend.pages.HomePage
 import dk.scheduling.schedulingfrontend.pages.LoginPage
@@ -44,8 +50,6 @@ class MainActivity : ComponentActivity() {
                     listOf(
                         Page.Home,
                         Page.TaskOverview,
-                        Page.ApiButton,
-                        Page.CreateTaskPage,
                         Page.Account,
                     )
 
@@ -56,6 +60,18 @@ class MainActivity : ComponentActivity() {
                         if (appState.shouldShowBottomBar) {
                             BottomNavigationBar(navController = appState.navHostController, pages = pages)
                         }
+                    },
+                    floatingActionButton = {
+                        val pairs =
+                            mutableListOf(
+                                Pair(Page.Home, Page.CreateDevicePage),
+                                Pair(Page.TaskOverview, Page.CreateTaskPage),
+                            )
+
+                        FloatingActionButtonLinkToCreatePage(
+                            navController = appState.navHostController,
+                            pairs = pairs,
+                        )
                     },
                 ) { innerPadding ->
                     NavHost(
@@ -78,10 +94,15 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(Page.Home.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
+                        composable(Page.CreateDevicePage.route) {
+                            CreateDevicePage(
+                                navigateOnValidCreation = { appState.navHostController.navigate(Page.Home.route) },
+                                navigateOnCancelCreation = { appState.navHostController.navigate(Page.Home.route) },
+                            )
+                        }
                         composable(
                             Page.TaskOverview.route,
                         ) { TaskOverviewPage(modifier = Modifier, getDeviceTasks = { deviceTaskTestData() }) }
-                        composable(Page.ApiButton.route) { ApiButton() }
                         composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, handleSubmission = {}, handleCancellation = {}) }
                         composable(Page.Account.route) {
                             AccountPage(
@@ -118,3 +139,19 @@ fun rememberAppState(navHostController: NavHostController = rememberNavControlle
     remember(navHostController) {
         AppState(navHostController)
     }
+
+@Composable
+fun FloatingActionButtonLinkToCreatePage(
+    navController: NavHostController,
+    pairs: List<Pair<Page, Page>>,
+) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    val pair = pairs.find { it.first.route == currentDestination?.route }
+    if (pair != null) {
+        FloatingActionButton(onClick = { navController.navigate(pair.second.route) }) {
+            Icon(Icons.Default.Add, contentDescription = "Add")
+        }
+    }
+}

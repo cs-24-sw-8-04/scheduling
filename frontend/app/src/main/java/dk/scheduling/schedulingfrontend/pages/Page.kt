@@ -3,6 +3,7 @@ package dk.scheduling.schedulingfrontend.pages
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Login
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HowToReg
@@ -16,6 +17,8 @@ sealed class Page(val route: String, val icon: ImageVector, val description: Str
     data object SignUpPage : Page("SignUp", Icons.Default.HowToReg, "Sign Up")
 
     data object Home : Page("Home", Icons.Default.Home, "Home")
+
+    data object CreateDevicePage : Page("CreateDevicePage", Icons.Default.Add, "Create Device")
 
     data object TaskOverview : Page("TaskOverview", Icons.Default.Task, "Tasks")
 
