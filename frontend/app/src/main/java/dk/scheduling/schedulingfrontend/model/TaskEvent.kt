@@ -6,4 +6,8 @@ import dk.scheduling.schedulingfrontend.api.protocol.Task
 data class TaskEvent(
     val task: Task,
     val event: Event?,
-)
+) {
+    fun hasEvent(): Boolean {
+        return event != null
+    }
+}
