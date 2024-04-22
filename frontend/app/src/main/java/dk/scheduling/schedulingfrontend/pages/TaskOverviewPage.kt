@@ -46,17 +46,14 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.api.protocol.Event
 import dk.scheduling.schedulingfrontend.api.protocol.Timespan
+import dk.scheduling.schedulingfrontend.components.DATE_AND_TIME_FORMAT
+import dk.scheduling.schedulingfrontend.components.DATE_FORMAT
+import dk.scheduling.schedulingfrontend.components.TIME_FORMAT
 import dk.scheduling.schedulingfrontend.model.DeviceTask
 import dk.scheduling.schedulingfrontend.model.TaskEvent
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import testdata.deviceTaskTestData
 import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-
-val dateFormat = DateTimeFormatter.ofPattern("MMM dd", Locale.ENGLISH)
-val timeFormat = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH)
-val dateAndTimeFormat = DateTimeFormatter.ofPattern("MMM dd hh:mm a", Locale.ENGLISH)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -171,7 +168,7 @@ fun TaskViewer(
 @Composable
 fun TaskScheduled(event: Event?) {
     if (event != null) {
-        Text(text = "Scheduled to start " + event.start_time.format(dateAndTimeFormat))
+        Text(text = "Scheduled to start " + event.start_time.format(DATE_AND_TIME_FORMAT))
     } else {
         Text(text = "Not scheduled yet")
     }
@@ -266,12 +263,12 @@ fun DateAndTimeViewer(dateTime: LocalDateTime) {
         modifier = Modifier.fillMaxHeight(),
     ) {
         Text(
-            text = dateTime.format(dateFormat),
+            text = dateTime.format(DATE_FORMAT),
             textAlign = TextAlign.Center,
             fontSize = TextUnit(20f, TextUnitType.Sp),
         )
         Text(
-            text = dateTime.format(timeFormat),
+            text = dateTime.format(TIME_FORMAT),
             textAlign = TextAlign.Center,
             fontSize = TextUnit(15f, TextUnitType.Sp),
         )
