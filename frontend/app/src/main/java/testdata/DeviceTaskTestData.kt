@@ -13,11 +13,26 @@ fun deviceTaskTestData(dateTime: LocalDateTime = LocalDateTime.now()): List<Devi
         TaskEvent(it, event)
     }
 
-    val groupTaskEventsToDevice = taskEvents.groupBy { it.task.device_id }
+    val taskEventComparator =
+        Comparator<TaskEvent> { e1, e2 ->
+            val hasE1Event = e1.hasEvent()
+            val hasE2Event = e2.hasEvent()
+
+            if (!hasE1Event || !hasE2Event) {
+                hasE2Event.compareTo(hasE1Event)
+            } else {
+                e2.event?.start_time?.compareTo(e1.event?.start_time) ?: 0
+            }
+        }
+
+    val groupTaskEventsToDevice =
+        taskEvents.groupBy { it.task.device_id }.mapValues { (_, values) ->
+            values.sortedWith(taskEventComparator)
+        }
 
     val deviceTasks: MutableList<DeviceTask> = mutableListOf()
 
-    devicesTestData().mapTo(deviceTasks) {
+    devicesTestData().sortedBy { it.name }.mapTo(deviceTasks) {
         val deviceTaskEvents = groupTaskEventsToDevice[it.id] ?: mutableListOf()
         DeviceTask(it, deviceTaskEvents.toMutableList())
     }
