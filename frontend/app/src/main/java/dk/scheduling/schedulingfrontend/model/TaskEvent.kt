@@ -10,4 +10,9 @@ data class TaskEvent(
     fun hasEvent(): Boolean {
         return event != null
     }
+
+    val duration: Long
+        get() {
+            return task.duration
+        }
 }

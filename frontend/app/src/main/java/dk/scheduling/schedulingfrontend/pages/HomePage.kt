@@ -173,8 +173,6 @@ fun DeviceCard(
                 DeviceInfo(modifier = Modifier, deviceOverview.device)
 
                 DeviceStatus(
-                    modifier = Modifier,
-                    deviceOverview = deviceOverview,
                     state = deviceState,
                 )
 
@@ -195,13 +193,13 @@ fun DeviceCard(
 @Composable
 fun DeviceStateIcon(state: DeviceState) {
     when (state) {
-        DeviceState.Active -> {
+        is DeviceState.Active -> {
             Circle(MaterialTheme.colorScheme.success)
         }
-        DeviceState.Scheduled -> {
+        is DeviceState.Scheduled -> {
             Circle(MaterialTheme.colorScheme.scheduled)
         }
-        DeviceState.Inactive -> {
+        is DeviceState.Inactive -> {
             Circle(MaterialTheme.colorScheme.error)
         }
     }
@@ -228,41 +226,28 @@ fun DeviceInfo(
 @Composable
 fun DeviceStatus(
     modifier: Modifier = Modifier,
-    deviceOverview: DeviceOverview,
     state: DeviceState,
 ) {
     when (state) {
-        DeviceState.Active -> {
-            val taskEvent = deviceOverview.taskEvent
-            if (taskEvent != null) {
-                val event = taskEvent.event
-                if (event != null) {
-                    Text(
-                        modifier = modifier,
-                        text =
-                            "This device ends at " +
-                                event.start_time
-                                    .plus(taskEvent.task.duration, ChronoUnit.MILLIS)
-                                    .format(DATE_FORMATTER),
-                    )
-                }
-            }
+        is DeviceState.Active -> {
+            Text(
+                modifier = modifier,
+                text =
+                    "This device ends at " +
+                        state.event.start_time
+                            .plus(state.duration, ChronoUnit.MILLIS)
+                            .format(DATE_FORMATTER),
+            )
         }
-        DeviceState.Scheduled -> {
-            val taskEvent = deviceOverview.taskEvent
-            if (taskEvent != null) {
-                val event = taskEvent.event
-                if (event != null) {
-                    Text(
-                        modifier = modifier,
-                        text =
-                            "This device starts in " +
-                                event.start_time.format(DATE_FORMATTER),
-                    )
-                }
-            }
+        is DeviceState.Scheduled -> {
+            Text(
+                modifier = modifier,
+                text =
+                    "This device starts at " +
+                        state.event.start_time.format(DATE_FORMATTER),
+            )
         }
-        DeviceState.Inactive -> {
+        is DeviceState.Inactive -> {
             Text(
                 modifier = modifier,
                 text = "No events",
