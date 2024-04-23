@@ -1,7 +1,12 @@
-use http::{header::USER_AGENT, HeaderValue};
+use anyhow::{anyhow, bail};
+use generate_data::BASE_URL;
+use http::{header::USER_AGENT, HeaderValue, Request};
+use http_body_util::BodyExt;
+use http_client::HttpClient;
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::TokioExecutor;
 use tower::ServiceBuilder;
+use tower::{Service, ServiceExt};
 use tower_http::{
     classify::StatusInRangeAsFailures, decompression::DecompressionLayer,
     set_header::SetRequestHeaderLayer, trace::TraceLayer,
@@ -19,8 +24,9 @@ const MAX_AMOUNT_OF_TASKS_PER_DEVICE: usize = 3;
 async fn main() -> Result<(), anyhow::Error> {
     tracing_subscriber::registry()
         .with(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "tower_http=debug,axum::rejection=trace".into()),
+            tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+                "simulator=trace,tower_http=debug,axum::rejection=trace".into()
+            }),
         )
         .with(tracing_subscriber::fmt::layer())
         .init();
@@ -48,12 +54,41 @@ async fn main() -> Result<(), anyhow::Error> {
     )
     .await?;
 
+    // Run the scheduler
+    run_scheduler(&mut client).await?;
+
     println!("-------------------------------------------------------------");
     println!("Auth tokens: {:?}", auth_tokens);
     println!("-------------------------------------------------------------");
     println!("Device ownership: {:?}", device_ownership);
     println!("-------------------------------------------------------------");
     println!("Task ownership: {:?}", task_onwership);
+
+    Ok(())
+}
+
+async fn run_scheduler(client: &mut HttpClient) -> Result<(), anyhow::Error> {
+    let request = Request::builder()
+        .uri(BASE_URL.to_owned() + "/scheduling/run")
+        .method("POST")
+        .header("Content-Type", "application/json")
+        .body("".to_string())?;
+
+    let response = client.ready().await?.call(request).await?;
+
+    if !response.status().is_success() {
+        let status = response.status();
+        let body = response
+            .into_body()
+            .collect()
+            .await
+            .map_err(|e| anyhow!(e))?;
+        bail!(
+            "status message: {} message: {:?}",
+            status,
+            String::from_utf8(body.to_bytes().to_vec())
+        );
+    }
 
     Ok(())
 }

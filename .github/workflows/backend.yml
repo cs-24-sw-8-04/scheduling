@@ -50,7 +50,7 @@ jobs:
     - name: Run backend
       run: |
         cargo build
-        cargo run&
+        cargo run -- --simulator &
       working-directory: backend
       if: matrix.project == 'simulator'
 

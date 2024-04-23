@@ -1,4 +1,7 @@
-use std::{collections::HashMap, mem::swap};
+use futures::stream::FuturesUnordered;
+use futures::StreamExt;
+use std::collections::HashMap;
+use tracing::{event, Level};
 use uuid::Uuid;
 
 use anyhow::{anyhow, bail, Result};
@@ -16,18 +19,18 @@ use protocol::{
 use rand::Rng;
 use tower::{Service, ServiceExt};
 
-const BASE_URL: &str = "http://localhost:3000";
+pub const BASE_URL: &str = "http://localhost:3000";
 const MIN_EFFECT: f64 = 10.0;
 const MAX_EFFECT: f64 = 5000.0;
 
 pub async fn generate_users(amount: usize, client: &mut HttpClient) -> Result<Vec<AuthToken>> {
-    let mut users_auth_tokens: Vec<AuthToken> = vec![];
-
-    for _ in 0..amount {
-        users_auth_tokens.push(generate_user(client).await?);
-    }
-
-    Ok(users_auth_tokens)
+    (0..amount)
+        .map(|_| generate_user(client.clone()))
+        .collect::<FuturesUnordered<_>>()
+        .collect::<Vec<_>>()
+        .await
+        .into_iter()
+        .collect::<Result<Vec<AuthToken>>>()
 }
 
 pub async fn generate_devices(
@@ -40,11 +43,15 @@ pub async fn generate_devices(
 
     for auth_token in auth_tokens {
         let amount = rng.gen_range(0..=max_amount);
-        let mut devices: Vec<Device> = vec![];
 
-        for _ in 0..amount {
-            devices.push(generate_device(client, auth_token.clone()).await?);
-        }
+        let devices = (0..amount)
+            .map(|_| generate_device(client.clone(), auth_token.clone()))
+            .collect::<FuturesUnordered<_>>()
+            .collect::<Vec<_>>()
+            .await
+            .into_iter()
+            .collect::<Result<Vec<Device>>>()?;
+
         device_onwership.insert(auth_token.clone(), devices);
     }
 
@@ -76,7 +83,7 @@ pub async fn generate_tasks(
     Ok(task_ownership)
 }
 
-async fn generate_user(client: &mut HttpClient) -> Result<AuthToken> {
+async fn generate_user(mut client: HttpClient) -> Result<AuthToken> {
     let body = serde_json::to_string(&RegisterOrLoginRequest {
         username: format!("test_user{}", Uuid::new_v4()).to_string(),
         password: "test_password".to_string(),
@@ -110,7 +117,7 @@ async fn generate_user(client: &mut HttpClient) -> Result<AuthToken> {
     Ok(response.auth_token)
 }
 
-async fn generate_device(client: &mut HttpClient, auth_token: AuthToken) -> Result<Device> {
+async fn generate_device(mut client: HttpClient, auth_token: AuthToken) -> Result<Device> {
     let mut rng = rand::thread_rng();
 
     let body = serde_json::to_string(&CreateDeviceRequest {
@@ -153,15 +160,12 @@ async fn generate_task(
     device: Device,
 ) -> Result<Task> {
     let mut rng = rand::thread_rng();
-    let mut start = Utc::now() + Duration::hours(rng.gen_range(0..10));
-    let mut end = Utc::now() + Duration::hours(rng.gen_range(0..10));
-    if start > end {
-        swap(&mut start, &mut end);
-    }
-    let start = start;
-    let end = end;
+    let start = Utc::now() + Duration::hours(rng.gen_range(0..10));
+    let end = start + Duration::hours(rng.gen_range(1..10));
+
     let min_dur: i64 = Duration::minutes(10).num_milliseconds();
-    let max_dur: i64 = Duration::hours(10).num_milliseconds();
+    let max_dur: i64 = (end - start).num_milliseconds();
+    event!(target: "simulator", Level::TRACE, "Min duration: {}, Max duration: {}", min_dur, max_dur);
     let duration = rng.gen_range(min_dur..=max_dur);
 
     let body = serde_json::to_string(&CreateTaskRequest {
