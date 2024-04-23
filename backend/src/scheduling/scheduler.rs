@@ -74,6 +74,7 @@ impl SchedulerAlgorithm for AllPermutationsAlgorithm {
         best_schedule
     }
 }
+
 impl SchedulerAlgorithm for GlobalSchedulerAlgorithm {
     fn schedule(
         &self,
