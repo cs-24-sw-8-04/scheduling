@@ -104,6 +104,8 @@ class AppState(
         listOf(
             Page.Home,
             Page.ApiButton,
+            Page.TaskOverview,
+            Page.Account,
         ).map { it.route }
 
     val shouldShowBottomBar: Boolean

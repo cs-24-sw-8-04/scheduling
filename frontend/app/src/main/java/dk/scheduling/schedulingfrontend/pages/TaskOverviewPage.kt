@@ -179,7 +179,7 @@ fun Duration(durationMills: Long) {
 
     Column(
         modifier =
-            Modifier.fillMaxWidth(0.35f),
+            Modifier.fillMaxWidth(0.30f),
     ) {
         SectionTitleLabel("Duration")
 
@@ -187,7 +187,7 @@ fun Duration(durationMills: Long) {
             if (hours != 0L) {
                 Column(
                     modifier =
-                        Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth(0.5f),
                 ) {
                     DisplayText("$hours", fontSizeNumber)
                     DisplayText("hr", fontSizeUnitLabel)
@@ -196,7 +196,7 @@ fun Duration(durationMills: Long) {
 
             Column(
                 modifier =
-                    Modifier.fillMaxWidth(if (hours != 0L) 0.35f else 1f),
+                    Modifier.fillMaxWidth(),
             ) {
                 DisplayText("$minutes", fontSizeNumber)
                 DisplayText("min", fontSizeUnitLabel)
@@ -266,12 +266,12 @@ fun DateAndTimeViewer(dateTime: LocalDateTime) {
         modifier = Modifier.fillMaxHeight(),
     ) {
         Text(
-            text = dateTime.format(DATE_FORMAT),
+            text = dateTime.format(TIME_FORMAT),
             textAlign = TextAlign.Center,
-            fontSize = TextUnit(20f, TextUnitType.Sp),
+            fontSize = TextUnit(18f, TextUnitType.Sp),
         )
         Text(
-            text = dateTime.format(TIME_FORMAT),
+            text = dateTime.format(DATE_FORMAT),
             textAlign = TextAlign.Center,
             fontSize = TextUnit(15f, TextUnitType.Sp),
         )
@@ -295,15 +295,11 @@ fun TaskMenu(
     modifier: Modifier = Modifier,
 ) {
     var openConfirmDialog by remember { mutableStateOf(false) }
-
-    ConfirmAlertDialog(
+    CancelTaskAlertDialog(
+        taskEvent = taskEvent,
+        onRemoveTask = onRemove,
         openConfirmDialog = openConfirmDialog,
         setOpenConfirmDialog = { openConfirmDialog = it },
-        title = "Cancel Task",
-        text = "Want to cancel the task planned to be conducted at ",
-        confirmLabel = "Yes",
-        onConfirm = { onRemove() },
-        dismissLabel = "No",
     )
 
     Box(
@@ -342,35 +338,25 @@ fun TaskMenu(
 }
 
 @Composable
-fun CancelTaskMenuItem(
+fun CancelTaskAlertDialog(
     taskEvent: TaskEvent,
     onRemoveTask: () -> Unit,
-    hideDropDownMenu: () -> Unit,
+    openConfirmDialog: Boolean,
+    setOpenConfirmDialog: (Boolean) -> Unit,
 ) {
-    var openConfirmDialog by remember { mutableStateOf(false) }
+    val timeSpan = taskEvent.task.timespan
+    val interval = "${timeSpan.start.format(DATE_FORMAT)} - ${timeSpan.end.format(DATE_FORMAT)}"
+    val (hour, minute) = milliSecondToHourMinute(taskEvent.task.duration)
+    val duration = if (hour > 0) hour.toString() else "$hour hr" + if (minute > 0) "$minute min" else ""
 
     ConfirmAlertDialog(
         openConfirmDialog = openConfirmDialog,
-        setOpenConfirmDialog = { openConfirmDialog = it },
+        setOpenConfirmDialog = setOpenConfirmDialog,
         title = "Cancel Task",
-        text = "Want to cancel the task planned to be conducted at ",
-        confirmLabel = "Cancel",
+        text = "Want to cancel the task happening $interval with duration $duration",
+        confirmLabel = "Yes",
         onConfirm = { onRemoveTask() },
-        dismissLabel = "Keep",
-    )
-
-    DropdownMenuItem(
-        text = { Text("Cancel") },
-        onClick = {
-            // Handle remove!
-            openConfirmDialog = true
-        },
-        leadingIcon = {
-            Icon(
-                Icons.Outlined.Cancel,
-                contentDescription = "Cancel task",
-            )
-        },
+        dismissLabel = "No",
     )
 }
 
