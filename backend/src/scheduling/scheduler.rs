@@ -17,6 +17,16 @@ pub struct AllPermutationsAlgorithm;
 pub struct GlobalSchedulerAlgorithm;
 pub struct NaiveSchedulerAlgorithm;
 
+impl AllPermutationsAlgorithm {
+    fn weight(val: &f64) -> f64 {
+        if *val < 0.0 {
+            val.powi(3).abs()
+        } else {
+            val.powi(2)
+        }
+    }
+}
+
 impl GlobalSchedulerAlgorithm {
     pub fn new() -> Self {
         GlobalSchedulerAlgorithm
@@ -36,6 +46,7 @@ impl SchedulerAlgorithm for AllPermutationsAlgorithm {
         tasks: Vec<TaskForScheduler>,
     ) -> Result<Vec<UnpublishedEvent>> {
         let scheudler = GlobalSchedulerAlgorithm::new();
+
         let len = tasks.len();
         let permutaions = tasks.into_iter().permutations(len);
 
@@ -45,18 +56,12 @@ impl SchedulerAlgorithm for AllPermutationsAlgorithm {
                 let res = scheudler.schedule(&mut temp_graph, permutation);
                 (temp_graph, res)
             })
-            .map(|(mut graph, schedule)| {
+            .map(|(graph, schedule)| {
                 (
                     graph
-                        .get_values_mut()
-                        .iter_mut()
-                        .map(|val: &mut f64| {
-                            if *val < 0.0 {
-                                val.powi(3).abs()
-                            } else {
-                                val.powi(2)
-                            }
-                        })
+                        .get_values()
+                        .iter()
+                        .map(|val: &f64| Self::weight(val))
                         .sum::<f64>(),
                     schedule,
                 )
@@ -144,15 +149,6 @@ fn find_best_event(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usi
     Ok(timeslot_start + greatest_index)
 }
 
-/// # Examples
-///
-/// ```
-/// let timeslots = 2;
-/// let graph_values = [1.0..=5.0];
-/// let res = adjust_graph_for_task_duration(timeslots, graph_values);
-///
-/// assert_eq!(res, [3.0, 5.0, 7.0, 9.0]);
-/// ```
 fn adjust_graph_for_task_duration(timeslots: usize, graph_values: &[f64]) -> Vec<f64> {
     assert_ne!(timeslots, 0, "Check that your duration is non-zero");
     graph_values
@@ -178,11 +174,7 @@ fn make_unpublished_event_and_remove_from_graph(
     timeslot: usize,
     duration_in_timeslots: usize,
 ) -> Result<UnpublishedEvent> {
-    graph.sub_values(
-        timeslot,
-        task.effect, // `* (i64::from(task.duration)) as f64` if we chose to make effect be per 1 millisec
-        duration_in_timeslots,
-    );
+    graph.sub_values(timeslot, task.effect, duration_in_timeslots);
 
     Ok(UnpublishedEvent {
         task_id: task.id,
@@ -277,7 +269,7 @@ mod tests {
                 id: 1.into(),
                 timespan: Timespan {
                     start,
-                    end: start + Duration::seconds(2),
+                    end: start + Duration::seconds(3),
                 },
                 duration: Duration::seconds(2).into(),
                 effect: 3.0,
@@ -620,6 +612,31 @@ mod tests {
         assert_eq!(events, expected)
     }
     #[test]
+    fn naive_scheduler_24_hour() {
+        let scheduler = NaiveSchedulerAlgorithm;
+        let start = Utc::now();
+
+        let tasks = TaskFactory::new().make_tasks(
+            1,
+            start,
+            Duration::hours(4).into(),
+            Duration::hours(24),
+            None,
+            None,
+        );
+
+        let mut graph = DiscreteGraph::new(
+            vec![8.0, 7.0, 6.0, 5.0, 4.0, 3.0],
+            Duration::hours(4),
+            start,
+        );
+
+        let events = scheduler.schedule(&mut graph, tasks).unwrap();
+        let expected = make_expected_unpublished_events!(start, 0);
+
+        assert_eq!(events, expected)
+    }
+    #[test]
     fn naive_scheduler_multiple_tasks() {
         let scheduler = NaiveSchedulerAlgorithm;
         let start = Utc::now();
@@ -641,6 +658,31 @@ mod tests {
 
         let events = scheduler.schedule(&mut graph, tasks).unwrap();
         let expected = make_expected_unpublished_events!(start, 2, 2, 2);
+
+        assert_eq!(events, expected)
+    }
+    #[test]
+    fn naive_scheduler_start_time_offset() {
+        let scheduler = NaiveSchedulerAlgorithm;
+        let start = Utc::now();
+
+        let tasks = TaskFactory::new().make_tasks(
+            3,
+            start,
+            Duration::seconds(3).into(),
+            Duration::seconds(5),
+            Some(Duration::seconds(3)),
+            None,
+        );
+
+        let mut graph = DiscreteGraph::new(
+            vec![0.0, 5.0, 8.0, 9.0, 8.0, 5.0, 0.0],
+            Duration::seconds(1),
+            start,
+        );
+
+        let events = scheduler.schedule(&mut graph, tasks).unwrap();
+        let expected = make_expected_unpublished_events!(start, 3, 3, 3);
 
         assert_eq!(events, expected)
     }
