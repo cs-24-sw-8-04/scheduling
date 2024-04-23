@@ -69,11 +69,14 @@ fn make_discrete_graph(
     total_duration: TimeDelta,
 ) -> DiscreteGraph {
     match either {
-        Either::Left(vec) => DiscreteGraph::new(
-            vec.clone(),
-            TimeDelta::seconds(total_duration.num_seconds() / vec.len() as i64),
-            time_now,
-        ),
+        Either::Left(vec) => {
+            let len = vec.len() as i64;
+            DiscreteGraph::new(
+                vec,
+                TimeDelta::seconds(total_duration.num_seconds() / len),
+                time_now,
+            )
+        }
         Either::Right(delta) => DiscreteGraph::new(
             (0..(total_duration.num_seconds() / delta.num_seconds()))
                 .map(|num| (num * 2) as f64)
