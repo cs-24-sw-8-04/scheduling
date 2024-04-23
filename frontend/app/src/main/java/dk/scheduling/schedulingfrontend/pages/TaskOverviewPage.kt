@@ -17,13 +17,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -106,17 +105,16 @@ fun DeviceTaskCard(
 
     Card(
         modifier =
-        Modifier
-            .fillMaxSize()
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            Modifier
+                .padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
         Text(
             text = deviceTask.device.name,
             textAlign = TextAlign.Center,
             modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
+                Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
         )
 
         tasks.forEach {
@@ -142,18 +140,18 @@ fun TaskViewer(
                 containerColor = MaterialTheme.colorScheme.surfaceBright,
             ),
         modifier =
-        Modifier
-            .fillMaxSize()
-            .padding(horizontal = 12.dp)
-            .padding(bottom = 12.dp),
+            Modifier
+                .padding(horizontal = 12.dp)
+                .padding(bottom = 12.dp),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 10.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row {
@@ -161,6 +159,7 @@ fun TaskViewer(
                     Interval(taskEvent.task.timespan)
                 }
                 TaskMenu(
+                    taskEvent = taskEvent,
                     onRemove = onRemove,
                 )
             }
@@ -186,7 +185,7 @@ fun Duration(durationMills: Long) {
 
     Column(
         modifier =
-            Modifier.fillMaxWidth(0.35f),
+            Modifier.fillMaxWidth(0.30f),
     ) {
         SectionTitleLabel("Duration")
 
@@ -194,7 +193,7 @@ fun Duration(durationMills: Long) {
             if (hours != 0L) {
                 Column(
                     modifier =
-                        Modifier.fillMaxWidth(),
+                        Modifier.fillMaxWidth(0.5f),
                 ) {
                     DisplayText("$hours", fontSizeNumber)
                     DisplayText("hr", fontSizeUnitLabel)
@@ -203,7 +202,7 @@ fun Duration(durationMills: Long) {
 
             Column(
                 modifier =
-                    Modifier.fillMaxWidth(if (hours != 0L) 0.35f else 1f),
+                    Modifier.fillMaxWidth(),
             ) {
                 DisplayText("$minutes", fontSizeNumber)
                 DisplayText("min", fontSizeUnitLabel)
@@ -239,9 +238,10 @@ fun Interval(timeSpan: Timespan) {
     ) {
         SectionTitleLabel("Interval")
         Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 10.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             DateAndTimeViewer(dateTime = timeSpan.start)
@@ -254,9 +254,10 @@ fun Interval(timeSpan: Timespan) {
 @Composable
 fun Dash() {
     Text(
-        modifier = Modifier
-            .fillMaxHeight()
-            .padding(vertical = 12.dp),
+        modifier =
+            Modifier
+                .fillMaxHeight()
+                .padding(vertical = 12.dp),
         textAlign = TextAlign.Center,
         fontWeight = FontWeight(500),
         fontSize = TextUnit(20f, TextUnitType.Sp),
@@ -271,12 +272,12 @@ fun DateAndTimeViewer(dateTime: LocalDateTime) {
         modifier = Modifier.fillMaxHeight(),
     ) {
         Text(
-            text = dateTime.format(DATE_FORMAT),
+            text = dateTime.format(TIME_FORMAT),
             textAlign = TextAlign.Center,
-            fontSize = TextUnit(20f, TextUnitType.Sp),
+            fontSize = TextUnit(18f, TextUnitType.Sp),
         )
         Text(
-            text = dateTime.format(TIME_FORMAT),
+            text = dateTime.format(DATE_FORMAT),
             textAlign = TextAlign.Center,
             fontSize = TextUnit(15f, TextUnitType.Sp),
         )
@@ -294,12 +295,25 @@ fun SectionTitleLabel(label: String) {
 }
 
 @Composable
-fun TaskMenu(onRemove: () -> Unit) {
+fun TaskMenu(
+    taskEvent: TaskEvent,
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var openConfirmDialog by remember { mutableStateOf(false) }
+    CancelTaskAlertDialog(
+        taskEvent = taskEvent,
+        onRemoveTask = onRemove,
+        openConfirmDialog = openConfirmDialog,
+        setOpenConfirmDialog = { openConfirmDialog = it },
+    )
+
     Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(start = 10.dp)
-            .wrapContentSize(Alignment.TopStart),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(start = 10.dp)
+                .wrapContentSize(Alignment.TopStart),
     ) {
         var expanded by remember { mutableStateOf(false) }
         Icon(
@@ -312,16 +326,16 @@ fun TaskMenu(onRemove: () -> Unit) {
             onDismissRequest = { expanded = false },
         ) {
             DropdownMenuItem(
-                text = { Text("Remove") },
+                text = { Text("Cancel") },
                 onClick = {
                     // Handle remove!
                     expanded = false
-                    onRemove()
+                    openConfirmDialog = true
                 },
                 leadingIcon = {
                     Icon(
-                        Icons.Outlined.Delete,
-                        contentDescription = "Remove task",
+                        Icons.Outlined.Cancel,
+                        contentDescription = "Cancel task",
                     )
                 },
             )
