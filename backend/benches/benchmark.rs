@@ -1,4 +1,4 @@
-use chrono::{DateTime, TimeDelta, Utc};
+use chrono::{DateTime, Duration, Utc};
 use criterion::{criterion_group, criterion_main, Criterion};
 
 use rand::Rng;
@@ -28,24 +28,24 @@ impl TaskFactory {
         amount: usize,
         start: DateTime<Utc>,
         max_effect: f64,
-        max_duration: TimeDelta,
+        max_duration: Duration,
     ) -> Vec<TaskForScheduler> {
         let mut res = Vec::new();
         let mut rng = rand::thread_rng();
         for _ in 0..amount {
-            let timespan_start = TimeDelta::seconds(0).num_seconds();
+            let timespan_start = Duration::seconds(0).num_seconds();
             let timespan_end = max_duration.num_seconds();
 
-            let start_offset = TimeDelta::seconds(rng.gen_range(timespan_start..timespan_end));
+            let start_offset = Duration::seconds(rng.gen_range(timespan_start..timespan_end));
             let end_offset =
-                TimeDelta::seconds(rng.gen_range(start_offset.num_seconds()..timespan_end))
-                    + TimeDelta::seconds(1);
+                Duration::seconds(rng.gen_range(start_offset.num_seconds()..timespan_end))
+                    + Duration::seconds(1);
 
             let start_time = start + start_offset;
             let end_time = start + end_offset;
 
             let total_duration = (end_time - start_time).num_seconds();
-            let duration = rng.gen_range(1..=total_duration);
+            let duration = Duration::seconds(rng.gen_range(1..=total_duration));
 
             let effect = rng.gen_range(1.0..=max_effect);
 
@@ -63,71 +63,69 @@ impl TaskFactory {
     }
 }
 
-fn make_discrete_graph(
+fn make_discrete_graph_from_vec(
     time_now: DateTime<Utc>,
-    either: Either<Vec<f64>, TimeDelta>,
-    total_duration: TimeDelta,
+    vec: Vec<f64>,
+    total_duration: Duration,
 ) -> DiscreteGraph {
-    match either {
-        Either::Left(vec) => {
-            let len = vec.len() as i64;
-            DiscreteGraph::new(
-                vec,
-                TimeDelta::seconds(total_duration.num_seconds() / len),
-                time_now,
-            )
-        }
-        Either::Right(delta) => DiscreteGraph::new(
-            (0..(total_duration.num_seconds() / delta.num_seconds()))
-                .map(|num| (num * 2) as f64)
-                .collect::<Vec<f64>>(),
-            delta,
-            time_now,
-        ),
-    }
+    let len = vec.len() as i64;
+    DiscreteGraph::new(
+        vec,
+        Duration::seconds(total_duration.num_seconds() / len),
+        time_now,
+    )
+}
+
+fn make_discrete_graph_from_delta(
+    time_now: DateTime<Utc>,
+    delta: Duration,
+    total_duration: Duration,
+) -> DiscreteGraph {
+    DiscreteGraph::new(
+        (0..(total_duration.num_seconds() / delta.num_seconds()))
+            .map(|num| (num * 2) as f64)
+            .collect::<Vec<f64>>(),
+        delta,
+        time_now,
+    )
 }
 
 fn naive_scheduling_benchmark(c: &mut Criterion) {
-    // One-time setup code goes here
     c.bench_function("naive_scheduling_benchmark", |b| {
-        // Per-sample (note that a sample can be many iterations) setup goes here
         let amount_of_tasks = 10000;
         let max_effect = 10000.0;
         let time_now = Utc::now();
-        let total_duration = TimeDelta::hours(24);
+        let total_duration = Duration::hours(24);
 
         let tasks =
             TaskFactory::new().make_tasks(amount_of_tasks, time_now, max_effect, total_duration);
         let discrete_graph =
-            make_discrete_graph(time_now, either::Right(TimeDelta::hours(4)), total_duration);
+            make_discrete_graph_from_delta(time_now, Duration::hours(4), total_duration);
 
         let naive_scheduler_algorithm = NaiveSchedulerAlgorithm::new();
 
-        b.iter(||
-            // Measured code goes here
-            naive_scheduler_algorithm.schedule(&mut discrete_graph.clone(), tasks.clone()));
+        b.iter(|| naive_scheduler_algorithm.schedule(&mut discrete_graph.clone(), tasks.clone()));
     });
 }
 
 fn global_scheduling_benchmark(c: &mut Criterion) {
-    // One-time setup code goes here
-    let amount_of_tasks = 10000;
-    let max_effect = 10000.0;
-    let time_now = Utc::now();
-    let total_duration = TimeDelta::hours(24);
-
-    let tasks =
-        TaskFactory::new().make_tasks(amount_of_tasks, time_now, max_effect, total_duration);
-    let discrete_graph =
-        make_discrete_graph(time_now, either::Right(TimeDelta::hours(4)), total_duration);
-
-    let global_scheduler_algorithm = GlobalSchedulerAlgorithm::new();
-
     c.bench_function("global_scheduling_benchmark", |b| {
-        // Per-sample (note that a sample can be many iterations) setup goes here
-        b.iter(||
-            // Measured code goes here
-            global_scheduler_algorithm.schedule(&mut discrete_graph.clone(), tasks.clone()));
+        let amount_of_tasks = 10000;
+        let max_effect = 10000.0;
+        let time_now = Utc::now();
+        let total_duration = Duration::hours(24);
+
+        let tasks =
+            TaskFactory::new().make_tasks(amount_of_tasks, time_now, max_effect, total_duration);
+        let discrete_graph = make_discrete_graph_from_vec(
+            time_now,
+            vec![0.0, 2.0, 4.0, 6.0, 8.0, 10.0],
+            total_duration,
+        );
+
+        let global_scheduler_algorithm = GlobalSchedulerAlgorithm::new();
+
+        b.iter(|| global_scheduler_algorithm.schedule(&mut discrete_graph.clone(), tasks.clone()));
     });
 }
 

@@ -1,9 +1,9 @@
+use anyhow::Result;
 use anyhow::{anyhow, bail};
 use generate_data::BASE_URL;
 use http::{header::USER_AGENT, HeaderValue, Request};
 use http_body_util::BodyExt;
 use http_client::HttpClient;
-use anyhow::Result;
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::TokioExecutor;
 use tower::ServiceBuilder;
