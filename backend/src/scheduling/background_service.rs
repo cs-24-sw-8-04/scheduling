@@ -8,13 +8,20 @@ use protocol::{
 };
 use sqlx::SqlitePool;
 use tokio::{select, sync::mpsc::UnboundedReceiver, time::sleep};
+use tracing::{event, Level};
 
 use crate::data_model::graph::DiscreteGraph;
 
 use super::{scheduler::SchedulerAlgorithm, task_for_scheduler::TaskForScheduler};
 
+pub enum BackgroundServiceMessage {
+    Update,
+    // Only use this in simulator mode!
+    RunScheduler,
+}
+
 pub async fn background_service<F, TAlg>(
-    mut receiver: UnboundedReceiver<()>,
+    mut receiver: UnboundedReceiver<BackgroundServiceMessage>,
     pool: SqlitePool,
     algorithm_constructor: F,
 ) where
@@ -46,6 +53,35 @@ pub async fn background_service<F, TAlg>(
     }
 }
 
+pub async fn simulator_background_service<F, TAlg>(
+    mut receiver: UnboundedReceiver<BackgroundServiceMessage>,
+    pool: SqlitePool,
+    algorithm_constructor: F,
+) where
+    F: FnOnce() -> TAlg,
+    TAlg: SchedulerAlgorithm,
+{
+    let mut algorithm = algorithm_constructor();
+    loop {
+        // Wait until we receive a message.
+        let msg = receiver.recv().await;
+        if msg.is_none() {
+            break;
+        }
+
+        let msg = msg.unwrap();
+
+        match msg {
+            BackgroundServiceMessage::Update => {}
+            BackgroundServiceMessage::RunScheduler => {
+                if let Err(error) = run_algorithm(&pool, &mut algorithm).await {
+                    println!("Algorithm error!: {}", error);
+                }
+            }
+        }
+    }
+}
+
 async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorithm) -> Result<()> {
     // TODO: Filter out tasks based on time
     // TODO: Filter out tasks that have a started event
@@ -58,7 +94,7 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
         .fetch_all(pool)
         .await?;
 
-    let tasks = tasks
+    let tasks: Vec<_> = tasks
         .iter()
         .map(|t| TaskForScheduler {
             id: t.id,
@@ -67,6 +103,8 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
             effect: t.effect,
         })
         .collect();
+
+    event!(target: "backend", Level::INFO, "Running algorithm on {} tasks", tasks.len());
 
     let values = vec![
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 28.0, 200.0, 484.0, 829.0, 1186.0, 1407.0, 1475.0, 1455.0,

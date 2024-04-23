@@ -6,11 +6,20 @@ mod scheduling;
 use std::error::Error;
 
 use axum::{
+    debug_handler,
+    extract::State,
+    http::StatusCode,
     routing::{delete, get, post},
     Router,
 };
+use clap::Parser;
 use dotenv::dotenv;
-use scheduling::{background_service::background_service, scheduler::NaiveSchedulerAlgorithm};
+use scheduling::{
+    background_service::{
+        background_service, simulator_background_service, BackgroundServiceMessage,
+    },
+    scheduler::NaiveSchedulerAlgorithm,
+};
 use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 use tokio::{
     net::TcpListener,
@@ -19,31 +28,46 @@ use tokio::{
 
 use handlers::{accounts::*, devices::*, events::*, tasks::*};
 use tower_http::trace::TraceLayer;
+use tracing::{event, Level};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+use crate::handlers::util::internal_error;
 
 #[derive(Clone)]
 pub struct MyState {
     pool: SqlitePool,
-    sender: UnboundedSender<()>,
+    sender: UnboundedSender<BackgroundServiceMessage>,
 }
 
 impl MyState {
-    pub fn update_schedule(&self) -> Result<(), SendError<()>> {
-        self.sender.send(())?;
+    pub fn update_schedule(&self) -> Result<(), SendError<BackgroundServiceMessage>> {
+        self.sender.send(BackgroundServiceMessage::Update)?;
         Ok(())
     }
+}
+
+#[derive(Parser, Debug)]
+#[command(version, about)]
+struct Args {
+    // Whether or not to run in simulator mode
+    #[arg(long)]
+    simulator: bool,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     dotenv().ok();
 
+    let args = Args::parse();
+
+    let simulator_mode = args.simulator;
+
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "tower_http=debug,axum::rejection=trace".into()),
+                .unwrap_or_else(|_| "backend=trace,tower_http=debug,axum::rejection=trace".into()),
         )
-        .with(tracing_subscriber::fmt::layer())
+        .with(tracing_subscriber::fmt::layer().pretty())
         .init();
 
     let db_connection_string = std::env::var("DATABASE_URL")?;
@@ -63,13 +87,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
         sender,
     };
 
-    let app = app(state);
+    let app = app(state, simulator_mode);
 
-    let background_task = tokio::spawn(background_service(
-        receiver,
-        pool,
-        NaiveSchedulerAlgorithm::new,
-    ));
+    let background_task = if simulator_mode {
+        event!(target: "backend", Level::INFO, "Running in simulator mode");
+        tokio::spawn(simulator_background_service(
+            receiver,
+            pool,
+            NaiveSchedulerAlgorithm::new,
+        ))
+    } else {
+        tokio::spawn(background_service(
+            receiver,
+            pool,
+            NaiveSchedulerAlgorithm::new,
+        ))
+    };
 
     axum::serve(listener, app).await?;
 
@@ -78,8 +111,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-fn app(state: MyState) -> Router {
-    Router::new()
+fn app(state: MyState, simulator_mode: bool) -> Router {
+    let mut router = Router::new()
         .route("/tasks/all", get(get_all_tasks))
         .route("/tasks/create", post(create_task))
         .route("/tasks/delete", delete(delete_task))
@@ -89,9 +122,22 @@ fn app(state: MyState) -> Router {
         .route("/accounts/register", post(register_account))
         .route("/accounts/login", post(login_to_account))
         .route("/events/all", get(get_all_events))
-        .route("/events/get", get(get_device_events))
-        .layer(TraceLayer::new_for_http())
-        .with_state(state)
+        .route("/events/get", get(get_device_events));
+
+    if simulator_mode {
+        router = router.route("/scheduling/run", post(run_scheduling));
+    }
+
+    router.layer(TraceLayer::new_for_http()).with_state(state)
+}
+
+#[debug_handler]
+async fn run_scheduling(State(state): State<MyState>) -> Result<(), (StatusCode, String)> {
+    state
+        .sender
+        .send(BackgroundServiceMessage::RunScheduler)
+        .map_err(internal_error)?;
+    Ok(())
 }
 
 #[cfg(test)]
@@ -136,7 +182,7 @@ mod tests {
 
         sqlx::migrate!("./migrations").run(&pool).await.unwrap();
 
-        (app(state), pool)
+        (app(state, false), pool)
     }
 
     async fn get_account(app: &mut RouterIntoService<Body>, username: Option<String>) -> AuthToken {
