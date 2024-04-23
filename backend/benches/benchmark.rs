@@ -28,13 +28,13 @@ impl TaskFactory {
         amount: usize,
         start: DateTime<Utc>,
         max_effect: f64,
-        total_duration: TimeDelta,
+        max_duration: TimeDelta,
     ) -> Vec<TaskForScheduler> {
         let mut res = Vec::new();
         let mut rng = rand::thread_rng();
         for _ in 0..amount {
             let timespan_start = TimeDelta::seconds(0).num_seconds();
-            let timespan_end = total_duration.num_seconds();
+            let timespan_end = max_duration.num_seconds();
 
             let start_offset = TimeDelta::seconds(rng.gen_range(timespan_start..timespan_end));
             let end_offset =
