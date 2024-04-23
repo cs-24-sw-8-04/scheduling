@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.api.protocol.Event
 import dk.scheduling.schedulingfrontend.api.protocol.Timespan
+import dk.scheduling.schedulingfrontend.components.ConfirmAlertDialog
 import dk.scheduling.schedulingfrontend.components.DATE_AND_TIME_FORMAT
 import dk.scheduling.schedulingfrontend.components.DATE_FORMAT
 import dk.scheduling.schedulingfrontend.components.TIME_FORMAT
@@ -341,6 +342,29 @@ fun TaskMenu(
             )
         }
     }
+}
+
+@Composable
+fun CancelTaskAlertDialog(
+    taskEvent: TaskEvent,
+    onRemoveTask: () -> Unit,
+    openConfirmDialog: Boolean,
+    setOpenConfirmDialog: (Boolean) -> Unit,
+) {
+    val timeSpan = taskEvent.task.timespan
+    val interval = "${timeSpan.start.format(DATE_FORMAT)} - ${timeSpan.end.format(DATE_FORMAT)}"
+    val (hour, minute) = milliSecondToHourMinute(taskEvent.task.duration)
+    val duration = if (hour > 0) hour.toString() else "$hour hr" + if (minute > 0) "$minute min" else ""
+
+    ConfirmAlertDialog(
+        openConfirmDialog = openConfirmDialog,
+        setOpenConfirmDialog = setOpenConfirmDialog,
+        title = "Cancel Task",
+        text = "Want to cancel the task happening $interval with duration $duration",
+        confirmLabel = "Yes",
+        onConfirm = { onRemoveTask() },
+        dismissLabel = "No",
+    )
 }
 
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
