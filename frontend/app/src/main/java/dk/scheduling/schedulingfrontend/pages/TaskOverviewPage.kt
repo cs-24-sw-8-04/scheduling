@@ -5,9 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -80,6 +83,10 @@ fun TaskOverviewPage(
                     ) { deviceTasks.remove(deviceTask) }
                 }
             }
+
+            item {
+                Spacer(modifier = Modifier.height(70.dp))
+            }
         }
 
         PullToRefreshContainer(
@@ -98,17 +105,17 @@ fun DeviceTaskCard(
 
     Card(
         modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
         Text(
             text = deviceTask.device.name,
             textAlign = TextAlign.Center,
             modifier =
-                Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
+            Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
         )
 
         tasks.forEach {
@@ -134,15 +141,18 @@ fun TaskViewer(
                 containerColor = MaterialTheme.colorScheme.surfaceBright,
             ),
         modifier =
-            Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp).padding(bottom = 12.dp),
+        Modifier
+            .fillMaxSize()
+            .padding(horizontal = 12.dp)
+            .padding(bottom = 12.dp),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row {
@@ -228,7 +238,9 @@ fun Interval(timeSpan: Timespan) {
     ) {
         SectionTitleLabel("Interval")
         Row(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             DateAndTimeViewer(dateTime = timeSpan.start)
@@ -241,7 +253,9 @@ fun Interval(timeSpan: Timespan) {
 @Composable
 fun Dash() {
     Text(
-        modifier = Modifier.fillMaxHeight().padding(vertical = 12.dp),
+        modifier = Modifier
+            .fillMaxHeight()
+            .padding(vertical = 12.dp),
         textAlign = TextAlign.Center,
         fontWeight = FontWeight(500),
         fontSize = TextUnit(20f, TextUnitType.Sp),
@@ -281,7 +295,10 @@ fun SectionTitleLabel(label: String) {
 @Composable
 fun TaskMenu(onRemove: () -> Unit) {
     Box(
-        modifier = Modifier.fillMaxSize().padding(start = 10.dp).wrapContentSize(Alignment.TopStart),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(start = 10.dp)
+            .wrapContentSize(Alignment.TopStart),
     ) {
         var expanded by remember { mutableStateOf(false) }
         Icon(
