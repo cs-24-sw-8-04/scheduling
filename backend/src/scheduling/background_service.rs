@@ -60,11 +60,13 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
 
     let tasks = tasks
         .iter()
-        .map(|t| TaskForScheduler {
-            id: t.id,
-            timespan: Timespan::new_from_naive(t.timespan_start, t.timespan_end),
-            duration: t.duration,
-            effect: t.effect,
+        .map(|t| {
+            TaskForScheduler::new(
+                t.id,
+                Timespan::new_from_naive(t.timespan_start, t.timespan_end),
+                t.duration,
+                t.effect,
+            )
         })
         .collect();
 

@@ -34,6 +34,10 @@ pub struct Timespan {
 
 impl Timespan {
     pub fn new(start: DateTimeUtc, end: DateTimeUtc) -> Self {
+        assert!(
+            start <= end,
+            "The timespans' end time is before the start time."
+        );
         Timespan { start, end }
     }
 
@@ -41,10 +45,6 @@ impl Timespan {
         fn to_utc(date_time: NaiveDateTime) -> DateTimeUtc {
             Utc::from_utc_datetime(&Utc, &date_time)
         }
-
-        Timespan {
-            start: to_utc(start),
-            end: to_utc(end),
-        }
+        Timespan::new(to_utc(start), to_utc(end))
     }
 }
