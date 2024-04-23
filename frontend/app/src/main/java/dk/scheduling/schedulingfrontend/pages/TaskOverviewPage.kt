@@ -14,7 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Cancel
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.api.protocol.Event
 import dk.scheduling.schedulingfrontend.api.protocol.Timespan
+import dk.scheduling.schedulingfrontend.components.ConfirmAlertDialog
 import dk.scheduling.schedulingfrontend.components.DATE_AND_TIME_FORMAT
 import dk.scheduling.schedulingfrontend.components.DATE_FORMAT
 import dk.scheduling.schedulingfrontend.components.TIME_FORMAT
@@ -99,7 +100,6 @@ fun DeviceTaskCard(
     Card(
         modifier =
             Modifier
-                .fillMaxSize()
                 .padding(horizontal = 12.dp, vertical = 6.dp),
     ) {
         Text(
@@ -135,14 +135,17 @@ fun TaskViewer(
             ),
         modifier =
             Modifier
-                .fillMaxSize()
-                .padding(horizontal = 12.dp).padding(bottom = 12.dp),
+                .padding(horizontal = 12.dp)
+                .padding(bottom = 12.dp),
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Row(
-                modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
+                modifier =
+                    Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 10.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Row {
@@ -150,6 +153,7 @@ fun TaskViewer(
                     Interval(taskEvent.task.timespan)
                 }
                 TaskMenu(
+                    taskEvent = taskEvent,
                     onRemove = onRemove,
                 )
             }
@@ -228,7 +232,10 @@ fun Interval(timeSpan: Timespan) {
     ) {
         SectionTitleLabel("Interval")
         Row(
-            modifier = Modifier.fillMaxSize().padding(horizontal = 10.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 10.dp),
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             DateAndTimeViewer(dateTime = timeSpan.start)
@@ -241,7 +248,10 @@ fun Interval(timeSpan: Timespan) {
 @Composable
 fun Dash() {
     Text(
-        modifier = Modifier.fillMaxHeight().padding(vertical = 12.dp),
+        modifier =
+            Modifier
+                .fillMaxHeight()
+                .padding(vertical = 12.dp),
         textAlign = TextAlign.Center,
         fontWeight = FontWeight(500),
         fontSize = TextUnit(20f, TextUnitType.Sp),
@@ -279,9 +289,29 @@ fun SectionTitleLabel(label: String) {
 }
 
 @Composable
-fun TaskMenu(onRemove: () -> Unit) {
+fun TaskMenu(
+    taskEvent: TaskEvent,
+    onRemove: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    var openConfirmDialog by remember { mutableStateOf(false) }
+
+    ConfirmAlertDialog(
+        openConfirmDialog = openConfirmDialog,
+        setOpenConfirmDialog = { openConfirmDialog = it },
+        title = "Cancel Task",
+        text = "Want to cancel the task planned to be conducted at ",
+        confirmLabel = "Yes",
+        onConfirm = { onRemove() },
+        dismissLabel = "No",
+    )
+
     Box(
-        modifier = Modifier.fillMaxSize().padding(start = 10.dp).wrapContentSize(Alignment.TopStart),
+        modifier =
+            Modifier
+                .fillMaxSize()
+                .padding(start = 10.dp)
+                .wrapContentSize(Alignment.TopStart),
     ) {
         var expanded by remember { mutableStateOf(false) }
         Icon(
@@ -294,21 +324,54 @@ fun TaskMenu(onRemove: () -> Unit) {
             onDismissRequest = { expanded = false },
         ) {
             DropdownMenuItem(
-                text = { Text("Remove") },
+                text = { Text("Cancel") },
                 onClick = {
                     // Handle remove!
                     expanded = false
-                    onRemove()
+                    openConfirmDialog = true
                 },
                 leadingIcon = {
                     Icon(
-                        Icons.Outlined.Delete,
-                        contentDescription = "Remove task",
+                        Icons.Outlined.Cancel,
+                        contentDescription = "Cancel task",
                     )
                 },
             )
         }
     }
+}
+
+@Composable
+fun CancelTaskMenuItem(
+    taskEvent: TaskEvent,
+    onRemoveTask: () -> Unit,
+    hideDropDownMenu: () -> Unit,
+) {
+    var openConfirmDialog by remember { mutableStateOf(false) }
+
+    ConfirmAlertDialog(
+        openConfirmDialog = openConfirmDialog,
+        setOpenConfirmDialog = { openConfirmDialog = it },
+        title = "Cancel Task",
+        text = "Want to cancel the task planned to be conducted at ",
+        confirmLabel = "Cancel",
+        onConfirm = { onRemoveTask() },
+        dismissLabel = "Keep",
+    )
+
+    DropdownMenuItem(
+        text = { Text("Cancel") },
+        onClick = {
+            // Handle remove!
+            openConfirmDialog = true
+        },
+        leadingIcon = {
+            Icon(
+                Icons.Outlined.Cancel,
+                contentDescription = "Cancel task",
+            )
+        },
+    )
 }
 
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
