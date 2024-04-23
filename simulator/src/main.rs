@@ -97,7 +97,29 @@ async fn run_scheduler(client: &mut HttpClient) -> Result<(), anyhow::Error> {
 #[cfg(test)]
 mod tests {
     use crate::generate_data;
-    use crate::http_client::make_client;
+    use crate::http_client::HttpClient;
+
+    use http::{header::USER_AGENT, HeaderValue};
+    use hyper_util::{client::legacy::Client, rt::TokioExecutor};
+    use tower::ServiceBuilder;
+    use tower_http::{
+        classify::StatusInRangeAsFailures, decompression::DecompressionLayer,
+        set_header::SetRequestHeaderLayer, trace::TraceLayer,
+    };
+
+    pub fn make_client() -> HttpClient {
+        let client = Client::builder(TokioExecutor::new()).build_http();
+        ServiceBuilder::new()
+            .layer(TraceLayer::new(
+                StatusInRangeAsFailures::new(400..=599).into_make_classifier(),
+            ))
+            .layer(SetRequestHeaderLayer::overriding(
+                USER_AGENT,
+                HeaderValue::from_static("scheduling-simulator"),
+            ))
+            .layer(DecompressionLayer::new())
+            .service(client)
+    }
 
     #[tokio::test]
     async fn generate_users_test() {

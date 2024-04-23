@@ -150,6 +150,13 @@ fn find_best_event(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usi
     Ok(timeslot_start + greatest_index)
 }
 
+/// # Example
+///
+/// let timeslots = 2;
+/// let graph_values = [1.0..=5.0];
+/// let res = adjust_graph_for_task_duration(timeslots, graph_values);
+///
+/// assert_eq!(res, [3.0, 5.0, 7.0, 9.0]);
 fn adjust_graph_for_task_duration(timeslots: usize, graph_values: &[f64]) -> Vec<f64> {
     assert_ne!(timeslots, 0, "Check that your duration is non-zero");
     graph_values
