@@ -1,7 +1,5 @@
 use http::HeaderValue;
-use hyper_util::
-    client::legacy::{connect::HttpConnector, Client}
-;
+use hyper_util::client::legacy::{connect::HttpConnector, Client};
 use tower_http::{
     classify::{SharedClassifier, StatusInRangeAsFailures},
     decompression::Decompression,
