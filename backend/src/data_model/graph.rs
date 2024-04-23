@@ -1,6 +1,13 @@
 use chrono::Duration;
 use protocol::time::DateTimeUtc;
 
+/// #### Important: end_time is non-inclusive
+/// ### Example
+/// time_delta = Duration::hours(4)
+///
+/// values = \[1, 2, 3, 4, 5, 6\]
+///
+/// This means that the values represent \[[0,4), [4, 8), [8, 12), [12, 16), [16, 20), [20, 24)\]
 #[derive(Clone)]
 pub struct DiscreteGraph {
     values: Vec<f64>,
@@ -16,14 +23,11 @@ impl DiscreteGraph {
             values,
             time_delta,
             start_time,
-            end_time: start_time + time_delta * len,
+            end_time: start_time + time_delta * len - Duration::microseconds(1),
         }
     }
     pub fn get_values(&self) -> &Vec<f64> {
         &self.values
-    }
-    pub fn get_values_mut(&mut self) -> &mut Vec<f64> {
-        self.values.as_mut()
     }
     pub fn get_time_delta(&self) -> Duration {
         self.time_delta
