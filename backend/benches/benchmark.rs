@@ -49,15 +49,15 @@ impl TaskFactory {
 
             let effect = rng.gen_range(1.0..=max_effect);
 
-            res.push(TaskForScheduler {
-                id: self.get_new_task_id(),
-                timespan: Timespan {
+            res.push(TaskForScheduler::new(
+                self.get_new_task_id(),
+                Timespan {
                     start: start_time,
                     end: end_time,
                 },
-                duration: duration.into(),
+                duration.into(),
                 effect,
-            });
+            ));
         }
         res
     }
