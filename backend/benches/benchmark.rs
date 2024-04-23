@@ -64,7 +64,7 @@ fn naive_scheduling_benchmark(c: &mut Criterion) {
     let tasks = TaskFactory::new().make_tasks(amount_of_tasks, time_now);
     let discrete_graph = DiscreteGraph::new(
         [0.0, 2.0, 4.0, 6.0, 5.0, 2.0, 0.0].to_vec(),
-        TimeDelta::hours(4), // The length of the vecotr multipled by this duration most match the timespan from make_tasks
+        TimeDelta::hours(4), // The length of the vector -1, multipled by this duration most match the timespan from make_tasks
         time_now,
     );
     let naive_scheduler_algorithm = NaiveSchedulerAlgorithm::new();
@@ -84,7 +84,7 @@ fn global_scheduling_benchmark(c: &mut Criterion) {
     let tasks = TaskFactory::new().make_tasks(amount_of_tasks, time_now);
     let discrete_graph = DiscreteGraph::new(
         [0.0, 2.0, 4.0, 6.0, 5.0, 2.0, 0.0].to_vec(),
-        TimeDelta::hours(4), // The length of the vecotr multipled by this duration most match the timespan from make_tasks
+        TimeDelta::hours(4), // The length of the vector -1, multipled by this duration most match the timespan from make_tasks
         time_now,
     );
     let global_scheduler_algorithm = GlobalSchedulerAlgorithm::new();
