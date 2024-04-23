@@ -7,6 +7,7 @@ import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.HowToReg
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Task
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class Page(val route: String, val icon: ImageVector, val description: String) {
@@ -15,6 +16,8 @@ sealed class Page(val route: String, val icon: ImageVector, val description: Str
     data object SignUpPage : Page("SignUp", Icons.Default.HowToReg, "Sign Up")
 
     data object Home : Page("Home", Icons.Default.Home, "Home")
+
+    data object TaskOverview : Page("TaskOverview", Icons.Default.Task, "Tasks")
 
     data object ApiButton : Page("ApiButton", Icons.Default.Favorite, "Api Button")
 

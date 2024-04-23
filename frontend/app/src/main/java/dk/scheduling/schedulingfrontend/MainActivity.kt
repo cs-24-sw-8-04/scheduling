@@ -22,9 +22,11 @@ import dk.scheduling.schedulingfrontend.pages.HomePage
 import dk.scheduling.schedulingfrontend.pages.LoginPage
 import dk.scheduling.schedulingfrontend.pages.Page
 import dk.scheduling.schedulingfrontend.pages.SignUpPage
+import dk.scheduling.schedulingfrontend.pages.TaskOverviewPage
 import dk.scheduling.schedulingfrontend.repositories.account.AccountRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.runBlocking
+import testdata.deviceTaskTestData
 import testdata.testDeviceOverview
 
 class MainActivity : ComponentActivity() {
@@ -41,6 +43,7 @@ class MainActivity : ComponentActivity() {
                 val pages =
                     listOf(
                         Page.Home,
+                        Page.TaskOverview,
                         Page.ApiButton,
                         Page.CreateTaskPage,
                         Page.Account,
@@ -75,6 +78,9 @@ class MainActivity : ComponentActivity() {
                             )
                         }
                         composable(Page.Home.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
+                        composable(
+                            Page.TaskOverview.route,
+                        ) { TaskOverviewPage(modifier = Modifier, getDeviceTasks = { deviceTaskTestData() }) }
                         composable(Page.ApiButton.route) { ApiButton() }
                         composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, handleSubmission = {}, handleCancellation = {}) }
                         composable(Page.Account.route) {
@@ -98,6 +104,8 @@ class AppState(
         listOf(
             Page.Home,
             Page.ApiButton,
+            Page.TaskOverview,
+            Page.Account,
         ).map { it.route }
 
     val shouldShowBottomBar: Boolean
