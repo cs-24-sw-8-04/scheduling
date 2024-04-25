@@ -54,5 +54,3 @@ data class TaskForm(
         return "$hourStr:$minuteStr"
     }
 }
-
-data class Status(val isValid: Boolean, val msg: String)
