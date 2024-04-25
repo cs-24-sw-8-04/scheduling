@@ -16,7 +16,7 @@ sealed class Page(val route: String, val icon: ImageVector, val description: Str
 
     data object SignUpPage : Page("SignUp", Icons.Default.HowToReg, "Sign Up")
 
-    data object Home : Page("Home", Icons.Default.Home, "Home")
+    data object DeviceOverview : Page("DeviceOverview", Icons.Default.Home, "Device")
 
     data object CreateDevicePage : Page("CreateDevicePage", Icons.Default.Add, "Device")
 

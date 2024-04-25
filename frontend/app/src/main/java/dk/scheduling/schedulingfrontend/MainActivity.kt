@@ -48,12 +48,12 @@ class MainActivity : ComponentActivity() {
 
                 val pages =
                     listOf(
-                        Page.Home,
+                        Page.DeviceOverview,
                         Page.TaskOverview,
                         Page.Account,
                     )
 
-                val startDestinationPage = if (runBlocking { accountRepo.isLoggedIn() }) Page.Home else Page.LoginPage
+                val startDestinationPage = if (runBlocking { accountRepo.isLoggedIn() }) Page.DeviceOverview else Page.LoginPage
 
                 Scaffold(
                     bottomBar = {
@@ -64,7 +64,7 @@ class MainActivity : ComponentActivity() {
                     floatingActionButton = {
                         val linkedPages =
                             mutableListOf(
-                                Pair(Page.Home, Page.CreateDevicePage),
+                                Pair(Page.DeviceOverview, Page.CreateDevicePage),
                                 Pair(Page.TaskOverview, Page.CreateTaskPage),
                             )
 
@@ -82,22 +82,22 @@ class MainActivity : ComponentActivity() {
                         composable(Page.LoginPage.route) {
                             LoginPage(
                                 accountRepo = accountRepo,
-                                navigateOnValidLogin = { appState.navHostController.navigate(Page.Home.route) },
+                                navigateOnValidLogin = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                                 navigateToSignUpPage = { appState.navHostController.navigate(Page.SignUpPage.route) },
                             )
                         }
                         composable(Page.SignUpPage.route) {
                             SignUpPage(
                                 accountRepo = accountRepo,
-                                navigateOnValidSignUp = { appState.navHostController.navigate(Page.Home.route) },
+                                navigateOnValidSignUp = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                                 navigateToLoginPage = { appState.navHostController.navigate(Page.LoginPage.route) },
                             )
                         }
-                        composable(Page.Home.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
+                        composable(Page.DeviceOverview.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
                         composable(Page.CreateDevicePage.route) {
                             CreateDevicePage(
-                                navigateOnValidCreation = { appState.navHostController.navigate(Page.Home.route) },
-                                navigateOnCancelCreation = { appState.navHostController.navigate(Page.Home.route) },
+                                navigateOnValidCreation = { appState.navHostController.navigate(Page.DeviceOverview.route) },
+                                navigateOnCancelCreation = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                             )
                         }
                         composable(
@@ -123,7 +123,7 @@ class AppState(
 ) {
     private val bottomBarPages =
         listOf(
-            Page.Home,
+            Page.DeviceOverview,
             Page.TaskOverview,
             Page.Account,
         ).map { it.route }
