@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.window.DialogProperties
+import dk.scheduling.schedulingfrontend.model.Status
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import java.time.Instant
 import java.time.LocalDateTime
@@ -99,44 +100,41 @@ fun StandardDateRangePicker(
     }
 }
 
-class DateRange {
-    constructor(startTime: Long, endTime: Long) {
+data class DateRange(val startTime: Long?, val endTime: Long?) {
+    fun rangeStart(): LocalDateTime? {
+        if (startTime == null) {
+            return null
+        }
         val startInstant = Instant.ofEpochMilli(startTime)
-        rangeStart = LocalDateTime.ofInstant(startInstant, ZoneId.systemDefault())
-        val endInstant = Instant.ofEpochMilli(endTime)
-        rangeEnd = LocalDateTime.ofInstant(endInstant, ZoneId.systemDefault())
-    }
-    constructor() {
-        rangeStart = null
-        rangeEnd = null
+        return LocalDateTime.ofInstant(startInstant, ZoneId.systemDefault())
     }
 
-    private val rangeStart: LocalDateTime?
-    private val rangeEnd: LocalDateTime?
+    fun rangeEnd(): LocalDateTime? {
+        if (endTime == null) {
+            return null
+        }
+        val endInstant = Instant.ofEpochMilli(endTime)
+        return LocalDateTime.ofInstant(endInstant, ZoneId.systemDefault())
+    }
+
     private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
-    fun isValidRange(): Boolean {
-        return rangeStart != null && rangeEnd != null && (rangeStart.isBefore(rangeEnd) || rangeStart.isEqual(rangeEnd))
+    fun isInitialized(): Boolean {
+        return !(rangeStart() == null && rangeEnd() == null)
     }
 
-    fun getStartDate(): String {
-        return if (rangeStart != null) rangeStart.format(formatter) else "No start date"
-    }
-
-    fun getEndDate(): String {
-        return if (rangeEnd != null && rangeStart != null) {
-            if (rangeStart.isBefore(rangeEnd) || rangeStart.isEqual(rangeEnd)) {
-                rangeEnd.format(formatter)
-            } else {
-                "Start date must be before end date"
-            }
+    fun status(): Status {
+        return if (!isInitialized()) {
+            Status(false, "No interval selected")
+        } else if (rangeStart() == null) {
+            Status(false, "No start date")
+        } else if (rangeEnd() == null) {
+            Status(false, "No end date")
+        } else if (!(rangeStart()!!.isBefore(rangeEnd()) || rangeStart()!!.isEqual(rangeEnd()))) {
+            Status(false, "Start date must be before end date")
         } else {
-            "No end date"
+            Status(true, "${rangeStart()!!.format(formatter)}:${rangeEnd()!!.format(formatter)}")
         }
-    }
-
-    fun print(): String {
-        return getStartDate() + ":" + getEndDate()
     }
 }
 
@@ -152,8 +150,6 @@ fun PickerPreviewLightMode() {
             passingDate = { datePickerState.value = it },
             openDialog = openDialog.value,
         )
-        val dateRange = datePickerState.value.print()
-        val dateMsg = if (datePickerState.value.isValidRange()) "no interval selected." else dateRange
-        Text(text = "Time: $dateMsg")
+        Text(text = "Time: ${datePickerState.value.status().msg}")
     }
 }

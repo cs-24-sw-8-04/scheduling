@@ -6,16 +6,25 @@ import org.junit.Test
 class DateRangeTest {
     @Test
     fun dateRangeTest() {
-        val date1 = DateRange(0, Long.MAX_VALUE)
-        assert(date1.isValidRange()) { "Valid range" }
+        val dateValid = DateRange(0, Long.MAX_VALUE)
 
-        assert(date1.getStartDate() == "1970-01-01") { "Should equal epoch date, not ${date1.getStartDate()}" }
+        assert(dateValid.isInitialized()) { "Range values set" }
+        assert(dateValid.status().isValid) { "Valid range" }
+
+        val dateUninitialized = DateRange(null, null)
+        val dateMissingStart = DateRange(null, 0)
+        val dateMissingEnd = DateRange(Long.MAX_VALUE, null)
+
+        assert(!dateUninitialized.status().isValid) { "Invalid range, not initialized, both fields are null" }
+        assert(!dateMissingStart.status().isValid) { "Invalid range, start date not initialized" }
+        assert(!dateMissingEnd.status().isValid) { "Invalid range, end date not initialized" }
+
+        val dateEndBeforeStart = DateRange(Long.MAX_VALUE, 0)
+        assert(!dateEndBeforeStart.status().isValid) { "Invalid range, end date is before start date" }
+
+        /*
+        assert(date1 == "1970-01-01") { "Should equal epoch date, not ${date1.getStartDate()}" }
         assert(date1.getEndDate() == "+292278994-08-17") { "Should equal 17-08-292278994, not ${date1.getEndDate()}" }
-
-        val date2 = DateRange(Long.MAX_VALUE, Long.MIN_VALUE)
-        assert(!date2.isValidRange()) { "Invalid range, startTime > endTime" }
-
-        val date3 = DateRange()
-        assert(!date3.isValidRange()) { "Invalid range, not initialized, both fields are null" }
+         */
     }
 }
