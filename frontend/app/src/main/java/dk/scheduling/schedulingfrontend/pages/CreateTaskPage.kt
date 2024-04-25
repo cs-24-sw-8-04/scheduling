@@ -73,7 +73,6 @@ fun CreateTaskPage(
                     ),
                 )
             }
-        // var str by remember { mutableStateOf("") }
 
         val options = listOf("Washer", "Dryer", "Toaster")
         var selectedItem by remember { mutableStateOf(options[0]) }
