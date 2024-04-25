@@ -6,7 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -149,9 +149,10 @@ fun FloatingActionButtonLinkToCreatePage(
 
     val linkedPage = linkedPages.find { it.first.route == currentDestination?.route }
     if (linkedPage != null) {
-        FloatingActionButton(onClick = { navController.navigate(linkedPage.second.route) }) {
-            Icon(Icons.Default.Add, contentDescription = "Add")
-            Text(text = linkedPage.second.description)
-        }
+        ExtendedFloatingActionButton(
+            onClick = { navController.navigate(linkedPage.second.route) },
+            icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
+            text = { Text(text = linkedPage.second.description) },
+        )
     }
 }
