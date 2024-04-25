@@ -18,13 +18,13 @@ sealed class Page(val route: String, val icon: ImageVector, val description: Str
 
     data object Home : Page("Home", Icons.Default.Home, "Home")
 
-    data object CreateDevicePage : Page("CreateDevicePage", Icons.Default.Add, "Create Device")
+    data object CreateDevicePage : Page("CreateDevicePage", Icons.Default.Add, "Device")
 
     data object TaskOverview : Page("TaskOverview", Icons.Default.Task, "Tasks")
 
     data object ApiButton : Page("ApiButton", Icons.Default.Favorite, "Api Button")
 
-    data object CreateTaskPage : Page("Settings", Icons.Default.Settings, "Settings")
+    data object CreateTaskPage : Page("CreateTaskPage", Icons.Default.Settings, "Task")
 
     data object Account : Page("Account", Icons.Default.AccountCircle, "Account")
 }

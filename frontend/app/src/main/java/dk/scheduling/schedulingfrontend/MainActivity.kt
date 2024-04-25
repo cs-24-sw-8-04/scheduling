@@ -9,6 +9,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -21,7 +22,6 @@ import androidx.navigation.compose.rememberNavController
 import dk.scheduling.schedulingfrontend.api.getApiClient
 import dk.scheduling.schedulingfrontend.datasources.AccountDataSource
 import dk.scheduling.schedulingfrontend.pages.AccountPage
-import dk.scheduling.schedulingfrontend.pages.ApiButton
 import dk.scheduling.schedulingfrontend.pages.CreateDevicePage
 import dk.scheduling.schedulingfrontend.pages.CreateTaskPage
 import dk.scheduling.schedulingfrontend.pages.HomePage
@@ -62,7 +62,7 @@ class MainActivity : ComponentActivity() {
                         }
                     },
                     floatingActionButton = {
-                        val pairs =
+                        val linkedPages =
                             mutableListOf(
                                 Pair(Page.Home, Page.CreateDevicePage),
                                 Pair(Page.TaskOverview, Page.CreateTaskPage),
@@ -70,7 +70,7 @@ class MainActivity : ComponentActivity() {
 
                         FloatingActionButtonLinkToCreatePage(
                             navController = appState.navHostController,
-                            pairs = pairs,
+                            linkedPages = linkedPages,
                         )
                     },
                 ) { innerPadding ->
@@ -121,17 +121,16 @@ class MainActivity : ComponentActivity() {
 class AppState(
     val navHostController: NavHostController,
 ) {
-    private val routes =
+    private val bottomBarPages =
         listOf(
             Page.Home,
-            Page.ApiButton,
             Page.TaskOverview,
             Page.Account,
         ).map { it.route }
 
     val shouldShowBottomBar: Boolean
         @Composable get() =
-            navHostController.currentBackStackEntryAsState().value?.destination?.route in routes
+            navHostController.currentBackStackEntryAsState().value?.destination?.route in bottomBarPages
 }
 
 @Composable
@@ -143,15 +142,16 @@ fun rememberAppState(navHostController: NavHostController = rememberNavControlle
 @Composable
 fun FloatingActionButtonLinkToCreatePage(
     navController: NavHostController,
-    pairs: List<Pair<Page, Page>>,
+    linkedPages: List<Pair<Page, Page>>,
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
-    val pair = pairs.find { it.first.route == currentDestination?.route }
-    if (pair != null) {
-        FloatingActionButton(onClick = { navController.navigate(pair.second.route) }) {
+    val linkedPage = linkedPages.find { it.first.route == currentDestination?.route }
+    if (linkedPage != null) {
+        FloatingActionButton(onClick = { navController.navigate(linkedPage.second.route) }) {
             Icon(Icons.Default.Add, contentDescription = "Add")
+            Text(text = linkedPage.second.description)
         }
     }
 }
