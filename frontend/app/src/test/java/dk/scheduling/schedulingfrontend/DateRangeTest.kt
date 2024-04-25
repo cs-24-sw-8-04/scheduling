@@ -21,10 +21,5 @@ class DateRangeTest {
 
         val dateEndBeforeStart = DateRange(Long.MAX_VALUE, 0)
         assert(!dateEndBeforeStart.status().isValid) { "Invalid range, end date is before start date" }
-
-        /*
-        assert(date1 == "1970-01-01") { "Should equal epoch date, not ${date1.getStartDate()}" }
-        assert(date1.getEndDate() == "+292278994-08-17") { "Should equal 17-08-292278994, not ${date1.getEndDate()}" }
-         */
     }
 }
