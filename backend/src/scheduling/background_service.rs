@@ -1,7 +1,5 @@
-use std::time::Duration;
-
 use anyhow::Result;
-use chrono::{TimeDelta, Utc};
+use chrono::{Duration, Utc};
 use protocol::{
     tasks::TaskId,
     time::{Milliseconds, Timespan},
@@ -36,7 +34,7 @@ pub async fn background_service<F, TAlg>(
             break;
         }
 
-        let debounce = sleep(Duration::from_secs(5 * 60));
+        let debounce = sleep(std::time::Duration::from_secs(5 * 60));
 
         select! {
             _ = debounce => {
@@ -113,7 +111,7 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
         1393.0, 1271.0, 1044.0, 754.0, 445.0, 154.0, 10.0, 0.0, 0.0, 0.0,
     ];
 
-    let mut graph = DiscreteGraph::new(values, TimeDelta::hours(1), Utc::now());
+    let mut graph = DiscreteGraph::new(values, Duration::hours(1), Utc::now());
 
     let events = algorithm.schedule(&mut graph, tasks)?;
 
