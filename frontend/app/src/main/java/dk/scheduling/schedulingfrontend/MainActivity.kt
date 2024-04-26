@@ -4,8 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -16,7 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import dk.scheduling.schedulingfrontend.api.getApiClient
 import dk.scheduling.schedulingfrontend.datasources.AccountDataSource
 import dk.scheduling.schedulingfrontend.pages.AccountPage
-import dk.scheduling.schedulingfrontend.pages.ApiButton
+import dk.scheduling.schedulingfrontend.pages.CreateDevicePage
 import dk.scheduling.schedulingfrontend.pages.CreateTaskPage
 import dk.scheduling.schedulingfrontend.pages.HomePage
 import dk.scheduling.schedulingfrontend.pages.LoginPage
@@ -42,20 +48,30 @@ class MainActivity : ComponentActivity() {
 
                 val pages =
                     listOf(
-                        Page.Home,
+                        Page.DeviceOverview,
                         Page.TaskOverview,
-                        Page.ApiButton,
-                        Page.CreateTaskPage,
                         Page.Account,
                     )
 
-                val startDestinationPage = if (runBlocking { accountRepo.isLoggedIn() }) Page.Home else Page.LoginPage
+                val startDestinationPage = if (runBlocking { accountRepo.isLoggedIn() }) Page.DeviceOverview else Page.LoginPage
 
                 Scaffold(
                     bottomBar = {
                         if (appState.shouldShowBottomBar) {
                             BottomNavigationBar(navController = appState.navHostController, pages = pages)
                         }
+                    },
+                    floatingActionButton = {
+                        val linkedPages =
+                            mutableListOf(
+                                Pair(Page.DeviceOverview, Page.CreateDevicePage),
+                                Pair(Page.TaskOverview, Page.CreateTaskPage),
+                            )
+
+                        FloatingActionButtonLinkToCreatePage(
+                            navController = appState.navHostController,
+                            linkedPages = linkedPages,
+                        )
                     },
                 ) { innerPadding ->
                     NavHost(
@@ -66,22 +82,27 @@ class MainActivity : ComponentActivity() {
                         composable(Page.LoginPage.route) {
                             LoginPage(
                                 accountRepo = accountRepo,
-                                navigateOnValidLogin = { appState.navHostController.navigate(Page.Home.route) },
+                                navigateOnValidLogin = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                                 navigateToSignUpPage = { appState.navHostController.navigate(Page.SignUpPage.route) },
                             )
                         }
                         composable(Page.SignUpPage.route) {
                             SignUpPage(
                                 accountRepo = accountRepo,
-                                navigateOnValidSignUp = { appState.navHostController.navigate(Page.Home.route) },
+                                navigateOnValidSignUp = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                                 navigateToLoginPage = { appState.navHostController.navigate(Page.LoginPage.route) },
                             )
                         }
-                        composable(Page.Home.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
+                        composable(Page.DeviceOverview.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
+                        composable(Page.CreateDevicePage.route) {
+                            CreateDevicePage(
+                                navigateOnValidCreation = { appState.navHostController.navigate(Page.DeviceOverview.route) },
+                                navigateOnCancelCreation = { appState.navHostController.navigate(Page.DeviceOverview.route) },
+                            )
+                        }
                         composable(
                             Page.TaskOverview.route,
                         ) { TaskOverviewPage(modifier = Modifier, getDeviceTasks = { deviceTaskTestData() }) }
-                        composable(Page.ApiButton.route) { ApiButton() }
                         composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, handleSubmission = {}, handleCancellation = {}) }
                         composable(Page.Account.route) {
                             AccountPage(
@@ -100,17 +121,16 @@ class MainActivity : ComponentActivity() {
 class AppState(
     val navHostController: NavHostController,
 ) {
-    private val routes =
+    private val bottomBarPages =
         listOf(
-            Page.Home,
-            Page.ApiButton,
+            Page.DeviceOverview,
             Page.TaskOverview,
             Page.Account,
         ).map { it.route }
 
     val shouldShowBottomBar: Boolean
         @Composable get() =
-            navHostController.currentBackStackEntryAsState().value?.destination?.route in routes
+            navHostController.currentBackStackEntryAsState().value?.destination?.route in bottomBarPages
 }
 
 @Composable
@@ -118,3 +138,21 @@ fun rememberAppState(navHostController: NavHostController = rememberNavControlle
     remember(navHostController) {
         AppState(navHostController)
     }
+
+@Composable
+fun FloatingActionButtonLinkToCreatePage(
+    navController: NavHostController,
+    linkedPages: List<Pair<Page, Page>>,
+) {
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
+
+    val linkedPage = linkedPages.find { it.first.route == currentDestination?.route }
+    if (linkedPage != null) {
+        ExtendedFloatingActionButton(
+            onClick = { navController.navigate(linkedPage.second.route) },
+            icon = { Icon(Icons.Default.Add, contentDescription = "Add") },
+            text = { Text(text = linkedPage.second.description) },
+        )
+    }
+}
