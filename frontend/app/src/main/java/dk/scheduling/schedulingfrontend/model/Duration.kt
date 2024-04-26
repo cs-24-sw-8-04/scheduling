@@ -1,7 +1,7 @@
 package dk.scheduling.schedulingfrontend.model
 
 data class Duration(val value: String) {
-    fun initializedAndInvalid(): Boolean {
+    fun isInitializedAndInvalid(): Boolean {
         return isInitialized() && !status().isValid
     }
 

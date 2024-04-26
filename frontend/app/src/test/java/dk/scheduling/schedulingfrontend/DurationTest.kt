@@ -14,19 +14,19 @@ class DurationTest {
 
     @Test
     fun initializedAndValid() {
-        assert(!durationValid.initializedAndInvalid()) { "Valid, 1" }
+        assert(!durationValid.isInitializedAndInvalid()) { "Valid, 1" }
 
-        assert(!durationUninitialized.initializedAndInvalid()) { "Valid, uninitialized" }
+        assert(!durationUninitialized.isInitializedAndInvalid()) { "Valid, uninitialized" }
 
-        assert(!durationWhitespace.initializedAndInvalid()) { "Valid, uninitialized" }
+        assert(!durationWhitespace.isInitializedAndInvalid()) { "Valid, uninitialized" }
 
-        assert(durationContainsWhitespace.initializedAndInvalid()) { "Invalid, no whitespace" }
+        assert(durationContainsWhitespace.isInitializedAndInvalid()) { "Invalid, no whitespace" }
 
-        assert(durationZero.initializedAndInvalid()) { "Invalid, duration cannot be 0" }
+        assert(durationZero.isInitializedAndInvalid()) { "Invalid, duration cannot be 0" }
 
-        assert(durationNegative.initializedAndInvalid()) { "Invalid, duration cannot be negative" }
+        assert(durationNegative.isInitializedAndInvalid()) { "Invalid, duration cannot be negative" }
 
-        assert(durationContainsNonNumeric.initializedAndInvalid()) { "Invalid, duration can only contain numbers" }
+        assert(durationContainsNonNumeric.isInitializedAndInvalid()) { "Invalid, duration can only contain numbers" }
     }
 
     @Test

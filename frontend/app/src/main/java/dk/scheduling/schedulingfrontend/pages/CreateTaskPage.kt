@@ -94,7 +94,7 @@ fun CreateTaskPage(
             label = { Text("Duration (min.)") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            isError = task.duration.initializedAndInvalid(),
+            isError = task.duration.isInitializedAndInvalid(),
         )
 
         // start date & end date
