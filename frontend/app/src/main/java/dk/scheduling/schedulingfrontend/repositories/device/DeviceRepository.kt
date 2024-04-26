@@ -13,12 +13,12 @@ import dk.scheduling.schedulingfrontend.repositories.account.AccountRepository
 class DeviceRepository(
     private val service: ApiService,
     private val accountRepository: AccountRepository,
-) {
+) : IDeviceRepository {
     private suspend fun getAuthToken(): String {
         return accountRepository.getAuthToken().toString()
     }
 
-    suspend fun getAllDevices(): List<Device> {
+    override suspend fun getAllDevices(): List<Device> {
         val authToken = getAuthToken()
         val response = service.getAllDevices(authToken)
         if (response.isSuccessful) {
@@ -31,7 +31,7 @@ class DeviceRepository(
         throw UnsuccessfulRequestException("The server couldn't provide a list of devices", response = response.raw())
     }
 
-    suspend fun createDevice(
+    override suspend fun createDevice(
         name: String,
         effect: Double,
     ) {
@@ -47,9 +47,9 @@ class DeviceRepository(
         throw CreationFailedException("The server couldn't create a device", response = response.raw())
     }
 
-    suspend fun deleteDevice(taskId: Long) {
+    override suspend fun deleteDevice(deviceId: Long) {
         val authToken = getAuthToken()
-        val response = service.deleteDevice(authToken, taskId)
+        val response = service.deleteDevice(authToken, deviceId)
         if (response.isSuccessful) {
             return
         }
