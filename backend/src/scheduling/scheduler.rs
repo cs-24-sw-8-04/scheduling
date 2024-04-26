@@ -27,11 +27,13 @@ impl AllPermutationsAlgorithm {
     }
 }
 
+#[allow(clippy::new_without_default)]
 impl GlobalSchedulerAlgorithm {
     pub fn new() -> Self {
         GlobalSchedulerAlgorithm
     }
 }
+#[allow(clippy::new_without_default)]
 impl NaiveSchedulerAlgorithm {
     pub fn new() -> Self {
         NaiveSchedulerAlgorithm
@@ -102,11 +104,13 @@ impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
         tasks: Vec<TaskForScheduler>,
     ) -> Result<Vec<UnpublishedEvent>> {
         let mut events: Vec<UnpublishedEvent> = Vec::new();
+        let initial_graph = graph.clone();
         for task in &tasks {
-            events.push(make_unpublished_event(
+            events.push(make_unpublished_event_and_remove_from_graph(
                 graph,
                 task,
-                find_best_event(task, graph)?.try_into()?,
+                find_best_event(task, &initial_graph)?,
+                tasks_duration_in_graph_timeslots(task, &initial_graph)?,
             )?);
         }
 
@@ -164,16 +168,6 @@ fn adjust_graph_for_task_duration(timeslots: usize, graph_values: &[f64]) -> Vec
         .windows(timeslots)
         .map(|window| window.iter().sum())
         .collect()
-}
-fn make_unpublished_event(
-    graph: &DiscreteGraph,
-    task: &TaskForScheduler,
-    timeslot: i32,
-) -> Result<UnpublishedEvent> {
-    Ok(UnpublishedEvent {
-        task_id: task.id,
-        start_time: graph.get_start_time() + graph.get_time_delta() * timeslot,
-    })
 }
 
 /// Same as add_event, but removes the energy used by the event from the [DiscreteGraph].values
