@@ -1,22 +1,17 @@
-package dk.scheduling.schedulingfrontend.repositories.task
+package dk.scheduling.schedulingfrontend.repositories.overviews
 
 import dk.scheduling.schedulingfrontend.model.DeviceOverview
 import dk.scheduling.schedulingfrontend.model.DeviceTask
 import dk.scheduling.schedulingfrontend.model.TaskEvent
 import dk.scheduling.schedulingfrontend.repositories.device.DeviceRepository
 import dk.scheduling.schedulingfrontend.repositories.event.EventRepository
-
-interface IOverviewRepository {
-    suspend fun getDeviceOverview(): List<DeviceOverview>
-
-    suspend fun getDeviceTasks(): List<DeviceTask>
-}
+import dk.scheduling.schedulingfrontend.repositories.task.TaskRepository
 
 class OverviewRepository(
     private val deviceRepository: DeviceRepository,
     private val taskRepository: TaskRepository,
     private val eventRepository: EventRepository,
-) : IOverviewRepository {
+) : IOverviewsRepository {
     override suspend fun getDeviceOverview(): List<DeviceOverview> {
         val deviceOverviews: MutableList<DeviceOverview> = mutableListOf()
 

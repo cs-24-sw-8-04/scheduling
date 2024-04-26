@@ -1,3 +1,3 @@
 package dk.scheduling.schedulingfrontend.exceptions
 
-class UnauthorizedException(s: String, authToken: String) : Throwable()
+class UnauthorizedException(message: String, val authToken: String) : Throwable(message)
