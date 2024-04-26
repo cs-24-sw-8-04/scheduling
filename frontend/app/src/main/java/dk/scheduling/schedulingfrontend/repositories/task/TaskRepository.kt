@@ -14,12 +14,12 @@ import dk.scheduling.schedulingfrontend.repositories.account.AccountRepository
 class TaskRepository(
     private val service: ApiService,
     private val accountRepository: AccountRepository,
-) {
+) : ITaskRepository {
     private suspend fun getAuthToken(): String {
         return accountRepository.getAuthToken().toString()
     }
 
-    suspend fun getAllTasks(): List<Task> {
+    override suspend fun getAllTasks(): List<Task> {
         val authToken = getAuthToken()
         val response = service.getAllTasks(authToken)
         if (response.isSuccessful) {
@@ -32,7 +32,7 @@ class TaskRepository(
         throw UnsuccessfulRequestException("The server couldn't provide a list of task", response = response.raw())
     }
 
-    suspend fun createTask(
+    override suspend fun createTask(
         timeSpan: Timespan,
         duration: Long,
         device_id: Long,
@@ -49,7 +49,7 @@ class TaskRepository(
         throw CreationFailedException("The server couldn't create a task", response = response.raw())
     }
 
-    suspend fun deleteTask(taskId: Long) {
+    override suspend fun deleteTask(taskId: Long) {
         val authToken = getAuthToken()
         val response = service.deleteTask(authToken, taskId)
         if (response.isSuccessful) {
