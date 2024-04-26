@@ -81,19 +81,23 @@ pub async fn simulator_background_service<F, TAlg>(
 }
 
 async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorithm) -> Result<()> {
-    // TODO: Filter out tasks based on time
+    let now = Utc::now();
+
     // TODO: Filter out tasks that have a started event
     let tasks = sqlx::query!(
         r#"
         SELECT Tasks.id as "id: TaskId", Tasks.timespan_start, Tasks.timespan_end, Tasks.duration as "duration: Milliseconds", Devices.effect as "effect: f64"
         FROM Tasks
         JOIN Devices ON Tasks.device_id == Devices.id
-        "#)
+        WHERE Tasks.timespan_end >= ? AND ((julianday(Tasks.timespan_end, 'utc') - julianday(?, 'utc')) * 24 * 60 * 60 * 1000) >= duration
+        "#,
+        now,
+        now)
         .fetch_all(pool)
         .await?;
 
     let tasks: Vec<_> = tasks
-        .iter()
+        .into_iter()
         .map(|t| {
             TaskForScheduler::new(
                 t.id,
