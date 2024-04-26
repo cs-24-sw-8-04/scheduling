@@ -122,7 +122,7 @@ fn app(state: MyState, simulator_mode: bool) -> Router {
         .route("/accounts/register", post(register_account))
         .route("/accounts/login", post(login_to_account))
         .route("/events/all", get(get_all_events))
-        .route("/events/get", get(get_device_events));
+        .route("/events/get", get(get_device_event));
 
     if simulator_mode {
         router = router.route("/scheduling/run", post(run_scheduling));
@@ -150,12 +150,12 @@ mod tests {
         http::{Method, Request, StatusCode},
         routing::RouterIntoService,
     };
-    use chrono::{Days, Utc};
+    use chrono::{Days, Duration, Utc};
     use http_body_util::BodyExt;
     use protocol::{
         accounts::{AuthToken, RegisterOrLoginRequest, RegisterOrLoginResponse},
         devices::{CreateDeviceRequest, CreateDeviceResponse, Device, GetDevicesResponse},
-        events::{GetDeviceEventsRequest, GetEventsResponse},
+        events::{GetDeviceEventRequest, GetEventResponse, GetEventsResponse},
         tasks::{CreateTaskRequest, GetTasksResponse, Task},
         time::Timespan,
     };
@@ -655,7 +655,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_device_events() {
+    async fn get_device_event() {
         let (router, pool) = test_app().await;
         let mut app = router.into_service();
 
@@ -664,7 +664,8 @@ mod tests {
 
         let device = generate_device(&mut app, auth_token.clone(), "test".into(), 20.0).await;
         let task = generate_task(&mut app, auth_token.clone(), 20, &device).await;
-        let event = _create_event(&pool, &task, Utc::now()).await.unwrap();
+        let event_start = Utc::now() + Duration::seconds(10);
+        let event = _create_event(&pool, &task, event_start).await.unwrap();
 
         let request = Request::builder()
             .method(Method::GET)
@@ -672,7 +673,7 @@ mod tests {
             .header("Content-Type", "application/json")
             .header("X-Auth-Token", auth_token)
             .body(Body::from(
-                serde_json::to_vec(&GetDeviceEventsRequest {
+                serde_json::to_vec(&GetDeviceEventRequest {
                     device_id: device.id,
                 })
                 .unwrap(),
@@ -693,8 +694,53 @@ mod tests {
         }
 
         let body = response.into_body().collect().await.unwrap().to_bytes();
-        let response: GetEventsResponse = serde_json::from_slice(&body).unwrap();
+        let response: GetEventResponse = serde_json::from_slice(&body).unwrap();
 
-        assert_eq!(response.events.first().unwrap(), &event);
+        assert_eq!(response.event, event.into());
+    }
+
+    #[tokio::test]
+    async fn get_device_event_none() {
+        let (router, pool) = test_app().await;
+        let mut app = router.into_service();
+
+        let auth_token = get_account(&mut app, None).await;
+        let auth_token = auth_token.to_string();
+
+        let device = generate_device(&mut app, auth_token.clone(), "test".into(), 20.0).await;
+        let task = generate_task(&mut app, auth_token.clone(), 20, &device).await;
+        let event_start = Utc::now() - Duration::seconds(10);
+        let _ = _create_event(&pool, &task, event_start).await.unwrap();
+
+        let request = Request::builder()
+            .method(Method::GET)
+            .uri("/events/get")
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token)
+            .body(Body::from(
+                serde_json::to_vec(&GetDeviceEventRequest {
+                    device_id: device.id,
+                })
+                .unwrap(),
+            ))
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(&mut app)
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        if response.status() != StatusCode::OK {
+            let body = response.into_body().collect().await.unwrap().to_bytes();
+            let body = String::from_utf8_lossy(&body);
+            panic!("{}", body);
+        }
+
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let response: GetEventResponse = serde_json::from_slice(&body).unwrap();
+
+        assert!(response.event.is_none());
     }
 }
