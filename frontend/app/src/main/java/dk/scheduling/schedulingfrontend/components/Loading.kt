@@ -1,6 +1,8 @@
 package dk.scheduling.schedulingfrontend.components
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.LinearProgressIndicator
@@ -12,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,11 +38,17 @@ fun Loading(
     }
 
     if (isLoading) {
-        LinearProgressIndicator(
-            modifier = modifier,
-            color = MaterialTheme.colorScheme.secondary,
-            trackColor = MaterialTheme.colorScheme.surfaceVariant,
-        )
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            LinearProgressIndicator(
+                modifier = modifier,
+                color = MaterialTheme.colorScheme.secondary,
+                trackColor = MaterialTheme.colorScheme.surfaceVariant,
+            )
+        }
     } else {
         whenLoaded()
     }
@@ -53,20 +62,20 @@ fun LoadingPreviewLightMode() {
 
         var isdone by remember { mutableStateOf(true) }
 
-        Column {
-            Loading(
-                isLoading = isLoading,
-                setIsLoading = { isLoading = it },
-                onLoading = {
-                    delay(5L * 1000L)
-                },
-            ) {
-                Text(text = "Loaded")
-            }
+
+        Loading(
+            isLoading = isLoading,
+            setIsLoading = { isLoading = it },
+            onLoading = {
+                delay(5L * 1000L)
+            },
+        ) {
+            Text(text = "Loaded")
 
             Text(text = "value of isloading = $isLoading")
 
             FilledButton(onClick = { isLoading = true }, text = "Load")
         }
+
     }
 }
