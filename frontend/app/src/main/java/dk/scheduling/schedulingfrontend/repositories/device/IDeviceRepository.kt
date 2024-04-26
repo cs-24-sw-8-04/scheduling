@@ -10,5 +10,5 @@ interface IDeviceRepository {
         effect: Double,
     )
 
-    suspend fun deleteDevice(taskId: Long)
+    suspend fun deleteDevice(deviceId: Long)
 }

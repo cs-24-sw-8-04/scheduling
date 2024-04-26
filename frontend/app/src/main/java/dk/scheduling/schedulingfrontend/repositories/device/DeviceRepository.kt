@@ -47,9 +47,9 @@ class DeviceRepository(
         throw CreationFailedException("The server couldn't create a device", response = response.raw())
     }
 
-    override suspend fun deleteDevice(taskId: Long) {
+    override suspend fun deleteDevice(deviceId: Long) {
         val authToken = getAuthToken()
-        val response = service.deleteDevice(authToken, taskId)
+        val response = service.deleteDevice(authToken, deviceId)
         if (response.isSuccessful) {
             return
         }
