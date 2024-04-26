@@ -12,11 +12,13 @@ fun FilledButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     text: String,
+    enabled: Boolean = true,
 ) {
     Column {
         Button(
             onClick = onClick,
             modifier = modifier.fillMaxWidth(),
+            enabled = enabled,
         ) {
             Text(text = text)
         }
@@ -28,11 +30,13 @@ fun OutlinedButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
     text: String,
+    enabled: Boolean = true,
 ) {
     Column {
         androidx.compose.material3.OutlinedButton(
             onClick = onClick,
             modifier = modifier.fillMaxWidth(),
+            enabled = enabled,
         ) {
             Text(text = text)
         }
