@@ -157,7 +157,7 @@ mod tests {
         devices::{CreateDeviceRequest, CreateDeviceResponse, Device, GetDevicesResponse},
         events::{GetDeviceEventRequest, GetEventResponse, GetEventsResponse},
         tasks::{CreateTaskRequest, GetTasksResponse, Task},
-        time::Timespan,
+        time::{DateTimeUtc, Timespan},
     };
     use tower::{Service, ServiceExt};
 
@@ -222,8 +222,10 @@ mod tests {
     async fn generate_task(
         app: &mut RouterIntoService<Body>,
         auth_token: String,
-        duration: i64,
+        duration: Duration,
         device: &Device,
+        start: DateTimeUtc,
+        end: DateTimeUtc,
     ) -> Task {
         let request = Request::builder()
             .method(Method::POST)
@@ -232,10 +234,7 @@ mod tests {
             .header("X-Auth-Token", auth_token.clone())
             .body(Body::from(
                 serde_json::to_vec(&CreateTaskRequest {
-                    timespan: Timespan::new(
-                        Utc::now(),
-                        Utc::now().checked_add_days(Days::new(1)).unwrap(),
-                    ),
+                    timespan: Timespan::new(start, end),
                     duration: duration.into(),
                     device_id: device.id,
                 })
@@ -456,10 +455,18 @@ mod tests {
         let auth_token = auth_token.to_string();
 
         let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
-        let task = generate_task(&mut app, auth_token, 3600, &device).await;
+        let task = generate_task(
+            &mut app,
+            auth_token,
+            Duration::hours(1),
+            &device,
+            Utc::now(),
+            Utc::now().checked_add_days(Days::new(1)).unwrap(),
+        )
+        .await;
 
         assert_ne!(task.id, (-1).into());
-        assert_eq!(task.duration, 3600.into());
+        assert_eq!(task.duration, Duration::hours(1).into());
     }
 
     #[tokio::test]
@@ -544,7 +551,15 @@ mod tests {
         let auth_token = auth_token.to_string();
 
         let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
-        let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
+        let task = generate_task(
+            &mut app,
+            auth_token.clone(),
+            Duration::hours(1),
+            &device,
+            Utc::now(),
+            Utc::now().checked_add_days(Days::new(1)).unwrap(),
+        )
+        .await;
         let all_tasks = get_tasks(&mut app, auth_token).await;
 
         assert_eq!(all_tasks.first().unwrap(), &task);
@@ -559,7 +574,15 @@ mod tests {
         let auth_token = auth_token.to_string();
 
         let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
-        let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
+        let task = generate_task(
+            &mut app,
+            auth_token.clone(),
+            Duration::hours(1),
+            &device,
+            Utc::now(),
+            Utc::now().checked_add_days(Days::new(1)).unwrap(),
+        )
+        .await;
         delete_task(&mut app, auth_token.clone(), task).await;
 
         let all_tasks = get_tasks(&mut app, auth_token).await;
@@ -624,7 +647,15 @@ mod tests {
         let auth_token = auth_token.to_string();
 
         let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
-        let task = generate_task(&mut app, auth_token.clone(), 3600, &device).await;
+        let task = generate_task(
+            &mut app,
+            auth_token.clone(),
+            Duration::hours(1),
+            &device,
+            Utc::now(),
+            Utc::now().checked_add_days(Days::new(1)).unwrap(),
+        )
+        .await;
         let event = _create_event(&pool, &task, Utc::now()).await.unwrap();
 
         let request = Request::builder()
@@ -655,6 +686,57 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn get_all_valid_events() {
+        let (router, pool) = test_app().await;
+        let mut app = router.into_service();
+
+        let auth_token = get_account(&mut app, None).await;
+        let auth_token = auth_token.to_string();
+
+        let device = generate_device(&mut app, auth_token.clone(), "test".into(), 1000.0).await;
+        let start = Utc::now() - Duration::hours(1);
+        let end = Utc::now() + Duration::hours(2);
+        let task = generate_task(
+            &mut app,
+            auth_token.clone(),
+            Duration::hours(1),
+            &device,
+            start,
+            end,
+        )
+        .await;
+        let event1 = _create_event(&pool, &task, Utc::now() - Duration::minutes(30))
+            .await
+            .unwrap();
+
+        let request = Request::builder()
+            .method(Method::GET)
+            .uri("/events/all")
+            .header("Content-Type", "application/json")
+            .header("X-Auth-Token", auth_token)
+            .body(Body::empty())
+            .unwrap();
+
+        let response = ServiceExt::<Request<Body>>::ready(&mut app)
+            .await
+            .unwrap()
+            .call(request)
+            .await
+            .unwrap();
+
+        if response.status() != StatusCode::OK {
+            let body = response.into_body().collect().await.unwrap().to_bytes();
+            let body = String::from_utf8_lossy(&body);
+            panic!("{}", body);
+        }
+
+        let body = response.into_body().collect().await.unwrap().to_bytes();
+        let response: GetEventsResponse = serde_json::from_slice(&body).unwrap();
+
+        assert_eq!(response.events.first().unwrap(), &event1);
+    }
+
+    #[tokio::test]
     async fn get_device_event() {
         let (router, pool) = test_app().await;
         let mut app = router.into_service();
@@ -663,7 +745,15 @@ mod tests {
         let auth_token = auth_token.to_string();
 
         let device = generate_device(&mut app, auth_token.clone(), "test".into(), 20.0).await;
-        let task = generate_task(&mut app, auth_token.clone(), 20, &device).await;
+        let task = generate_task(
+            &mut app,
+            auth_token.clone(),
+            Duration::hours(1),
+            &device,
+            Utc::now(),
+            Utc::now().checked_add_days(Days::new(1)).unwrap(),
+        )
+        .await;
         let event_start = Utc::now() + Duration::seconds(10);
         let event = _create_event(&pool, &task, event_start).await.unwrap();
 
@@ -708,7 +798,15 @@ mod tests {
         let auth_token = auth_token.to_string();
 
         let device = generate_device(&mut app, auth_token.clone(), "test".into(), 20.0).await;
-        let task = generate_task(&mut app, auth_token.clone(), 20, &device).await;
+        let task = generate_task(
+            &mut app,
+            auth_token.clone(),
+            Duration::hours(1),
+            &device,
+            Utc::now(),
+            Utc::now().checked_add_days(Days::new(1)).unwrap(),
+        )
+        .await;
         let event_start = Utc::now() - Duration::seconds(10);
         let _ = _create_event(&pool, &task, event_start).await.unwrap();
 
