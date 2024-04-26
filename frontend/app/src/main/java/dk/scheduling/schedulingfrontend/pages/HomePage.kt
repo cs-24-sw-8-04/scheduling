@@ -46,12 +46,17 @@ import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.api.protocol.Device
 import dk.scheduling.schedulingfrontend.components.ConfirmAlertDialog
 import dk.scheduling.schedulingfrontend.components.DATE_FORMATTER
+import dk.scheduling.schedulingfrontend.components.Loading
 import dk.scheduling.schedulingfrontend.model.DeviceOverview
 import dk.scheduling.schedulingfrontend.model.DeviceState
 import dk.scheduling.schedulingfrontend.model.getDeviceState
+import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import dk.scheduling.schedulingfrontend.ui.theme.scheduled
 import dk.scheduling.schedulingfrontend.ui.theme.success
+import testdata.DummyDeviceRepository
+import testdata.DummyEventRepository
+import testdata.DummyTaskRepository
 import testdata.testDeviceOverview
 import java.time.temporal.ChronoUnit
 
@@ -59,7 +64,7 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun HomePagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        HomePage(getDevices = { testDeviceOverview() })
+        HomePage(overviewRepository = OverviewRepository(DummyDeviceRepository(), DummyTaskRepository(), DummyEventRepository()))
     }
 }
 
@@ -67,7 +72,7 @@ fun HomePagePreviewLightMode() {
 @Composable
 fun HomePagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        HomePage(getDevices = { testDeviceOverview() })
+        HomePage(overviewRepository = OverviewRepository(DummyDeviceRepository(), DummyTaskRepository(), DummyEventRepository()))
     }
 }
 
@@ -75,41 +80,50 @@ fun HomePagePreviewDarkMode() {
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
-    getDevices: () -> List<DeviceOverview> = { mutableListOf() },
+    overviewRepository: OverviewRepository,
 ) {
-    var devices = getDevices().toMutableStateList()
+    var devices by remember { mutableStateOf(mutableListOf<DeviceOverview>()) }
+
     val refreshState = rememberPullToRefreshState()
     if (refreshState.isRefreshing) {
         LaunchedEffect(true) {
-            devices = getDevices().toMutableStateList()
+            devices = overviewRepository.getDeviceOverview().toMutableStateList()
             refreshState.endRefresh()
         }
     }
 
-    Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
-        LazyColumn(
-            modifier =
-                modifier
-                    .fillMaxSize(),
-        ) {
-            items(devices) { deviceOverview ->
-                DeviceCard(
-                    deviceOverview = deviceOverview,
-                    onRemove = {
-                        devices.remove(it)
-                    },
-                )
+    var isLoading by remember { mutableStateOf(true) }
+
+    Loading(
+        isLoading = isLoading,
+        setIsLoading = { isLoading = it },
+        onLoading = { devices = overviewRepository.getDeviceOverview().toMutableStateList() },
+    ) {
+        Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
+            LazyColumn(
+                modifier =
+                    modifier
+                        .fillMaxSize(),
+            ) {
+                items(devices) { deviceOverview ->
+                    DeviceCard(
+                        deviceOverview = deviceOverview,
+                        onRemove = {
+                            devices.remove(it)
+                        },
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(70.dp))
+                }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(70.dp))
-            }
+            PullToRefreshContainer(
+                modifier = Modifier.align(Alignment.TopCenter),
+                state = refreshState,
+            )
         }
-
-        PullToRefreshContainer(
-            modifier = Modifier.align(Alignment.TopCenter),
-            state = refreshState,
-        )
     }
 }
 

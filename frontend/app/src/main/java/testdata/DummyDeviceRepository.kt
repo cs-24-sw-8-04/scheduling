@@ -5,12 +5,7 @@ import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
 import kotlinx.coroutines.delay
 
 class DummyDeviceRepository : IDeviceRepository {
-    private val devices: MutableList<Device> =
-        mutableListOf(
-            Device(1L, "Washing Machine", 100.0),
-            Device(2L, "Toaster", 100.0),
-            Device(3L, "Electric car", 100.0),
-        )
+    private val devices: MutableList<Device> = devicesTestData().toMutableList()
 
     private val sleepDuration: Long = 2000
 
