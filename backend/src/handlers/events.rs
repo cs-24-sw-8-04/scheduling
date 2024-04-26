@@ -12,15 +12,17 @@ pub async fn get_all_events(
     State(state): State<MyState>,
     Authentication(account_id): Authentication,
 ) -> Result<Json<GetEventsResponse>, (StatusCode, String)> {
+    let current_time = Utc::now();
     let events = sqlx::query!(
         r#"
         SELECT Events.id as "id: EventId", Events.task_id as "task_id: TaskId", Events.start_time
         FROM Events 
         JOIN Tasks ON Events.task_id == Tasks.id 
         JOIN Devices ON Tasks.device_id == Devices.id
-        WHERE Devices.account_id = ?
+        WHERE Devices.account_id = ? AND ((julianday(Events.start_time, 'utc')*24*60*60*1000) + Tasks.duration)  >= (julianday(?, 'utc')*24*60*60*1000)
         "#,
-        account_id
+        account_id,
+        current_time
     )
     .fetch_all(&state.pool)
     .await
