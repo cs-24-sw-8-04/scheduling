@@ -34,7 +34,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -57,7 +56,6 @@ import dk.scheduling.schedulingfrontend.ui.theme.success
 import testdata.DummyDeviceRepository
 import testdata.DummyEventRepository
 import testdata.DummyTaskRepository
-import testdata.testDeviceOverview
 import java.time.temporal.ChronoUnit
 
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
@@ -87,7 +85,7 @@ fun HomePage(
     val refreshState = rememberPullToRefreshState()
     if (refreshState.isRefreshing) {
         LaunchedEffect(true) {
-            devices = overviewRepository.getDeviceOverview().toMutableStateList()
+            devices = overviewRepository.getDeviceOverview().toMutableList()
             refreshState.endRefresh()
         }
     }
@@ -97,7 +95,7 @@ fun HomePage(
     Loading(
         isLoading = isLoading,
         setIsLoading = { isLoading = it },
-        onLoading = { devices = overviewRepository.getDeviceOverview().toMutableStateList() },
+        onLoading = { devices = overviewRepository.getDeviceOverview().toMutableList() },
     ) {
         Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
             LazyColumn(

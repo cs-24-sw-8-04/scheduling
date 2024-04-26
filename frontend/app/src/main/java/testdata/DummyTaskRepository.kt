@@ -5,9 +5,8 @@ import dk.scheduling.schedulingfrontend.api.protocol.Timespan
 import dk.scheduling.schedulingfrontend.repositories.task.ITaskRepository
 import kotlinx.coroutines.delay
 
-class DummyTaskRepository : ITaskRepository {
+class DummyTaskRepository(private val sleepDuration: Long = 2000) : ITaskRepository {
     private val tasks = tasksTestData().toMutableList()
-    private val sleepDuration: Long = 2000
 
     override suspend fun getAllTasks(): List<Task> {
         delay(sleepDuration)

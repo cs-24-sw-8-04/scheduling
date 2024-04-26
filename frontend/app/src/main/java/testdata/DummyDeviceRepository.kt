@@ -4,10 +4,8 @@ import dk.scheduling.schedulingfrontend.api.protocol.Device
 import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
 import kotlinx.coroutines.delay
 
-class DummyDeviceRepository : IDeviceRepository {
+class DummyDeviceRepository(private val sleepDuration: Long = 2000) : IDeviceRepository {
     private val devices: MutableList<Device> = devicesTestData().toMutableList()
-
-    private val sleepDuration: Long = 2000
 
     override suspend fun getAllDevices(): List<Device> {
         delay(sleepDuration)
