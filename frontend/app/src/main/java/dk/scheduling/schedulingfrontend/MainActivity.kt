@@ -36,7 +36,6 @@ import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepositor
 import dk.scheduling.schedulingfrontend.repositories.task.TaskRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.runBlocking
-import testdata.DummyDeviceRepository
 import testdata.deviceTaskTestData
 import testdata.testDeviceOverview
 
@@ -121,7 +120,7 @@ class MainActivity : ComponentActivity() {
                         composable(
                             Page.CreateTaskPage.route,
                         ) { TaskOverviewPage(modifier = Modifier, getDeviceTasks = { deviceTaskTestData() }) }
-                        composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, DummyDeviceRepository()) }
+                        composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, deviceRepo) }
                         composable(Page.Account.route) {
                             AccountPage(
                                 accountRepo = accountRepo,
