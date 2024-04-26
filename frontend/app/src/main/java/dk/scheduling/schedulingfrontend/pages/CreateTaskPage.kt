@@ -54,11 +54,11 @@ fun CreateTaskPage(
     val loading =
         remember { mutableStateOf(true) }
     val devices =
-        remember { mutableListOf<Device>() }
+        remember { mutableStateOf(listOf<Device>()) }
     Loading(
         isLoading = loading.value,
         setIsLoading = { loading.value = it },
-        onLoading = { devices.addAll(deviceRepo.getAllDevices()) },
+        onLoading = { devices.value = deviceRepo.getAllDevices() },
     ) {
         Title(titleText = "Create Task", topMargin = 0.dp)
 
@@ -85,10 +85,10 @@ fun CreateTaskPage(
                         ),
                     )
                 }
-            var selectedItem by remember { mutableLongStateOf(devices.first().id) }
+            var selectedItem by remember { mutableLongStateOf(devices.value.first().id) }
             StandardDropDownMenu(
                 modifier = Modifier,
-                options = devices.associate { device -> device.id to device.name },
+                options = devices.value.associate { device -> device.id to device.name },
                 label = "Devices",
                 selectedItem = selectedItem,
                 onSelect = { selectedItem = it },
