@@ -62,7 +62,6 @@ fun LoadingPreviewLightMode() {
 
         var isdone by remember { mutableStateOf(true) }
 
-
         Loading(
             isLoading = isLoading,
             setIsLoading = { isLoading = it },
@@ -76,6 +75,5 @@ fun LoadingPreviewLightMode() {
 
             FilledButton(onClick = { isLoading = true }, text = "Load")
         }
-
     }
 }
