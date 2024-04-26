@@ -37,10 +37,10 @@ class OverviewRepository(
                 val hasE1Event = e1.hasEvent()
                 val hasE2Event = e2.hasEvent()
 
-                if (!hasE1Event || !hasE2Event) {
-                    hasE2Event.compareTo(hasE1Event)
-                } else {
+                if (hasE1Event && hasE2Event) {
                     e2.event?.start_time?.compareTo(e1.event?.start_time) ?: 0
+                } else {
+                    hasE2Event.compareTo(hasE1Event)
                 }
             }
 
