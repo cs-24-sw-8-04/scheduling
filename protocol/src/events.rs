@@ -12,6 +12,11 @@ pub struct GetEventsResponse {
     pub events: Vec<Event>,
 }
 
+#[derive(Deserialize, Serialize)]
+pub struct GetEventResponse {
+    pub event: Option<Event>,
+}
+
 #[derive(Deserialize, Serialize, Debug, PartialEq, Eq)]
 pub struct Event {
     pub id: EventId,
@@ -20,6 +25,6 @@ pub struct Event {
 }
 
 #[derive(Deserialize, Serialize)]
-pub struct GetDeviceEventsRequest {
+pub struct GetDeviceEventRequest {
     pub device_id: DeviceId,
 }
