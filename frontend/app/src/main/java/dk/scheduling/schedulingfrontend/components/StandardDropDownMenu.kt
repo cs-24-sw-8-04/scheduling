@@ -16,6 +16,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -26,12 +27,12 @@ import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 
 @Composable
-fun StandardDropDownMenu(
+fun <T> StandardDropDownMenu(
     modifier: Modifier,
-    options: List<String>,
+    options: Map<T, String>,
     label: String,
-    selectedItem: String,
-    onSelect: (String) -> Unit,
+    selectedItem: T,
+    onSelect: (T) -> Unit,
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -46,7 +47,7 @@ fun StandardDropDownMenu(
                 modifier
                     .fillMaxWidth()
                     .menuAnchor(),
-            value = selectedItem,
+            value = options[selectedItem]!!,
             onValueChange = {},
             readOnly = true,
             singleLine = true,
@@ -62,9 +63,9 @@ fun StandardDropDownMenu(
             options.forEach { option ->
                 DropdownMenuItem(
                     modifier = modifier,
-                    text = { Text(option, style = MaterialTheme.typography.bodyLarge) },
+                    text = { Text(option.value, style = MaterialTheme.typography.bodyLarge) },
                     onClick = {
-                        onSelect(option)
+                        onSelect(option.key)
                         expanded = false
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
@@ -77,8 +78,8 @@ fun StandardDropDownMenu(
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
 fun StandardDropDownMenuPreviewLightMode() {
-    val options = listOf("Washer", "Dryer", "Toaster")
-    var selectedItem by remember { mutableStateOf(options[0]) }
+    val options = mapOf(1 to "Washer", 2 to "Dryer", 3 to "Toaster")
+    var selectedItem by remember { mutableIntStateOf(1) }
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
         Column(
             modifier =
