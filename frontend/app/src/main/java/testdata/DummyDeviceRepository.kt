@@ -2,8 +2,8 @@ package testdata
 
 import dk.scheduling.schedulingfrontend.api.protocol.Device
 import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
+import kotlinx.coroutines.delay
 
-@Suppress("BlockingMethodInNonBlockingContext")
 class DummyDeviceRepository : IDeviceRepository {
     private val devices: MutableList<Device> =
         mutableListOf(
@@ -12,11 +12,10 @@ class DummyDeviceRepository : IDeviceRepository {
             Device(3L, "Electric car", 100.0),
         )
 
-    private var nextDeviceId: Long = 4
     private val sleepDuration: Long = 2000
 
     override suspend fun getAllDevices(): List<Device> {
-        Thread.sleep(sleepDuration)
+        delay(sleepDuration)
         return devices.toList()
     }
 
@@ -24,12 +23,13 @@ class DummyDeviceRepository : IDeviceRepository {
         name: String,
         effect: Double,
     ) {
-        Thread.sleep(sleepDuration)
-        devices.add(Device(nextDeviceId++, name, effect))
+        delay(sleepDuration)
+        val newDeviceId = devices.maxOf { device -> device.id } + 1
+        devices.add(Device(newDeviceId, name, effect))
     }
 
     override suspend fun deleteDevice(deviceId: Long) {
-        Thread.sleep(sleepDuration)
+        delay(sleepDuration)
         devices.removeAll { device: Device -> device.id == deviceId }
     }
 }
