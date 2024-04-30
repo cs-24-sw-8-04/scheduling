@@ -115,7 +115,7 @@ fun CreateTaskPage(
                 passingDate = {
                     taskSetter(task.copy(dateRange = it.copy()))
                 },
-                openDialog = dateRangeDialog,
+                dialogState = dateRangeDialog,
             )
 
             ClickableCard(
