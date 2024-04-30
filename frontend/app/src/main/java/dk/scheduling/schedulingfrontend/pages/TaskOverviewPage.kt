@@ -50,7 +50,6 @@ import dk.scheduling.schedulingfrontend.components.DATE_AND_TIME_FORMAT
 import dk.scheduling.schedulingfrontend.components.DATE_FORMAT
 import dk.scheduling.schedulingfrontend.components.Loading
 import dk.scheduling.schedulingfrontend.components.TIME_FORMAT
-import dk.scheduling.schedulingfrontend.model.DeviceOverview
 import dk.scheduling.schedulingfrontend.model.DeviceTask
 import dk.scheduling.schedulingfrontend.model.TaskEvent
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
@@ -92,7 +91,7 @@ fun TaskOverviewPage(
                         ) { deviceTasks.remove(deviceTask) }
                     }
                 }
-    
+
                 item {
                     Spacer(modifier = Modifier.height(70.dp))
                 }
