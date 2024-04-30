@@ -141,13 +141,13 @@ data class DateRange(val startTime: Long?, val endTime: Long?) {
 fun PickerPreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
         val openDialog = remember { mutableStateOf(true) }
-        val datePickerState = remember { mutableStateOf(DateRange(Long.MIN_VALUE, Long.MIN_VALUE)) }
+        val (datePickerState, setDatePickerState) = remember { mutableStateOf(DateRange(Long.MIN_VALUE, Long.MIN_VALUE)) }
 
         StandardDateRangePicker(
             closeDialog = { openDialog.value = false },
-            passingDate = { datePickerState.value = it },
+            passingDate = setDatePickerState,
             isDialogOpen = openDialog.value,
         )
-        Text(text = "Time: ${datePickerState.value.status().msg}")
+        Text(text = "Time: ${datePickerState.status().msg}")
     }
 }
