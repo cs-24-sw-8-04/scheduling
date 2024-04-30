@@ -60,17 +60,17 @@ fun <T> StandardDropDownMenu(
             onDismissRequest = { setExpanded(false) },
             modifier = modifier,
         ) {
-            options.forEach { option ->
+            options.forEach { (key, value) ->
                 DropdownMenuItem(
                     modifier = modifier,
                     text = {
                         Text(
-                            option.value,
+                            value,
                             style = MaterialTheme.typography.bodyLarge,
                         )
                     },
                     onClick = {
-                        onSelect(option.key)
+                        onSelect(key)
                         setExpanded(false)
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
