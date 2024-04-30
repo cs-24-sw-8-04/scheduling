@@ -74,11 +74,11 @@ fun TaskOverviewPage(
         }
     }
 
-    var isLoading by remember { mutableStateOf(true) }
+    val (isLoading, setIsLoading) = remember { mutableStateOf(true) }
 
     Loading(
         isLoading = isLoading,
-        setIsLoading = { isLoading = it },
+        setIsLoading = setIsLoading,
         onLoading = { deviceTasks = overviewRepository.getDeviceTasks().toMutableList() },
     ) {
         Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
