@@ -4,6 +4,7 @@ use axum::{
     http::StatusCode,
     Json,
 };
+use chrono::Utc;
 use protocol::{
     devices::DeviceId,
     tasks::{CreateTaskRequest, DeleteTaskRequest, GetTasksResponse, Task, TaskId},
@@ -17,14 +18,16 @@ pub async fn get_all_tasks(
     State(state): State<MyState>,
     Authentication(account_id): Authentication,
 ) -> Result<Json<GetTasksResponse>, (StatusCode, String)> {
+    let current_time = Utc::now();
     let tasks = sqlx::query!(
         r#"
         SELECT Tasks.id as "id: TaskId", Tasks.timespan_start, Tasks.timespan_end, Tasks.duration as "duration: Milliseconds", Tasks.device_id as "device_id: DeviceId"
         FROM Tasks
         JOIN Devices ON Tasks.device_id == Devices.id
-        WHERE Devices.account_id = ?
+        WHERE Devices.account_id = ? AND ((julianday(Tasks.timespan_end, 'utc')*24*60*60*1000) >= (julianday(?, 'utc')*24*60*60*1000))
         "#,
-        account_id
+        account_id,
+        current_time
     )
     .fetch_all(&state.pool)
     .await
