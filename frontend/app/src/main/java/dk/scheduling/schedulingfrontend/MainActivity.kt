@@ -115,7 +115,14 @@ class MainActivity : ComponentActivity() {
                         composable(
                             Page.TaskOverview.route,
                         ) { TaskOverviewPage(overviewRepository = overviewRepo) }
-                        composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, deviceRepo) }
+                        composable(Page.CreateTaskPage.route) {
+                            CreateTaskPage(
+                                deviceRepository = deviceRepo,
+                                taskRepository = taskRepo,
+                                navigateOnValidCreation = { appState.navHostController.navigate(Page.TaskOverview.route) },
+                                navigateOnCancelCreation = { appState.navHostController.navigate(Page.TaskOverview.route) },
+                            )
+                        }
                         composable(Page.Account.route) {
                             AccountPage(
                                 accountRepo = accountRepo,
