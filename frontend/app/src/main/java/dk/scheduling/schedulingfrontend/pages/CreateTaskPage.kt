@@ -38,13 +38,13 @@ import dk.scheduling.schedulingfrontend.components.DateRange
 import dk.scheduling.schedulingfrontend.components.FilledButton
 import dk.scheduling.schedulingfrontend.components.Loading
 import dk.scheduling.schedulingfrontend.components.StandardDateRangePicker
+import dk.scheduling.schedulingfrontend.components.StandardDropDownMenu
 import dk.scheduling.schedulingfrontend.components.StandardTimePickerDialog
 import dk.scheduling.schedulingfrontend.components.Title
 import dk.scheduling.schedulingfrontend.model.Duration
 import dk.scheduling.schedulingfrontend.model.TaskForm
 import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
 import dk.scheduling.schedulingfrontend.repositories.task.ITaskRepository
-import dk.scheduling.schedulingfrontend.sharedcomponents.StandardDropDownMenu
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.launch
 import testdata.DummyDeviceRepository
@@ -122,12 +122,12 @@ fun CreateTaskPage(
                 passingDate = {
                     taskSetter(task.copy(dateRange = it.copy()))
                 },
-                dialogState = dateRangeDialog,
+                isDialogOpen = dateRangeDialog,
             )
 
             ClickableCard(
                 onClick = { dateRangeDialog = true },
-                text = "Date interval: ${task.dateRange.status().msg}",
+                text = task.dateRange.status().msg,
                 isError = task.dateRange.isInitialized() && !task.dateRange.status().isValid,
             )
 
@@ -137,7 +137,7 @@ fun CreateTaskPage(
             StandardTimePickerDialog(
                 closeDialog = { startTimeDialog = false },
                 state = task.startTime,
-                openDialog = startTimeDialog,
+                isDialogOpen = startTimeDialog,
             )
 
             ClickableCard(
@@ -151,7 +151,7 @@ fun CreateTaskPage(
             StandardTimePickerDialog(
                 closeDialog = { endTimeDialog = false },
                 state = task.endTime,
-                openDialog = endTimeDialog,
+                isDialogOpen = endTimeDialog,
             )
             ClickableCard(
                 onClick = { endTimeDialog = true },

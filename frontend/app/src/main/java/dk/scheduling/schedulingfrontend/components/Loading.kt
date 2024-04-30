@@ -10,10 +10,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -58,13 +56,11 @@ fun Loading(
 @Composable
 fun LoadingPreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        var isLoading by remember { mutableStateOf(true) }
-
-        var isdone by remember { mutableStateOf(true) }
+        val (isLoading, setIsLoading) = remember { mutableStateOf(true) }
 
         Loading(
             isLoading = isLoading,
-            setIsLoading = { isLoading = it },
+            setIsLoading = setIsLoading,
             onLoading = {
                 delay(5L * 1000L)
             },
@@ -73,7 +69,7 @@ fun LoadingPreviewLightMode() {
 
             Text(text = "value of isloading = $isLoading")
 
-            FilledButton(onClick = { isLoading = true }, text = "Load")
+            FilledButton(onClick = { setIsLoading(true) }, text = "Load")
         }
     }
 }
