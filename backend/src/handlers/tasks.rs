@@ -24,7 +24,7 @@ pub async fn get_all_tasks(
         SELECT Tasks.id as "id: TaskId", Tasks.timespan_start, Tasks.timespan_end, Tasks.duration as "duration: Milliseconds", Tasks.device_id as "device_id: DeviceId"
         FROM Tasks
         JOIN Devices ON Tasks.device_id == Devices.id
-        WHERE Devices.account_id = ? AND ((julianday(Tasks.timespan_end, 'utc')*24*60*60*1000) >= (julianday(?, 'utc')*24*60*60*1000))
+        WHERE Devices.account_id = ? AND (julianday(Tasks.timespan_end, 'utc') >= julianday(?, 'utc'))
         "#,
         account_id,
         current_time
