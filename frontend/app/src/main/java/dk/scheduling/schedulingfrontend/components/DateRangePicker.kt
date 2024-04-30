@@ -77,7 +77,7 @@ fun StandardDateRangePicker(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        IconButton(onClick = { closeDialog() }) {
+                        IconButton(onClick = closeDialog) {
                             Icon(Icons.Filled.Close, contentDescription = "Close")
                         }
                         TextButton(
