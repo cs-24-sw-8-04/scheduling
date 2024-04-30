@@ -127,7 +127,7 @@ fun CreateTaskPage(
 
             ClickableCard(
                 onClick = { dateRangeDialog = true },
-                text = "Date interval: ${task.dateRange.status().msg}",
+                text = task.dateRange.status().msg,
                 isError = task.dateRange.isInitialized() && !task.dateRange.status().isValid,
             )
 

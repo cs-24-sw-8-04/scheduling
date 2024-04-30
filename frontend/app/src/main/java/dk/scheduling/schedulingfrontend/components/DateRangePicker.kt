@@ -31,7 +31,6 @@ import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -117,8 +116,6 @@ data class DateRange(val startTime: Long?, val endTime: Long?) {
         return LocalDateTime.ofInstant(endInstant, ZoneId.systemDefault())
     }
 
-    private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
-
     fun isInitialized(): Boolean {
         return !(rangeStart() == null && rangeEnd() == null)
     }
@@ -133,7 +130,7 @@ data class DateRange(val startTime: Long?, val endTime: Long?) {
         } else if (!(rangeStart()!!.isBefore(rangeEnd()) || rangeStart()!!.isEqual(rangeEnd()))) {
             Status(false, "Start date must be before end date")
         } else {
-            Status(true, "${rangeStart()!!.format(formatter)}:${rangeEnd()!!.format(formatter)}")
+            Status(true, "${rangeStart()!!.format(DATE_FORMAT)}:${rangeEnd()!!.format(DATE_FORMAT)}")
         }
     }
 }
