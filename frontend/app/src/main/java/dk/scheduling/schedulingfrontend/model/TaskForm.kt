@@ -8,14 +8,16 @@ import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 data class TaskForm(
-    val deviceId: Long,
+    val deviceId: Long?,
     val duration: Duration,
     val dateRange: DateRange,
     val startTime: TimePickerState,
     val endTime: TimePickerState,
 ) {
     fun status(): Status {
-        return if (!duration.status().isValid) {
+        return if (deviceId == null) {
+            return Status(false, "No device selected")
+        } else if (!duration.status().isValid) {
             duration.status()
         } else if (!dateRange.status().isValid) {
             dateRange.status()
