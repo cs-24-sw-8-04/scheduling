@@ -23,9 +23,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.api.protocol.Device
+import dk.scheduling.schedulingfrontend.api.protocol.Timespan
 import dk.scheduling.schedulingfrontend.components.DateRange
 import dk.scheduling.schedulingfrontend.components.FilledButton
 import dk.scheduling.schedulingfrontend.components.Loading
@@ -42,14 +43,20 @@ import dk.scheduling.schedulingfrontend.components.Title
 import dk.scheduling.schedulingfrontend.model.Duration
 import dk.scheduling.schedulingfrontend.model.TaskForm
 import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
+import dk.scheduling.schedulingfrontend.repositories.task.ITaskRepository
 import dk.scheduling.schedulingfrontend.sharedcomponents.StandardDropDownMenu
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
+import kotlinx.coroutines.launch
 import testdata.DummyDeviceRepository
+import testdata.DummyTaskRepository
 
 @Composable
 fun CreateTaskPage(
     modifier: Modifier = Modifier,
-    deviceRepo: IDeviceRepository,
+    deviceRepository: IDeviceRepository,
+    taskRepository: ITaskRepository,
+    navigateOnValidCreation: () -> Unit,
+    navigateOnCancelCreation: () -> Unit,
 ) {
     val (isLoading, setLoading) =
         remember { mutableStateOf(true) }
@@ -58,7 +65,7 @@ fun CreateTaskPage(
     Loading(
         isLoading = isLoading,
         setIsLoading = setLoading,
-        onLoading = { devices = deviceRepo.getAllDevices() },
+        onLoading = { devices = deviceRepository.getAllDevices() },
     ) {
         Title(titleText = "Create Task", topMargin = 0.dp)
 
@@ -77,7 +84,7 @@ fun CreateTaskPage(
                 remember {
                     mutableStateOf(
                         TaskForm(
-                            0,
+                            devices.first().id,
                             Duration(""),
                             DateRange(null, null),
                             TimePickerState(0, 0, true),
@@ -85,13 +92,13 @@ fun CreateTaskPage(
                         ),
                     )
                 }
-            val (selectedItem, setSelectedItem) = remember { mutableLongStateOf(devices.first().id) }
+
             StandardDropDownMenu(
                 modifier = Modifier,
                 options = devices.associate { device -> device.id to device.name },
                 label = "Devices",
-                selectedItem = selectedItem,
-                onSelect = setSelectedItem,
+                selectedItem = task.deviceId,
+                onSelect = { taskSetter(task.copy(deviceId = it)) },
             )
 
             // Duration input field
@@ -158,16 +165,40 @@ fun CreateTaskPage(
                 )
             }
 
+            var errorStatus by remember { mutableStateOf<String?>(null) }
+            if (errorStatus != null) {
+                Text(
+                    text = errorStatus!!,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+
+            val coroutineScope = rememberCoroutineScope()
             // Submit or Cancel
             FilledButton(
                 text = "Create task",
                 enabled = task.status().isValid,
-                onClick = {},
+                onClick = {
+                    try {
+                        coroutineScope.launch {
+                            taskRepository.createTask(
+                                timeSpan = Timespan(task.startDateTime(), task.endDateTime()),
+                                // Duration is in minutes and must be in milliseconds
+                                duration = task.duration.value.toLong() * 60 * 1000,
+                                device_id = task.deviceId,
+                            )
+                            errorStatus = null
+                            navigateOnValidCreation()
+                        }
+                    } catch (e: Throwable) {
+                        errorStatus = "A device could not be created"
+                    }
+                },
             )
 
             FilledButton(
                 text = "Cancel",
-                onClick = {},
+                onClick = navigateOnCancelCreation,
             )
         }
     }
@@ -202,7 +233,13 @@ fun ClickableCard(
 @Composable
 fun CreateTaskPagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        CreateTaskPage(Modifier, DummyDeviceRepository())
+        CreateTaskPage(
+            Modifier,
+            DummyDeviceRepository(),
+            DummyTaskRepository(),
+            navigateOnValidCreation = {},
+            navigateOnCancelCreation = {},
+        )
     }
 }
 
@@ -210,6 +247,12 @@ fun CreateTaskPagePreviewLightMode() {
 @Composable
 fun CreateTaskPagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        CreateTaskPage(Modifier, DummyDeviceRepository())
+        CreateTaskPage(
+            Modifier,
+            DummyDeviceRepository(),
+            DummyTaskRepository(),
+            navigateOnValidCreation = {},
+            navigateOnCancelCreation = {},
+        )
     }
 }

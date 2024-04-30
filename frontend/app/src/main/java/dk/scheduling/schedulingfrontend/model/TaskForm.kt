@@ -3,11 +3,12 @@ package dk.scheduling.schedulingfrontend.model
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TimePickerState
 import dk.scheduling.schedulingfrontend.components.DateRange
+import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 data class TaskForm(
-    val deviceId: Int,
+    val deviceId: Long,
     val duration: Duration,
     val dateRange: DateRange,
     val startTime: TimePickerState,
@@ -26,9 +27,17 @@ data class TaskForm(
         }
     }
 
+    fun startDateTime(): LocalDateTime {
+        return dateRange.rangeStart()!!.plusHours(startTime.hour.toLong()).plusMinutes(startTime.minute.toLong())
+    }
+
+    fun endDateTime(): LocalDateTime {
+        return dateRange.rangeEnd()!!.plusHours(endTime.hour.toLong()).plusMinutes(endTime.minute.toLong())
+    }
+
     private fun timeStatus(): Status {
-        val start = dateRange.rangeStart()!!.plusHours(startTime.hour.toLong()).plusMinutes(startTime.minute.toLong())
-        val end = dateRange.rangeEnd()!!.plusHours(endTime.hour.toLong()).plusMinutes(endTime.minute.toLong())
+        val start = startDateTime()
+        val end = endDateTime()
         val intervalLengthInMinutes = start.until(end, ChronoUnit.MINUTES)
         return if (start.isBefore(end) && intervalLengthInMinutes >= duration.value.toLong()) {
             Status(true, "")
