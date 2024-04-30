@@ -1,6 +1,7 @@
 package testdata
 
 import dk.scheduling.schedulingfrontend.api.protocol.Device
+import dk.scheduling.schedulingfrontend.exceptions.UserNotLoggedInException
 import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
 import kotlinx.coroutines.delay
 
@@ -16,6 +17,7 @@ class DummyDeviceRepository(private val sleepDuration: Long = 2000) : IDeviceRep
         name: String,
         effect: Double,
     ) {
+        throw UserNotLoggedInException()
         delay(sleepDuration)
         val newDeviceId = devices.maxOf { device -> device.id } + 1
         devices.add(Device(newDeviceId, name, effect))

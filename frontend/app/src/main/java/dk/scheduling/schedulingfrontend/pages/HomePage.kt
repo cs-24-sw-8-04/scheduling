@@ -50,17 +50,21 @@ import dk.scheduling.schedulingfrontend.components.Loading
 import dk.scheduling.schedulingfrontend.model.DeviceOverview
 import dk.scheduling.schedulingfrontend.model.DeviceState
 import dk.scheduling.schedulingfrontend.model.getDeviceState
+import dk.scheduling.schedulingfrontend.repositories.overviews.IOverviewsRepository
+import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import dk.scheduling.schedulingfrontend.ui.theme.scheduled
 import dk.scheduling.schedulingfrontend.ui.theme.success
-import testdata.testDeviceOverview
+import testdata.DummyDeviceRepository
+import testdata.DummyEventRepository
+import testdata.DummyTaskRepository
 import java.time.temporal.ChronoUnit
 
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
 fun HomePagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        HomePage(getDevices = { testDeviceOverview() })
+        HomePage(overviewRepository = OverviewRepository(DummyDeviceRepository(0), DummyTaskRepository(0), DummyEventRepository(0)))
     }
 }
 
@@ -68,7 +72,7 @@ fun HomePagePreviewLightMode() {
 @Composable
 fun HomePagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        HomePage(getDevices = { testDeviceOverview() })
+        HomePage(overviewRepository = OverviewRepository(DummyDeviceRepository(0), DummyTaskRepository(0), DummyEventRepository(0)))
     }
 }
 
@@ -76,13 +80,13 @@ fun HomePagePreviewDarkMode() {
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
-    getDevices: () -> List<DeviceOverview> = { mutableListOf() },
+    overviewRepository: IOverviewsRepository,
 ) {
     var devices by remember { mutableStateOf(mutableListOf<DeviceOverview>()) }
     val refreshState = rememberPullToRefreshState()
     if (refreshState.isRefreshing) {
         LaunchedEffect(true) {
-            devices = getDevices().toMutableStateList()
+            devices = overviewRepository.getDeviceOverview().toMutableStateList()
             refreshState.endRefresh()
         }
     }
@@ -92,7 +96,7 @@ fun HomePage(
     Loading(
         isLoading = isLoading,
         setIsLoading = setIsLoading,
-        onLoading = { devices = getDevices().toMutableStateList() },
+        onLoading = { devices = overviewRepository.getDeviceOverview().toMutableStateList() },
     ) {
         Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
             LazyColumn(
