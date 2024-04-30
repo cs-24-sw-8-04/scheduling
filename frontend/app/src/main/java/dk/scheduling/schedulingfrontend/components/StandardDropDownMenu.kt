@@ -34,11 +34,11 @@ fun <T> StandardDropDownMenu(
     selectedItem: T,
     onSelect: (T) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    val (expanded, setExpanded) = remember { mutableStateOf(false) }
 
     ExposedDropdownMenuBox(
         expanded = expanded,
-        onExpandedChange = { expanded = it },
+        onExpandedChange = setExpanded,
         modifier = modifier.fillMaxWidth(),
     ) {
         OutlinedTextField(
@@ -57,16 +57,21 @@ fun <T> StandardDropDownMenu(
         )
         ExposedDropdownMenu(
             expanded = expanded,
-            onDismissRequest = { expanded = false },
+            onDismissRequest = { setExpanded(false) },
             modifier = modifier,
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
                     modifier = modifier,
-                    text = { Text(option.value, style = MaterialTheme.typography.bodyLarge) },
+                    text = {
+                        Text(
+                            option.value,
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                    },
                     onClick = {
                         onSelect(option.key)
-                        expanded = false
+                        setExpanded(false)
                     },
                     contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                 )
@@ -79,7 +84,7 @@ fun <T> StandardDropDownMenu(
 @Composable
 fun StandardDropDownMenuPreviewLightMode() {
     val options = mapOf(1 to "Washer", 2 to "Dryer", 3 to "Toaster")
-    var selectedItem by remember { mutableIntStateOf(1) }
+    val (selectedItem, setSelectedItem) = remember { mutableIntStateOf(1) }
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
         Column(
             modifier =
@@ -94,7 +99,7 @@ fun StandardDropDownMenuPreviewLightMode() {
                 options = options,
                 label = "Devices",
                 selectedItem = selectedItem,
-                onSelect = { selectedItem = it },
+                onSelect = setSelectedItem,
             )
         }
     }
