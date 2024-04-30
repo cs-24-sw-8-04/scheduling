@@ -1,22 +1,14 @@
 package dk.scheduling.schedulingfrontend.model
 
 data class Duration(val value: String) {
-    fun isInitializedAndInvalid(): Boolean {
-        return isInitialized() && !status().isValid
-    }
+    fun isInitializedAndInvalid(): Boolean = isInitialized() && !status().isValid
 
     fun status(): Status {
-        if (cannotParseToLong(value)) {
-            return Status(false, "Duration cannot be blank or 0")
+        if (value.toLongOrNull() == null || value.toLongOrNull()!! <= 0) {
+            return Status(false, "Duration cannot be blank, 0 or negative")
         }
         return Status(true, value)
     }
 
-    private fun isInitialized(): Boolean {
-        return value.isNotBlank()
-    }
-
-    private fun cannotParseToLong(input: String): Boolean {
-        return !isInitialized() || input.toLongOrNull() == null || input.toLongOrNull()!! <= 0
-    }
+    private fun isInitialized(): Boolean = value.isNotBlank()
 }
