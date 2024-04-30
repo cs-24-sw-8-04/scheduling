@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.api.protocol.Device
 import dk.scheduling.schedulingfrontend.components.ConfirmAlertDialog
 import dk.scheduling.schedulingfrontend.components.DATE_FORMATTER
+import dk.scheduling.schedulingfrontend.components.Loading
 import dk.scheduling.schedulingfrontend.model.DeviceOverview
 import dk.scheduling.schedulingfrontend.model.DeviceState
 import dk.scheduling.schedulingfrontend.model.getDeviceState
@@ -77,7 +78,7 @@ fun HomePage(
     modifier: Modifier = Modifier,
     getDevices: () -> List<DeviceOverview> = { mutableListOf() },
 ) {
-    var devices = getDevices().toMutableStateList()
+    var devices by remember { mutableStateOf(mutableListOf<DeviceOverview>()) }
     val refreshState = rememberPullToRefreshState()
     if (refreshState.isRefreshing) {
         LaunchedEffect(true) {
@@ -86,30 +87,38 @@ fun HomePage(
         }
     }
 
-    Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
-        LazyColumn(
-            modifier =
-                modifier
-                    .fillMaxSize(),
-        ) {
-            items(devices) { deviceOverview ->
-                DeviceCard(
-                    deviceOverview = deviceOverview,
-                    onRemove = {
-                        devices.remove(it)
-                    },
-                )
+    val (isLoading, setIsLoading) = remember { mutableStateOf(true) }
+
+    Loading(
+        isLoading = isLoading,
+        setIsLoading = setIsLoading,
+        onLoading = { devices = getDevices().toMutableStateList() },
+    ) {
+        Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
+            LazyColumn(
+                modifier =
+                    modifier
+                        .fillMaxSize(),
+            ) {
+                items(devices) { deviceOverview ->
+                    DeviceCard(
+                        deviceOverview = deviceOverview,
+                        onRemove = {
+                            devices.remove(it)
+                        },
+                    )
+                }
+
+                item {
+                    Spacer(modifier = Modifier.height(70.dp))
+                }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(70.dp))
-            }
+            PullToRefreshContainer(
+                modifier = Modifier.align(Alignment.TopCenter),
+                state = refreshState,
+            )
         }
-
-        PullToRefreshContainer(
-            modifier = Modifier.align(Alignment.TopCenter),
-            state = refreshState,
-        )
     }
 }
 

@@ -48,7 +48,9 @@ import dk.scheduling.schedulingfrontend.api.protocol.Timespan
 import dk.scheduling.schedulingfrontend.components.ConfirmAlertDialog
 import dk.scheduling.schedulingfrontend.components.DATE_AND_TIME_FORMAT
 import dk.scheduling.schedulingfrontend.components.DATE_FORMAT
+import dk.scheduling.schedulingfrontend.components.Loading
 import dk.scheduling.schedulingfrontend.components.TIME_FORMAT
+import dk.scheduling.schedulingfrontend.model.DeviceOverview
 import dk.scheduling.schedulingfrontend.model.DeviceTask
 import dk.scheduling.schedulingfrontend.model.TaskEvent
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
@@ -61,7 +63,7 @@ fun TaskOverviewPage(
     getDeviceTasks: () -> List<DeviceTask>,
     modifier: Modifier = Modifier,
 ) {
-    var deviceTasks = getDeviceTasks().toMutableStateList()
+    var deviceTasks by remember { mutableStateOf(mutableListOf<DeviceTask>()) }
     val refreshState = rememberPullToRefreshState()
     if (refreshState.isRefreshing) {
         LaunchedEffect(true) {
@@ -70,29 +72,37 @@ fun TaskOverviewPage(
         }
     }
 
-    Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
-        LazyColumn(
-            modifier =
-                modifier
-                    .fillMaxSize(),
-        ) {
-            items(deviceTasks) { deviceTask ->
-                if (deviceTask.tasks.isNotEmpty()) {
-                    DeviceTaskCard(
-                        deviceTask = deviceTask,
-                    ) { deviceTasks.remove(deviceTask) }
+    val (isLoading, setIsLoading) = remember { mutableStateOf(true) }
+
+    Loading(
+        isLoading = isLoading,
+        setIsLoading = setIsLoading,
+        onLoading = { deviceTasks = getDeviceTasks().toMutableStateList() },
+    ) {
+        Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
+            LazyColumn(
+                modifier =
+                    modifier
+                        .fillMaxSize(),
+            ) {
+                items(deviceTasks) { deviceTask ->
+                    if (deviceTask.tasks.isNotEmpty()) {
+                        DeviceTaskCard(
+                            deviceTask = deviceTask,
+                        ) { deviceTasks.remove(deviceTask) }
+                    }
+                }
+    
+                item {
+                    Spacer(modifier = Modifier.height(70.dp))
                 }
             }
 
-            item {
-                Spacer(modifier = Modifier.height(70.dp))
-            }
+            PullToRefreshContainer(
+                modifier = Modifier.align(Alignment.TopCenter),
+                state = refreshState,
+            )
         }
-
-        PullToRefreshContainer(
-            modifier = Modifier.align(Alignment.TopCenter),
-            state = refreshState,
-        )
     }
 }
 
