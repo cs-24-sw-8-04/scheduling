@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.DateRangePicker
+import androidx.compose.material3.DateRangePickerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -69,27 +70,7 @@ fun StandardDateRangePicker(
                 Column(
                     verticalArrangement = Arrangement.Top,
                 ) {
-                    Row(
-                        modifier =
-                            Modifier
-                                .fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                    ) {
-                        IconButton(onClick = closeDialog) {
-                            Icon(Icons.Filled.Close, contentDescription = "Close")
-                        }
-                        TextButton(
-                            onClick = {
-                                val range = DateRange(state.selectedStartDateMillis!!, state.selectedEndDateMillis!!)
-                                passingDate(range)
-                                closeDialog()
-                            },
-                            enabled = state.selectedEndDateMillis != null,
-                        ) {
-                            Text(text = "Save")
-                        }
-                    }
+                    DialogActions(closeDialog, state, passingDate)
                     DateRangePicker(
                         state = state,
                     )
@@ -99,10 +80,40 @@ fun StandardDateRangePicker(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun DialogActions(
+    closeDialog: () -> Unit,
+    state: DateRangePickerState,
+    passingDate: (DateRange) -> Unit,
+) {
+    Row(
+        modifier =
+            Modifier
+                .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+    ) {
+        IconButton(onClick = closeDialog) {
+            Icon(Icons.Filled.Close, contentDescription = "Close")
+        }
+        TextButton(
+            onClick = {
+                val range =
+                    DateRange(state.selectedStartDateMillis!!, state.selectedEndDateMillis!!)
+                passingDate(range)
+                closeDialog()
+            },
+            enabled = state.selectedEndDateMillis != null,
+        ) {
+            Text(text = "Save")
+        }
+    }
+}
+
 data class DateRange(val startTime: Long?, val endTime: Long?) {
     private fun millisToLocalDateTime(millis: Long): LocalDateTime {
-        val instant = Instant.ofEpochMilli(millis)
-        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+        return LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
     }
 
     fun rangeStart(): LocalDateTime? {
@@ -127,7 +138,7 @@ data class DateRange(val startTime: Long?, val endTime: Long?) {
         } else if (!(rangeStart()!!.isBefore(rangeEnd()) || rangeStart()!!.isEqual(rangeEnd()))) {
             Status(false, "Start date must be before end date")
         } else {
-            Status(true, "${rangeStart()!!.format(DATE_FORMAT)}:${rangeEnd()!!.format(DATE_FORMAT)}")
+            Status(true, "${rangeStart()!!.format(DATE_FORMAT)} to ${rangeEnd()!!.format(DATE_FORMAT)}")
         }
     }
 }
