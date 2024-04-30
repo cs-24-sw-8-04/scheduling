@@ -21,11 +21,6 @@ class RetrofitClient(val baseUrl: String) {
      * 2222 is the port where the server is running
      */
 
-    private val gson =
-        GsonBuilder()
-            .setLenient()
-            .create()
-
     private val okHttpClient: OkHttpClient by lazy {
         val trustAllCertificates =
             arrayOf<TrustManager>(
