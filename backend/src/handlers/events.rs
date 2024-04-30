@@ -19,7 +19,7 @@ pub async fn get_all_events(
         FROM Events 
         JOIN Tasks ON Events.task_id == Tasks.id 
         JOIN Devices ON Tasks.device_id == Devices.id
-        WHERE Devices.account_id = ? AND ((julianday(Events.start_time, 'utc')*24*60*60*1000) + Tasks.duration)  >= (julianday(?, 'utc')*24*60*60*1000)
+        WHERE Devices.account_id = ? AND (julianday(Tasks.timespan_end, 'utc') >= julianday(?, 'utc'))
         "#,
         account_id,
         current_time
