@@ -126,7 +126,7 @@ fun StandardTimePickerDialogPreviewLightMode() {
             state = state,
             isDialogOpen = isDialogOpen,
         )
-        val dateMsg: String = "Time: ${state.hour}:${state.minute}"
+        val dateMsg = "Time: ${state.hour}:${state.minute}"
         Text(text = dateMsg)
     }
 }
