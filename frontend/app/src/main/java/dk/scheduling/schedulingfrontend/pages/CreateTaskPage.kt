@@ -122,7 +122,7 @@ fun CreateTaskPage(
                 passingDate = {
                     taskSetter(task.copy(dateRange = it.copy()))
                 },
-                dialogState = dateRangeDialog,
+                isDialogOpen = dateRangeDialog,
             )
 
             ClickableCard(
@@ -137,7 +137,7 @@ fun CreateTaskPage(
             StandardTimePickerDialog(
                 closeDialog = { startTimeDialog = false },
                 state = task.startTime,
-                openDialog = startTimeDialog,
+                isDialogOpen = startTimeDialog,
             )
 
             ClickableCard(
@@ -151,7 +151,7 @@ fun CreateTaskPage(
             StandardTimePickerDialog(
                 closeDialog = { endTimeDialog = false },
                 state = task.endTime,
-                openDialog = endTimeDialog,
+                isDialogOpen = endTimeDialog,
             )
             ClickableCard(
                 onClick = { endTimeDialog = true },

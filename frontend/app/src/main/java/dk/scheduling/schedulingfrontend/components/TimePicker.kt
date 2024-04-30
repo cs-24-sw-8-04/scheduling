@@ -36,10 +36,10 @@ import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 fun StandardTimePickerDialog(
     closeDialog: () -> Unit,
     state: TimePickerState,
-    openDialog: Boolean,
+    isDialogOpen: Boolean,
 ) {
-    if (openDialog) {
-        val showingPicker = remember { mutableStateOf(true) }
+    if (isDialogOpen) {
+        val (showingPicker, setShowingPicker) = remember { mutableStateOf(true) }
         BasicAlertDialog(
             // Dismiss the dialog when the user clicks outside the dialog or on the back
             // button. If you want to disable that functionality, simply use an empty
@@ -62,7 +62,7 @@ fun StandardTimePickerDialog(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    if (showingPicker.value) {
+                    if (showingPicker) {
                         TimePicker(
                             state = state,
                             modifier = Modifier.padding(8.dp),
@@ -75,7 +75,7 @@ fun StandardTimePickerDialog(
                             Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        ChangeInput({ showingPicker.value = !showingPicker.value }, showingPicker.value)
+                        ChangeInput({ setShowingPicker(!showingPicker) }, showingPicker)
                         Button(onClick = closeDialog) {
                             Text(text = "Close")
                         }
@@ -118,13 +118,13 @@ fun ChangeInput(
 @Composable
 fun StandardTimePickerDialogPreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        val openDialog = remember { mutableStateOf(true) }
+        val (isDialogOpen, setOpenDialog) = remember { mutableStateOf(true) }
         val state = rememberTimePickerState()
 
         StandardTimePickerDialog(
-            closeDialog = { openDialog.value = false },
+            closeDialog = { setOpenDialog(false) },
             state = state,
-            openDialog = openDialog.value,
+            isDialogOpen = isDialogOpen,
         )
         val dateMsg: String = "Time: ${state.hour}:${state.minute}"
         Text(text = dateMsg)
