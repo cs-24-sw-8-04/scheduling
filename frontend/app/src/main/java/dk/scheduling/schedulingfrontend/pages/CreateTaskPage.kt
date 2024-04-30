@@ -85,13 +85,13 @@ fun CreateTaskPage(
                         ),
                     )
                 }
-            var selectedItem by remember { mutableLongStateOf(devices.first().id) }
+            val (selectedItem, setSelectedItem) = remember { mutableLongStateOf(devices.first().id) }
             StandardDropDownMenu(
                 modifier = Modifier,
                 options = devices.associate { device -> device.id to device.name },
                 label = "Devices",
                 selectedItem = selectedItem,
-                onSelect = { selectedItem = it },
+                onSelect = setSelectedItem,
             )
 
             // Duration input field
