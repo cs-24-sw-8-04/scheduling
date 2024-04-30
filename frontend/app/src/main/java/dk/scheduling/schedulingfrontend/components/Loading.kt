@@ -58,13 +58,11 @@ fun Loading(
 @Composable
 fun LoadingPreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        var isLoading by remember { mutableStateOf(true) }
-
-        var isdone by remember { mutableStateOf(true) }
+        val (isLoading, setIsLoading) = remember { mutableStateOf(true) }
 
         Loading(
             isLoading = isLoading,
-            setIsLoading = { isLoading = it },
+            setIsLoading = setIsLoading,
             onLoading = {
                 delay(5L * 1000L)
             },
@@ -73,7 +71,7 @@ fun LoadingPreviewLightMode() {
 
             Text(text = "value of isloading = $isLoading")
 
-            FilledButton(onClick = { isLoading = true }, text = "Load")
+            FilledButton(onClick = { setIsLoading(true) }, text = "Load")
         }
     }
 }
