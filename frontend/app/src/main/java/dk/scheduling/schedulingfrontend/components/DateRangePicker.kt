@@ -112,21 +112,14 @@ private fun DialogActions(
 }
 
 data class DateRange(val startTime: Long?, val endTime: Long?) {
-    private fun millisToLocalDateTime(millis: Long): LocalDateTime {
-        return LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
-    }
+    private fun millisToLocalDateTime(millis: Long): LocalDateTime =
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
 
-    fun rangeStart(): LocalDateTime? {
-        return startTime?.let { millisToLocalDateTime(it) }
-    }
+    fun rangeStart(): LocalDateTime? = startTime?.let { millisToLocalDateTime(it) }
 
-    fun rangeEnd(): LocalDateTime? {
-        return endTime?.let { millisToLocalDateTime(it) }
-    }
+    fun rangeEnd(): LocalDateTime? = endTime?.let { millisToLocalDateTime(it) }
 
-    fun isInitialized(): Boolean {
-        return !(rangeStart() == null && rangeEnd() == null)
-    }
+    fun isInitialized(): Boolean = !(rangeStart() == null && rangeEnd() == null)
 
     fun status(): Status {
         return if (!isInitialized()) {
