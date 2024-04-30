@@ -51,14 +51,14 @@ fun CreateTaskPage(
     modifier: Modifier = Modifier,
     deviceRepo: IDeviceRepository,
 ) {
-    val loading =
+    val (isLoading, setLoading) =
         remember { mutableStateOf(true) }
-    val devices =
+    var devices by
         remember { mutableStateOf(listOf<Device>()) }
     Loading(
-        isLoading = loading.value,
-        setIsLoading = { loading.value = it },
-        onLoading = { devices.value = deviceRepo.getAllDevices() },
+        isLoading = isLoading,
+        setIsLoading = setLoading,
+        onLoading = { devices = deviceRepo.getAllDevices() },
     ) {
         Title(titleText = "Create Task", topMargin = 0.dp)
 
@@ -85,10 +85,10 @@ fun CreateTaskPage(
                         ),
                     )
                 }
-            var selectedItem by remember { mutableLongStateOf(devices.value.first().id) }
+            var selectedItem by remember { mutableLongStateOf(devices.first().id) }
             StandardDropDownMenu(
                 modifier = Modifier,
-                options = devices.value.associate { device -> device.id to device.name },
+                options = devices.associate { device -> device.id to device.name },
                 label = "Devices",
                 selectedItem = selectedItem,
                 onSelect = { selectedItem = it },
@@ -108,46 +108,46 @@ fun CreateTaskPage(
             )
 
             // start date & end date
-            val dateRangeDialog = remember { mutableStateOf(false) }
+            var dateRangeDialog by remember { mutableStateOf(false) }
 
             StandardDateRangePicker(
-                closeDialog = { dateRangeDialog.value = false },
+                closeDialog = { dateRangeDialog = false },
                 passingDate = {
                     taskSetter(task.copy(dateRange = it.copy()))
                 },
-                openDialog = dateRangeDialog.value,
+                openDialog = dateRangeDialog,
             )
 
             ClickableCard(
-                onClick = { dateRangeDialog.value = true },
+                onClick = { dateRangeDialog = true },
                 text = "Date interval: ${task.dateRange.status().msg}",
                 isError = task.dateRange.isInitialized() && !task.dateRange.status().isValid,
             )
 
             // start time
-            val startTimeDialog = remember { mutableStateOf(false) }
+            var startTimeDialog by remember { mutableStateOf(false) }
 
             StandardTimePickerDialog(
-                closeDialog = { startTimeDialog.value = false },
+                closeDialog = { startTimeDialog = false },
                 state = task.startTime,
-                openDialog = startTimeDialog.value,
+                openDialog = startTimeDialog,
             )
 
             ClickableCard(
-                onClick = { startTimeDialog.value = true },
+                onClick = { startTimeDialog = true },
                 text = "Start time: ${task.printStartTime()}",
             )
 
             // end time
-            val endTimeDialog = remember { mutableStateOf(false) }
+            var endTimeDialog by remember { mutableStateOf(false) }
 
             StandardTimePickerDialog(
-                closeDialog = { endTimeDialog.value = false },
+                closeDialog = { endTimeDialog = false },
                 state = task.endTime,
-                openDialog = endTimeDialog.value,
+                openDialog = endTimeDialog,
             )
             ClickableCard(
-                onClick = { endTimeDialog.value = true },
+                onClick = { endTimeDialog = true },
                 text = "End time: ${task.printEndTime()}",
             )
 
