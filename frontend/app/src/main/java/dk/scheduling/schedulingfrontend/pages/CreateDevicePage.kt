@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,10 +27,14 @@ import dk.scheduling.schedulingfrontend.api.protocol.Device
 import dk.scheduling.schedulingfrontend.components.FilledButton
 import dk.scheduling.schedulingfrontend.components.OutlinedButton
 import dk.scheduling.schedulingfrontend.components.StandardTextField
+import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
+import kotlinx.coroutines.launch
+import testdata.DummyDeviceRepository
 
 @Composable
 fun CreateDevicePage(
     modifier: Modifier = Modifier,
+    deviceRepository: IDeviceRepository,
     navigateOnValidCreation: () -> Unit,
     navigateOnCancelCreation: () -> Unit,
 ) {
@@ -40,6 +45,11 @@ fun CreateDevicePage(
     var isEffectSet by remember {
         mutableStateOf(true)
     }
+
+    var errorStatus: String? by remember {
+        mutableStateOf(null)
+    }
+
     Column(
         modifier =
             modifier
@@ -92,10 +102,27 @@ fun CreateDevicePage(
 
         Spacer(modifier = Modifier.height(30.dp))
 
+        errorStatus?.let {
+            Text(
+                text = it,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.error,
+            )
+            Spacer(modifier = Modifier.height(30.dp))
+        }
+
+        val coroutineScope = rememberCoroutineScope()
+
         FilledButton(
             onClick = {
-                if (createDevice(device)) {
-                    navigateOnValidCreation()
+                try {
+                    coroutineScope.launch {
+                        deviceRepository.createDevice(device.name, device.effect)
+                        errorStatus = null
+                        navigateOnValidCreation()
+                    }
+                } catch (e: Throwable) {
+                    errorStatus = "A device could not be created"
                 }
             },
             text = "Create Device",
@@ -112,13 +139,8 @@ fun CreateDevicePage(
     }
 }
 
-fun createDevice(device: Device): Boolean {
-    // Send info to the server and if all goes well return true otherwise false
-    return false
-}
-
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
 fun CreateDevicePagePreview() {
-    CreateDevicePage(navigateOnValidCreation = {}, navigateOnCancelCreation = {})
+    CreateDevicePage(deviceRepository = DummyDeviceRepository(0), navigateOnValidCreation = {}, navigateOnCancelCreation = {})
 }

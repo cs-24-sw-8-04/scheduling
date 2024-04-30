@@ -52,21 +52,25 @@ import dk.scheduling.schedulingfrontend.components.Loading
 import dk.scheduling.schedulingfrontend.components.TIME_FORMAT
 import dk.scheduling.schedulingfrontend.model.DeviceTask
 import dk.scheduling.schedulingfrontend.model.TaskEvent
+import dk.scheduling.schedulingfrontend.repositories.overviews.IOverviewsRepository
+import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
-import testdata.deviceTaskTestData
+import testdata.DummyDeviceRepository
+import testdata.DummyEventRepository
+import testdata.DummyTaskRepository
 import java.time.LocalDateTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskOverviewPage(
-    getDeviceTasks: () -> List<DeviceTask>,
     modifier: Modifier = Modifier,
+    overviewRepository: IOverviewsRepository,
 ) {
     var deviceTasks by remember { mutableStateOf(mutableListOf<DeviceTask>()) }
     val refreshState = rememberPullToRefreshState()
     if (refreshState.isRefreshing) {
         LaunchedEffect(true) {
-            deviceTasks = getDeviceTasks().toMutableStateList()
+            deviceTasks = overviewRepository.getDeviceTasks().toMutableStateList()
             refreshState.endRefresh()
         }
     }
@@ -76,7 +80,7 @@ fun TaskOverviewPage(
     Loading(
         isLoading = isLoading,
         setIsLoading = setIsLoading,
-        onLoading = { deviceTasks = getDeviceTasks().toMutableStateList() },
+        onLoading = { deviceTasks = overviewRepository.getDeviceTasks().toMutableStateList() },
     ) {
         Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
             LazyColumn(
@@ -379,7 +383,7 @@ fun CancelTaskAlertDialog(
 @Composable
 fun TaskOverviewPagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        TaskOverviewPage({ deviceTaskTestData() })
+        TaskOverviewPage(overviewRepository = OverviewRepository(DummyDeviceRepository(0), DummyTaskRepository(0), DummyEventRepository(0)))
     }
 }
 
@@ -387,6 +391,6 @@ fun TaskOverviewPagePreviewLightMode() {
 @Composable
 fun TaskOverviewPagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        TaskOverviewPage({ deviceTaskTestData() })
+        TaskOverviewPage(overviewRepository = OverviewRepository(DummyDeviceRepository(0), DummyTaskRepository(0), DummyEventRepository(0)))
     }
 }

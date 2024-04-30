@@ -36,8 +36,6 @@ import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepositor
 import dk.scheduling.schedulingfrontend.repositories.task.TaskRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.runBlocking
-import testdata.deviceTaskTestData
-import testdata.testDeviceOverview
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -106,20 +104,20 @@ class MainActivity : ComponentActivity() {
                                 navigateToLoginPage = { appState.navHostController.navigate(Page.LoginPage.route) },
                             )
                         }
-                        composable(Page.DeviceOverview.route) { HomePage(modifier = Modifier, getDevices = { testDeviceOverview() }) }
+                        composable(Page.DeviceOverview.route) { HomePage(overviewRepository = overviewRepo) }
                         composable(Page.CreateDevicePage.route) {
                             CreateDevicePage(
+                                deviceRepository = deviceRepo,
                                 navigateOnValidCreation = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                                 navigateOnCancelCreation = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                             )
                         }
                         composable(
                             Page.TaskOverview.route,
-                        ) { TaskOverviewPage(modifier = Modifier, getDeviceTasks = { deviceTaskTestData() }) }
-                        composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, handleSubmission = {}, handleCancellation = {}) }
+                        ) { TaskOverviewPage(overviewRepository = overviewRepo) }
+                        composable(Page.CreateTaskPage.route) { CreateTaskPage(handleSubmission = {}, handleCancellation = {}) }
                         composable(Page.Account.route) {
                             AccountPage(
-                                modifier = Modifier,
                                 accountRepo = accountRepo,
                                 navigateOnLogout = { appState.navHostController.navigate(Page.LoginPage.route) },
                             )
