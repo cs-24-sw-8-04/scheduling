@@ -10,12 +10,12 @@ import dk.scheduling.schedulingfrontend.repositories.account.AccountRepository
 class EventRepository(
     private val service: ApiService,
     private val accountRepository: AccountRepository,
-) {
+) : IEventRepository {
     private suspend fun getAuthToken(): String {
         return accountRepository.getAuthToken().toString()
     }
 
-    suspend fun getAllEvents(): List<Event> {
+    override suspend fun getAllEvents(): List<Event> {
         val authToken = getAuthToken()
         val response = service.getAllEvents(authToken)
         if (response.isSuccessful) {
