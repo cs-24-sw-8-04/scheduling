@@ -34,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -82,7 +83,7 @@ fun HomePage(
     modifier: Modifier = Modifier,
     overviewRepository: IOverviewsRepository,
 ) {
-    var devices by remember { mutableStateOf(mutableListOf<DeviceOverview>()) }
+    var devices = remember { SnapshotStateList<DeviceOverview>() }
     val refreshState = rememberPullToRefreshState()
     if (refreshState.isRefreshing) {
         LaunchedEffect(true) {
