@@ -38,9 +38,9 @@ import java.time.format.DateTimeFormatter
 fun StandardDateRangePicker(
     closeDialog: () -> Unit,
     passingDate: (DateRange) -> Unit,
-    openDialog: Boolean,
+    dialogState: Boolean,
 ) {
-    if (openDialog) {
+    if (dialogState) {
         BasicAlertDialog(
             // Dismiss the dialog when the user clicks outside the dialog or on the back
             // button. If you want to disable that functionality, simply use an empty
@@ -148,7 +148,7 @@ fun PickerPreviewLightMode() {
         StandardDateRangePicker(
             closeDialog = { openDialog.value = false },
             passingDate = { datePickerState.value = it },
-            openDialog = openDialog.value,
+            dialogState = openDialog.value,
         )
         Text(text = "Time: ${datePickerState.value.status().msg}")
     }

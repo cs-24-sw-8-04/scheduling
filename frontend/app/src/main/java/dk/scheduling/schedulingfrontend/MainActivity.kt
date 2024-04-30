@@ -115,7 +115,7 @@ class MainActivity : ComponentActivity() {
                         composable(
                             Page.TaskOverview.route,
                         ) { TaskOverviewPage(overviewRepository = overviewRepo) }
-                        composable(Page.CreateTaskPage.route) { CreateTaskPage(handleSubmission = {}, handleCancellation = {}) }
+                        composable(Page.CreateTaskPage.route) { CreateTaskPage(Modifier, deviceRepo) }
                         composable(Page.Account.route) {
                             AccountPage(
                                 accountRepo = accountRepo,
