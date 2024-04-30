@@ -30,6 +30,10 @@ import dk.scheduling.schedulingfrontend.pages.Page
 import dk.scheduling.schedulingfrontend.pages.SignUpPage
 import dk.scheduling.schedulingfrontend.pages.TaskOverviewPage
 import dk.scheduling.schedulingfrontend.repositories.account.AccountRepository
+import dk.scheduling.schedulingfrontend.repositories.device.DeviceRepository
+import dk.scheduling.schedulingfrontend.repositories.event.EventRepository
+import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
+import dk.scheduling.schedulingfrontend.repositories.task.TaskRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.runBlocking
 import testdata.deviceTaskTestData
@@ -43,6 +47,15 @@ class MainActivity : ComponentActivity() {
                 val service = getApiClient(baseUrl = getString(R.string.base_url))
                 val accountDataStorage = AccountDataSource(this)
                 val accountRepo = AccountRepository(accountDataSource = accountDataStorage, service = service)
+                val deviceRepo = DeviceRepository(accountRepository = accountRepo, service = service)
+                val taskRepo = TaskRepository(accountRepository = accountRepo, service = service)
+                val eventRepo = EventRepository(accountRepository = accountRepo, service = service)
+                val overviewRepo =
+                    OverviewRepository(
+                        deviceRepository = deviceRepo,
+                        taskRepository = taskRepo,
+                        eventRepository = eventRepo,
+                    )
 
                 val appState = rememberAppState()
 
