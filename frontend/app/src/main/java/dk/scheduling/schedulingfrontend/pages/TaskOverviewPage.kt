@@ -33,6 +33,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -66,7 +67,7 @@ fun TaskOverviewPage(
     modifier: Modifier = Modifier,
     overviewRepository: IOverviewsRepository,
 ) {
-    var deviceTasks by remember { mutableStateOf(mutableListOf<DeviceTask>()) }
+    var deviceTasks = remember { SnapshotStateList<DeviceTask>() }
     val refreshState = rememberPullToRefreshState()
     if (refreshState.isRefreshing) {
         LaunchedEffect(true) {
