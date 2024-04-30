@@ -100,20 +100,17 @@ fun StandardDateRangePicker(
 }
 
 data class DateRange(val startTime: Long?, val endTime: Long?) {
+    private fun millisToLocalDateTime(millis: Long): LocalDateTime {
+        val instant = Instant.ofEpochMilli(millis)
+        return LocalDateTime.ofInstant(instant, ZoneId.systemDefault())
+    }
+
     fun rangeStart(): LocalDateTime? {
-        if (startTime == null) {
-            return null
-        }
-        val startInstant = Instant.ofEpochMilli(startTime)
-        return LocalDateTime.ofInstant(startInstant, ZoneId.systemDefault())
+        return startTime?.let { millisToLocalDateTime(it) }
     }
 
     fun rangeEnd(): LocalDateTime? {
-        if (endTime == null) {
-            return null
-        }
-        val endInstant = Instant.ofEpochMilli(endTime)
-        return LocalDateTime.ofInstant(endInstant, ZoneId.systemDefault())
+        return endTime?.let { millisToLocalDateTime(it) }
     }
 
     fun isInitialized(): Boolean {
