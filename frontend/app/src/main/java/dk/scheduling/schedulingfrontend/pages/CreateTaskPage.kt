@@ -119,9 +119,9 @@ fun CreateTaskPage(
             )
 
             ClickableCard(
-                { dateRangeDialog.value = true },
-                "Date interval: ${task.dateRange.status().msg}",
-                task.dateRange.isInitialized() && !task.dateRange.status().isValid,
+                onClick = { dateRangeDialog.value = true },
+                text = "Date interval: ${task.dateRange.status().msg}",
+                isError = task.dateRange.isInitialized() && !task.dateRange.status().isValid,
             )
 
             // start time
@@ -132,7 +132,11 @@ fun CreateTaskPage(
                 state = task.startTime,
                 openDialog = startTimeDialog.value,
             )
-            ClickableCard({ startTimeDialog.value = true }, "Start time: ${task.printStartTime()}")
+
+            ClickableCard(
+                onClick = { startTimeDialog.value = true },
+                text = "Start time: ${task.printStartTime()}",
+            )
 
             // end time
             val endTimeDialog = remember { mutableStateOf(false) }
@@ -142,7 +146,10 @@ fun CreateTaskPage(
                 state = task.endTime,
                 openDialog = endTimeDialog.value,
             )
-            ClickableCard({ endTimeDialog.value = true }, "End time: ${task.printEndTime()}")
+            ClickableCard(
+                onClick = { endTimeDialog.value = true },
+                text = "End time: ${task.printEndTime()}",
+            )
 
             if (!task.status().isValid) {
                 Text(
