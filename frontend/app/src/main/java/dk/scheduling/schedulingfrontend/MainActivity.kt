@@ -1,8 +1,11 @@
 package dk.scheduling.schedulingfrontend
 
+import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -19,7 +22,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.WorkManager
 import dk.scheduling.schedulingfrontend.api.getApiClient
+import dk.scheduling.schedulingfrontend.background.eventCollectWork
 import dk.scheduling.schedulingfrontend.datasources.AccountDataSource
 import dk.scheduling.schedulingfrontend.pages.AccountPage
 import dk.scheduling.schedulingfrontend.pages.CreateDevicePage
@@ -36,8 +42,11 @@ import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepositor
 import dk.scheduling.schedulingfrontend.repositories.task.TaskRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.runBlocking
+import java.time.Duration
 
 class MainActivity : ComponentActivity() {
+    private val appPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions(), {})
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -54,6 +63,14 @@ class MainActivity : ComponentActivity() {
                         taskRepository = taskRepo,
                         eventRepository = eventRepo,
                     )
+
+                val workManager = WorkManager.getInstance(this)
+
+                workManager.enqueueUniquePeriodicWork(
+                    getString(R.string.event_alarm_notify_work_id),
+                    ExistingPeriodicWorkPolicy.KEEP,
+                    eventCollectWork(Duration.ofMinutes(15)),
+                )
 
                 val appState = rememberAppState()
 
@@ -134,6 +151,27 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+}
+
+@Composable
+fun requestNotificationPermissionDialog() {
+    val requestPermissionLauncher =
+        rememberLauncherForActivityResult(
+            contract = ActivityResultContracts.RequestPermission(),
+        ) { isGranted: Boolean ->
+            if (isGranted) {
+                // Permission is granted. Continue the action or workflow in your
+                // app.
+            } else {
+                // Explain to the user that the feature is unavailable because the
+                // feature requires a permission that the user has denied. At the
+                // same time, respect the user's decision. Don't link to system
+                // settings in an effort to convince the user to change their
+                // decision.
+            }
+        }
+
+    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
 }
 
 class AppState(
