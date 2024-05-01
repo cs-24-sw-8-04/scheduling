@@ -1,5 +1,3 @@
-@file:Suppress("PropertyName")
-
 package dk.scheduling.schedulingfrontend.api.protocol
 
 data class Device(

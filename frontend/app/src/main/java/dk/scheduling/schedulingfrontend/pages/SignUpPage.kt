@@ -133,15 +133,6 @@ fun SignUpPage(
     }
 }
 
-fun signUp(
-    username: String,
-    password: String,
-    homeAddress: String,
-): Boolean {
-    // TODO: Send to server and if the signup is valid return true
-    return false
-}
-
 @Preview(showBackground = true, device = "spec:id=reference_phone,shape=Normal,width=411,height=891,unit=dp,dpi=420")
 @Composable
 fun SignUpPagePreviewLightMode() {

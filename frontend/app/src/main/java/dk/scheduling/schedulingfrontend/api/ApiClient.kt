@@ -14,17 +14,12 @@ import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManager
 import javax.net.ssl.X509TrustManager
 
-class RetrofitClient(val baseUrl: String) {
+class RetrofitClient(private val baseUrl: String) {
     /**
      * The base URL of the API
      * 10.0.2.2 is a special alias to your host loopback interface (127.0.0.1 on your development machine)
      * 2222 is the port where the server is running
      */
-
-    private val gson =
-        GsonBuilder()
-            .setLenient()
-            .create()
 
     private val okHttpClient: OkHttpClient by lazy {
         val trustAllCertificates =
