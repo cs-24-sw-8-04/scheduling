@@ -50,6 +50,7 @@ import kotlinx.coroutines.launch
 import testdata.DummyDeviceRepository
 import testdata.DummyTaskRepository
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CreateTaskPage(
     modifier: Modifier = Modifier,
@@ -84,7 +85,7 @@ fun CreateTaskPage(
                 remember {
                     mutableStateOf(
                         TaskForm(
-                            devices.first().id,
+                            null,
                             Duration(""),
                             DateRange(null, null),
                             TimePickerState(0, 0, true),
@@ -185,7 +186,7 @@ fun CreateTaskPage(
                                 timeSpan = Timespan(task.startDateTime(), task.endDateTime()),
                                 // Duration is in minutes and must be in milliseconds
                                 duration = task.duration.value.toLong() * 60 * 1000,
-                                device_id = task.deviceId,
+                                device_id = task.deviceId!!,
                             )
                             errorStatus = null
                             navigateOnValidCreation()

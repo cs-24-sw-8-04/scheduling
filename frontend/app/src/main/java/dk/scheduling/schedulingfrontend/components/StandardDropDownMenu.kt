@@ -29,7 +29,7 @@ fun <T> StandardDropDownMenu(
     modifier: Modifier,
     options: Map<T, String>,
     label: String,
-    selectedItem: T,
+    selectedItem: T?,
     onSelect: (T) -> Unit,
 ) {
     val (expanded, setExpanded) = remember { mutableStateOf(false) }
@@ -45,7 +45,7 @@ fun <T> StandardDropDownMenu(
                 modifier
                     .fillMaxWidth()
                     .menuAnchor(),
-            value = options[selectedItem]!!,
+            value = options[selectedItem] ?: "Unselected",
             onValueChange = {},
             readOnly = true,
             singleLine = true,

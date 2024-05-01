@@ -59,4 +59,17 @@ class TaskFormTest {
             )
         assert(!taskDifferentDates.status().isValid) { "Invalid task, time interval 1 day is smaller than duration" }
     }
+
+    @Test
+    fun deviceId_IsNull_InvalidStatus() {
+        val taskSameDate =
+            TaskForm(
+                null,
+                Duration("1"),
+                DateRange(0, 0),
+                timeMidday,
+                timeOneMinutePastMidday,
+            )
+        assert(!taskSameDate.status().isValid) { "Invalid task, deviceId is null (unselected)" }
+    }
 }
