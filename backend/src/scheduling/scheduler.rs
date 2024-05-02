@@ -83,18 +83,20 @@ impl SchedulerAlgorithm for GlobalSchedulerAlgorithm {
         graph: &mut DiscreteGraph,
         tasks: Vec<TaskForScheduler>,
     ) -> Result<Vec<UnpublishedEvent>> {
-        let mut events: Vec<UnpublishedEvent> = Vec::new();
+        let mut scheduled_events: Vec<UnpublishedEvent> = Vec::new();
+
         for task in &tasks {
             let temp_graph = graph.clone();
-            events.push(make_unpublished_event_and_remove_from_graph(
+            let best_event = make_unpublished_event_and_remove_from_graph(
                 graph,
                 task,
                 find_best_event(task, &temp_graph)?,
-                tasks_duration_in_graph_timeslots(task, &temp_graph)?,
-            )?)
+                duration_as_timeslots(task, &temp_graph)?,
+            )?;
+            scheduled_events.push(best_event);
         }
 
-        Ok(events)
+        Ok(scheduled_events)
     }
 }
 impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
@@ -103,28 +105,26 @@ impl SchedulerAlgorithm for NaiveSchedulerAlgorithm {
         graph: &mut DiscreteGraph,
         tasks: Vec<TaskForScheduler>,
     ) -> Result<Vec<UnpublishedEvent>> {
-        let mut events: Vec<UnpublishedEvent> = Vec::new();
+        let mut scheduled_events: Vec<UnpublishedEvent> = Vec::new();
         let initial_graph = graph.clone();
         for task in &tasks {
-            events.push(make_unpublished_event_and_remove_from_graph(
+            scheduled_events.push(make_unpublished_event_and_remove_from_graph(
                 graph,
                 task,
                 find_best_event(task, &initial_graph)?,
-                tasks_duration_in_graph_timeslots(task, &initial_graph)?,
+                duration_as_timeslots(task, &initial_graph)?,
             )?);
         }
 
-        Ok(events)
+        Ok(scheduled_events)
     }
 }
 
-/// Best meaning where the energy available is at max
 fn find_best_event(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usize> {
-    let timeslots = tasks_duration_in_graph_timeslots(task, graph)?;
+    // timeslots represent d'
+    let timeslots = duration_as_timeslots(task, graph)?;
 
-    // Make a new graph containing all possible time intervals to place the event
-    let mapped_graph = adjust_graph_for_task_duration(timeslots, graph.get_values());
-
+    // time_delta represents delta t
     let time_delta = graph.get_time_delta().num_milliseconds();
     // Defining ranges for the task's timespan
     let start_time = min(task.timespan.start, graph.get_start_time());
@@ -133,6 +133,7 @@ fn find_best_event(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usi
     let end_time = min(task.timespan.end, graph.get_end_time());
     let end_offset = (end_time - graph.get_start_time()).num_milliseconds();
 
+    // The timeslots of when the task can start and end
     let timeslot_start: usize = (start_offset / time_delta).try_into()?;
     let timeslot_end: usize = (end_offset / time_delta).try_into()?;
 
@@ -152,9 +153,15 @@ fn find_best_event(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usi
         timeslots
     );
 
-    // Find the max of mapped_graph slice.
-    // Slice is made form the tasks timespan
-    let greatest_index = mapped_graph[timeslot_start..=timeslot_end - (timeslots - 1)]
+    // The set of values I for task T
+    let task_interval = &graph.get_values()[timeslot_start..=timeslot_end];
+
+    // The set P(d') created using I
+    let mapped_graph = make_p_from_duration_in_timeslots(timeslots, task_interval);
+
+    // Getting the max value for P(d'),
+    // then finding the timeslot in which the event should begin
+    let greatest_index = mapped_graph
         .iter()
         .position_max_by(|x, y| x.total_cmp(y))
         .unwrap();
@@ -166,11 +173,11 @@ fn find_best_event(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usi
 /// ```ignore
 /// let timeslots = 2;
 /// let graph_values = [1.0..=5.0];
-/// let res = adjust_graph_for_task_duration(timeslots, graph_values);
+/// let res = make_p_from_duration_in_timeslots(timeslots, graph_values);
 ///
 /// assert_eq!(res, [3.0, 5.0, 7.0, 9.0]);
 /// ```
-fn adjust_graph_for_task_duration(timeslots: usize, graph_values: &[f64]) -> Vec<f64> {
+fn make_p_from_duration_in_timeslots(timeslots: usize, graph_values: &[f64]) -> Vec<f64> {
     assert_ne!(timeslots, 0, "Check that your duration is non-zero");
     graph_values
         .windows(timeslots)
@@ -193,10 +200,7 @@ fn make_unpublished_event_and_remove_from_graph(
     })
 }
 
-fn tasks_duration_in_graph_timeslots(
-    task: &TaskForScheduler,
-    graph: &DiscreteGraph,
-) -> Result<usize> {
+fn duration_as_timeslots(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usize> {
     let time_delta = graph.get_time_delta().num_milliseconds() as usize;
     let duration = (i64::from(task.duration)) as usize;
     Ok(duration.div_ceil(time_delta))
