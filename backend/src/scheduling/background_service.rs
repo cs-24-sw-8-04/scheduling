@@ -123,7 +123,7 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
         sqlx::query!(
             r#"
             INSERT INTO Events (task_id, start_time)
-            VALUES ((SELECT id FROM Tasks WHERE id == ?), ?)
+            VALUES ((SELECT id FROM Tasks WHERE id == ? LIMIT 1), ?)
             "#,
             event.task_id,
             event.start_time,
