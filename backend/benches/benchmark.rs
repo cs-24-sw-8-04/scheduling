@@ -8,7 +8,6 @@ use scheduling_backend::scheduling::{
     scheduler::NaiveSchedulerAlgorithm, task_for_scheduler::TaskForScheduler,
 };
 
-use either::*;
 use protocol::{tasks::TaskId, time::Timespan};
 
 struct TaskFactory {

@@ -143,6 +143,14 @@ fn find_best_event(task: &TaskForScheduler, graph: &DiscreteGraph) -> Result<usi
         timeslot_end,
         task
     );
+    assert!(
+        timeslot_end - timeslot_start >= (timeslots - 1),
+        "Unschedulable task provided, because the duration is larger than the task after truncating, task: {:?} timespan start in timeslots: {}, timespan end in timeslots: {}, duration in timeslots: {}",
+        task,
+        timeslot_start,
+        timeslot_end,
+        timeslots
+    );
 
     // Find the max of mapped_graph slice.
     // Slice is made form the tasks timespan
