@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{Duration, Utc};
+use chrono::{DateTime, Datelike, Duration, TimeZone, Utc};
 use protocol::{
     tasks::TaskId,
     time::{Milliseconds, Timespan},
@@ -8,7 +8,7 @@ use sqlx::SqlitePool;
 use tokio::{select, sync::mpsc::UnboundedReceiver, time::sleep};
 use tracing::{event, Level};
 
-use crate::data_model::graph::DiscreteGraph;
+use crate::{data_model::graph::DiscreteGraph, scheduling::event_creation::{_create_event, _create_event_with_task_id}};
 
 use super::{scheduler::SchedulerAlgorithm, task_for_scheduler::TaskForScheduler};
 
@@ -34,7 +34,7 @@ pub async fn background_service<F, TAlg>(
             break;
         }
 
-        let debounce = sleep(std::time::Duration::from_secs(5 * 60));
+        let debounce = sleep(std::time::Duration::from_secs(10));
 
         select! {
             _ = debounce => {
@@ -115,7 +115,7 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
         1393.0, 1271.0, 1044.0, 754.0, 445.0, 154.0, 10.0, 0.0, 0.0, 0.0,
     ];
 
-    let mut graph = DiscreteGraph::new(values, Duration::hours(1), Utc::now());
+    let mut graph = DiscreteGraph::new(values, Duration::hours(1), Utc.with_ymd_and_hms(now.year(), now.month(), now.day(), 0, 0, 0).unwrap());
 
     let events = algorithm.schedule(&mut graph, tasks)?;
 

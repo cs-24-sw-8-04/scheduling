@@ -60,6 +60,7 @@ android {
 
 dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
+    androidTestImplementation("junit:junit:4.12")
     annotationProcessor("androidx.room:room-compiler:2.6.1")
     // To use Kotlin annotation processing tool (kapt)
     kapt("androidx.room:room-compiler:2.6.1")
@@ -88,6 +89,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.05.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+    androidTestImplementation("androidx.work:work-testing:2.4.0")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

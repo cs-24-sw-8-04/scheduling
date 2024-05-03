@@ -1,5 +1,6 @@
 package dk.scheduling.schedulingfrontend.model
 
+import android.util.Log
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TimePickerState
 import dk.scheduling.schedulingfrontend.components.DateRange
@@ -30,11 +31,15 @@ data class TaskForm(
     }
 
     fun startDateTime(): LocalDateTime {
-        return dateRange.rangeStart()!!.plusHours(startTime.hour.toLong()).plusMinutes(startTime.minute.toLong())
+        Log.i("TaskForm", "dateRange start: ${dateRange.rangeStart()}")
+        Log.i("TaskForm", "hour: ${startTime.hour.toLong()}")
+        Log.i("TaskForm", "minute: ${startTime.minute.toLong()}")
+        Log.i("TaskForm", "startDateTime: ${dateRange.rangeStart()!!.withHour(startTime.hour).withMinute(startTime.minute)}")
+        return dateRange.rangeStart()!!.withHour(startTime.hour).withMinute(startTime.minute)
     }
 
     fun endDateTime(): LocalDateTime {
-        return dateRange.rangeEnd()!!.plusHours(endTime.hour.toLong()).plusMinutes(endTime.minute.toLong())
+        return dateRange.rangeEnd()!!.withHour(endTime.hour).withMinute(endTime.minute)
     }
 
     private fun timeStatus(): Status {

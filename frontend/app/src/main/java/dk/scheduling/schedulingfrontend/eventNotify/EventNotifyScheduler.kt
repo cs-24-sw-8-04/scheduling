@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import dk.scheduling.schedulingfrontend.database.EventAlarm
 import java.time.Duration
 import java.time.LocalDateTime
@@ -14,17 +15,17 @@ class EventNotifyScheduler(
 ) {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-    companion object {
-        val notifyBefore = Duration.ofMinutes(10)
-    }
+    private val notifyBefore = Duration.ofMinutes(15)
 
     fun scheduler(eventAlarm: EventAlarm) {
+        Log.i("EventNotifyScheduler", "scheduler: new alarm to schedule")
         val status =
             if (LocalDateTime.now().isBefore(eventAlarm.startTime.minus(notifyBefore))) {
-                eventAlarm.startTime.minusMinutes(10)
+                eventAlarm.startTime.minus(notifyBefore)
             } else {
-                eventAlarm.startTime
+                LocalDateTime.now()
             }
+        Log.i("EventNotifyScheduler", "scheduler: event ${eventAlarm.id} notify at $status. Event start at ${eventAlarm.startTime}")
 
         val intent =
             Intent(context, EventAlarmReceiver::class.java).apply {
@@ -38,12 +39,12 @@ class EventNotifyScheduler(
                 intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
-
         alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
-            eventAlarm.startTime.atZone(ZoneId.systemDefault()).toEpochSecond() * 1000,
+            status.atZone(ZoneId.systemDefault()).toEpochSecond() * 1000,
             pendingIntent,
         )
+        Log.i("EventNotifyScheduler", "Set alarm for event ${eventAlarm.id}")
     }
 
     fun cancel(eventAlarm: EventAlarm) {

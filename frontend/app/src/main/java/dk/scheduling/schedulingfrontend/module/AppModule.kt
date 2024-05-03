@@ -15,6 +15,10 @@ import dk.scheduling.schedulingfrontend.repositories.event.IEventRepository
 import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
 import dk.scheduling.schedulingfrontend.repositories.task.ITaskRepository
 import dk.scheduling.schedulingfrontend.repositories.task.TaskRepository
+import testdata.DummyAccountRepository
+import testdata.DummyDeviceRepository
+import testdata.DummyEventRepository
+import testdata.DummyTaskRepository
 
 interface IAppModule {
     val apiService: ApiService
@@ -42,10 +46,40 @@ class AppModule(
         DeviceRepository(accountRepository = accountRepo, service = apiService)
     }
     override val taskRepo: ITaskRepository by lazy {
-        TaskRepository(accountRepository = accountRepo, service = apiService)
+        TaskRepository(accountRepository = accountRepo, service = apiService, context = context)
     }
     override val eventRepo: IEventRepository by lazy {
         EventRepository(accountRepository = accountRepo, service = apiService)
+    }
+    override val overviewRepo: OverviewRepository by lazy {
+        OverviewRepository(
+            deviceRepository = deviceRepo,
+            taskRepository = taskRepo,
+            eventRepository = eventRepo,
+        )
+    }
+}
+
+class TestMockAppModule(
+    private val context: Context,
+) : IAppModule {
+    override val apiService: ApiService by lazy {
+        getApiClient(baseUrl = getString(context, R.string.base_url))
+    }
+    override val accountDataStorage: AccountDataSource by lazy {
+        AccountDataSource(context)
+    }
+    override val accountRepo: IAccountRepository by lazy {
+        DummyAccountRepository()
+    }
+    override val deviceRepo: IDeviceRepository by lazy {
+        DummyDeviceRepository(0)
+    }
+    override val taskRepo: ITaskRepository by lazy {
+        DummyTaskRepository(0)
+    }
+    override val eventRepo: IEventRepository by lazy {
+        DummyEventRepository(0)
     }
     override val overviewRepo: OverviewRepository by lazy {
         OverviewRepository(

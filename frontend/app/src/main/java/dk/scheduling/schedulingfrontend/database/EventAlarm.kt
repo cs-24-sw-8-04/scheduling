@@ -17,6 +17,7 @@ data class EventAlarm(
     @PrimaryKey val id: Long = 0,
     val deviceName: String,
     val startTime: LocalDateTime,
+    val duration: Long,
 )
 
 @Dao

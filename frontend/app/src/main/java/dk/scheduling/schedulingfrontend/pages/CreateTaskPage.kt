@@ -183,7 +183,11 @@ fun CreateTaskPage(
                     try {
                         coroutineScope.launch {
                             taskRepository.createTask(
-                                timeSpan = Timespan(task.startDateTime(), task.endDateTime()),
+                                timeSpan =
+                                    Timespan(
+                                        task.startDateTime(),
+                                        task.endDateTime(),
+                                    ),
                                 // Duration is in minutes and must be in milliseconds
                                 duration = task.duration.value.toLong() * 60 * 1000,
                                 device_id = task.deviceId!!,
