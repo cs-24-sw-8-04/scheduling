@@ -11,8 +11,8 @@ import androidx.work.WorkManager
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
-import dk.scheduling.schedulingfrontend.background.EventCollectorWorker
-import dk.scheduling.schedulingfrontend.background.eventCollectWork
+import dk.scheduling.schedulingfrontend.background.EventAlarmSetterWorker
+import dk.scheduling.schedulingfrontend.background.eventAlarmSetterWorkPeriodicRequest
 import dk.scheduling.schedulingfrontend.module.TestMockAppModule
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -41,7 +41,7 @@ class EventWorkerTest {
     @Throws(Exception::class)
     fun testPeriodicEventCollectorWork() {
         // Create request
-        val request = eventCollectWork(java.time.Duration.ofMinutes(15))
+        val request = eventAlarmSetterWorkPeriodicRequest(java.time.Duration.ofMinutes(15))
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         App.appModule = TestMockAppModule(context)
         val workManager = WorkManager.getInstance(context)
@@ -61,7 +61,7 @@ class EventWorkerTest {
     @Throws(Exception::class)
     fun testEventAlarmSet() {
         // Create request
-        val request = eventCollectWork(java.time.Duration.ofMinutes(15))
+        val request = eventAlarmSetterWorkPeriodicRequest(java.time.Duration.ofMinutes(15))
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         App.appModule = TestMockAppModule(context)
 
@@ -108,7 +108,7 @@ class EventAlarmWorkerTest {
         assertTrue("The list suppose to be empty", db.eventAlarmDao().getAll().isEmpty())
         runBlocking {
             val expectedNumEvents = App.appModule.eventRepo.getAllEvents().count()
-            val worker = TestListenableWorkerBuilder<EventCollectorWorker>(context).build()
+            val worker = TestListenableWorkerBuilder<EventAlarmSetterWorker>(context).build()
 
             val result = worker.doWork()
 

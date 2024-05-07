@@ -10,8 +10,8 @@ import androidx.room.Room
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
-import dk.scheduling.schedulingfrontend.background.eventCollectWork
-import dk.scheduling.schedulingfrontend.background.eventCollectWorkOnetime
+import dk.scheduling.schedulingfrontend.background.EventAlarmSetterWorker.Request.eventAlarmSetterWorkOnetimeRequest
+import dk.scheduling.schedulingfrontend.background.EventAlarmSetterWorker.Request.eventAlarmSetterWorkPeriodicRequest
 import dk.scheduling.schedulingfrontend.database.EventDatabase
 import dk.scheduling.schedulingfrontend.module.AppModule
 import dk.scheduling.schedulingfrontend.module.IAppModule
@@ -54,13 +54,13 @@ class App : Application() {
         workManager.enqueueUniquePeriodicWork(
             getString(R.string.event_alarm_notify_work_id),
             ExistingPeriodicWorkPolicy.KEEP,
-            eventCollectWork(Duration.ofMinutes(15)),
+            eventAlarmSetterWorkPeriodicRequest(Duration.ofMinutes(15)),
         )
 
         workManager.enqueueUniqueWork(
             "Start-up",
             ExistingWorkPolicy.KEEP,
-            eventCollectWorkOnetime(),
+            eventAlarmSetterWorkOnetimeRequest(),
         )
     }
 }

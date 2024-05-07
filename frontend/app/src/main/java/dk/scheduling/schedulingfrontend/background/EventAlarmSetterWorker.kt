@@ -15,51 +15,31 @@ import dk.scheduling.schedulingfrontend.eventNotify.EventNotifyScheduler
 import dk.scheduling.schedulingfrontend.exceptions.UserNotLoggedInException
 import java.time.Duration
 
-fun eventCollectWork(periodic: Duration): PeriodicWorkRequest {
-    val constraints =
-        Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-    return PeriodicWorkRequestBuilder<EventCollectorWorker>(periodic)
-        .setConstraints(constraints)
-        .build()
-}
-
-fun eventCollectWorkOnetime(): OneTimeWorkRequest {
-    val constraints =
-        Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-    return OneTimeWorkRequestBuilder<EventCollectorWorker>()
-        .setConstraints(constraints)
-        .build()
-}
-
-class EventCollectorWorker(
+class EventAlarmSetterWorker(
     private val context: Context,
     params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val dao = App.eventAlarmDb.eventAlarmDao()
+
         val eventNotifyScheduler = EventNotifyScheduler(context)
-        val eventsIdStored = dao.getAll().map { it.id }.toSet()
-        val retrievedEventIds = mutableSetOf<Long>()
+
+        val storedEventAlarmsId = dao.getAll().map { it.id }.toSet()
+        val retrievedEventsIds = mutableSetOf<Long>()
 
         try {
             App.appModule.overviewRepo.getDeviceTasks().forEach { deviceTask ->
                 deviceTask.tasks.forEach { taskEvent ->
-                    if (taskEvent.event != null) {
-                        val id = taskEvent.event.id
+                    taskEvent.event?.let { event ->
+                        val id = event.id
+                        retrievedEventsIds.add(id)
 
-                        retrievedEventIds.add(id)
-                        if (!(eventsIdStored.contains(id))) {
+                        if (!(storedEventAlarmsId.contains(id))) {
                             val eventAlarm =
                                 EventAlarm(
                                     id = id,
                                     deviceName = deviceTask.device.name,
-                                    startTime = taskEvent.event.start_time,
+                                    startTime = event.start_time,
                                     duration = taskEvent.task.duration,
                                 )
                             dao.insert(eventAlarm)
@@ -74,7 +54,7 @@ class EventCollectorWorker(
             return Result.retry()
         }
 
-        val cancelEvents = eventsIdStored - retrievedEventIds
+        val cancelEvents = storedEventAlarmsId - retrievedEventsIds
         cancelEvents.forEach {
             dao.loadById(it)?.let {
                 eventNotifyScheduler.cancel(it)
@@ -83,5 +63,29 @@ class EventCollectorWorker(
         }
 
         return Result.success()
+    }
+
+    companion object Request {
+        fun eventAlarmSetterWorkPeriodicRequest(periodic: Duration): PeriodicWorkRequest {
+            val constraints =
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+
+            return PeriodicWorkRequestBuilder<EventAlarmSetterWorker>(periodic)
+                .setConstraints(constraints)
+                .build()
+        }
+
+        fun eventAlarmSetterWorkOnetimeRequest(): OneTimeWorkRequest {
+            val constraints =
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+
+            return OneTimeWorkRequestBuilder<EventAlarmSetterWorker>()
+                .setConstraints(constraints)
+                .build()
+        }
     }
 }
