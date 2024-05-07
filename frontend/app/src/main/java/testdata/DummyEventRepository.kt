@@ -1,6 +1,6 @@
 package testdata
 
-import dk.scheduling.schedulingfrontend.api.protocol.Event
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Event
 import dk.scheduling.schedulingfrontend.repositories.event.IEventRepository
 import kotlinx.coroutines.delay
 import java.time.LocalDateTime

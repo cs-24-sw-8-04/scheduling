@@ -1,9 +1,9 @@
 package testdata
 
-import dk.scheduling.schedulingfrontend.api.protocol.Device
-import dk.scheduling.schedulingfrontend.api.protocol.Event
-import dk.scheduling.schedulingfrontend.api.protocol.Task
-import dk.scheduling.schedulingfrontend.api.protocol.Timespan
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Device
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Event
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Task
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Timespan
 import java.time.LocalDateTime
 
 fun devicesTestData(): List<Device> {
