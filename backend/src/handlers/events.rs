@@ -36,8 +36,7 @@ pub async fn get_all_events(
             start_time: Utc.from_utc_datetime(&e.start_time),
         })
         .collect();
-    println!("Events: {:?}", events);
-    println!("Account ID: {:?}", account_id);
+
     Ok(Json(GetEventsResponse { events }))
 }
 

@@ -4,7 +4,6 @@ import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.content.Context
-import android.content.Intent
 import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.room.Room
@@ -14,7 +13,6 @@ import androidx.work.WorkManager
 import dk.scheduling.schedulingfrontend.background.eventCollectWork
 import dk.scheduling.schedulingfrontend.background.eventCollectWorkOnetime
 import dk.scheduling.schedulingfrontend.database.EventDatabase
-import dk.scheduling.schedulingfrontend.eventNotify.EventAlarmReceiver
 import dk.scheduling.schedulingfrontend.module.AppModule
 import dk.scheduling.schedulingfrontend.module.IAppModule
 import java.time.Duration
@@ -44,7 +42,7 @@ class App : Application() {
                 NotificationChannel(
                     getString(R.string.notification_channel),
                     "Notification Channel",
-                    NotificationManager.IMPORTANCE_HIGH, // TODO: CHECK
+                    NotificationManager.IMPORTANCE_HIGH,
                 )
 
             notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
@@ -60,15 +58,9 @@ class App : Application() {
         )
 
         workManager.enqueueUniqueWork(
-            "A",
+            "Start-up",
             ExistingWorkPolicy.KEEP,
             eventCollectWorkOnetime(),
         )
-
-        Intent(context, EventAlarmReceiver::class.java).apply {
-            putExtra("ID", 125L)
-        }.also {
-            sendBroadcast(it)
-        }
     }
 }
