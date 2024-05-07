@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">SchedulingFrontend</string>
-    <string name="default_notification_channel_id">1</string>
     <string name="notification_channel">Notification</string>
     <string name="event_alarm_local_database">alarm_local_database</string>
     <string name="event_alarm_notify_work_id">EventAlarmNotifyWorkID</string>

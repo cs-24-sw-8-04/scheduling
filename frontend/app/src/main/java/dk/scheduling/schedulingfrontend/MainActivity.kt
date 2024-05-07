@@ -48,7 +48,6 @@ class MainActivity : ComponentActivity() {
                         Page.TaskOverview,
                         Page.Account,
                     )
-
                 val startDestinationPage = if (runBlocking { App.appModule.accountRepo.isLoggedIn() }) Page.DeviceOverview else Page.LoginPage
 
                 Scaffold(
@@ -76,6 +75,7 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding),
                     ) {
                         composable(Page.LoginPage.route) {
+                            requestNotificationPermissionDialog()
                             LoginPage(
                                 accountRepo = App.appModule.accountRepo,
                                 navigateOnValidLogin = { appState.navHostController.navigate(Page.DeviceOverview.route) },

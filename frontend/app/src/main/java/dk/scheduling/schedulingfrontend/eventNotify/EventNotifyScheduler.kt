@@ -15,12 +15,12 @@ class EventNotifyScheduler(
 ) {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-    private val notifyBefore = Duration.ofMinutes(15)
+    private val notifyBefore = Duration.ofMinutes(30)
 
     fun scheduler(eventAlarm: EventAlarm) {
-        Log.i("EventNotifyScheduler", "scheduler: new alarm to schedule")
+        Log.i("EventNotifyScheduler", "scheduler: new alarm to schedule ${eventAlarm.startTime.minus(notifyBefore)}")
         val status =
-            if (LocalDateTime.now().isBefore(eventAlarm.startTime.minus(notifyBefore))) {
+            if (LocalDateTime.now() < eventAlarm.startTime.minus(notifyBefore)) {
                 eventAlarm.startTime.minus(notifyBefore)
             } else {
                 LocalDateTime.now()

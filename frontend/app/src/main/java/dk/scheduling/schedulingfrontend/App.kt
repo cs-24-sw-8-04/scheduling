@@ -3,6 +3,8 @@ package dk.scheduling.schedulingfrontend
 import android.app.Application
 import android.app.NotificationChannel
 import android.app.NotificationManager
+import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.core.content.ContextCompat
 import androidx.room.Room
@@ -12,6 +14,7 @@ import androidx.work.WorkManager
 import dk.scheduling.schedulingfrontend.background.eventCollectWork
 import dk.scheduling.schedulingfrontend.background.eventCollectWorkOnetime
 import dk.scheduling.schedulingfrontend.database.EventDatabase
+import dk.scheduling.schedulingfrontend.eventNotify.EventAlarmReceiver
 import dk.scheduling.schedulingfrontend.module.AppModule
 import dk.scheduling.schedulingfrontend.module.IAppModule
 import java.time.Duration
@@ -21,11 +24,12 @@ class App : Application() {
         lateinit var appModule: IAppModule
         lateinit var eventAlarmDb: EventDatabase
         lateinit var notificationManager: NotificationManager
+        lateinit var context: Context
     }
 
     override fun onCreate() {
         super.onCreate()
-
+        context = this
         appModule = AppModule(this)
 
         eventAlarmDb =
@@ -60,5 +64,11 @@ class App : Application() {
             ExistingWorkPolicy.KEEP,
             eventCollectWorkOnetime(),
         )
+
+        Intent(context, EventAlarmReceiver::class.java).apply {
+            putExtra("ID", 125L)
+        }.also {
+            sendBroadcast(it)
+        }
     }
 }

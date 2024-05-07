@@ -83,9 +83,10 @@ class EventCollectorWorker(
         val cancelEvents = eventsIdStored - retrievedEventIds
         Log.i("EventCollectorWorker", "Cancel eventAlarms $cancelEvents")
         cancelEvents.forEach {
-            val eventAlarm = dao.loadById(it)
-            eventNotifyScheduler.cancel(eventAlarm)
-            dao.delete(eventAlarm)
+            dao.loadById(it)?.let {
+                eventNotifyScheduler.cancel(it)
+                dao.delete(it)
+            }
         }
 
         return Result.success()
