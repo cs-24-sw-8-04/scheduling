@@ -1,6 +1,5 @@
 package dk.scheduling.schedulingfrontend.repositories.event
 
-import android.util.Log
 import dk.scheduling.schedulingfrontend.api.ApiService
 import dk.scheduling.schedulingfrontend.api.protocol.Event
 import dk.scheduling.schedulingfrontend.exceptions.NoBodyWasProvidedException
@@ -22,7 +21,6 @@ class EventRepository(
         val response = service.getAllEvents(authToken)
         if (response.isSuccessful) {
             val events = response.body()?.events ?: throw NoBodyWasProvidedException("No body was provided", response = response.raw())
-            Log.i("EventRepository", "EVENTS: $events NUMBER-OF-EVENTS: ${events.count()}")
             return events
         }
         if (response.code() == 401) {

@@ -1,11 +1,8 @@
 package dk.scheduling.schedulingfrontend
 
-import android.Manifest
 import android.os.Bundle
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -34,8 +31,6 @@ import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
-    private val appPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions(), {})
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -75,7 +70,6 @@ class MainActivity : ComponentActivity() {
                         modifier = Modifier.padding(innerPadding),
                     ) {
                         composable(Page.LoginPage.route) {
-                            requestNotificationPermissionDialog()
                             LoginPage(
                                 accountRepo = App.appModule.accountRepo,
                                 navigateOnValidLogin = { appState.navHostController.navigate(Page.DeviceOverview.route) },
@@ -119,27 +113,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-
-@Composable
-fun requestNotificationPermissionDialog() {
-    val requestPermissionLauncher =
-        rememberLauncherForActivityResult(
-            contract = ActivityResultContracts.RequestPermission(),
-        ) { isGranted: Boolean ->
-            if (isGranted) {
-                // Permission is granted. Continue the action or workflow in your
-                // app.
-            } else {
-                // Explain to the user that the feature is unavailable because the
-                // feature requires a permission that the user has denied. At the
-                // same time, respect the user's decision. Don't link to system
-                // settings in an effort to convince the user to change their
-                // decision.
-            }
-        }
-
-    requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
 }
 
 class AppState(

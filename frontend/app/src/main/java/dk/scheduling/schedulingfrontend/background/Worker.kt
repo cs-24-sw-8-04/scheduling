@@ -1,7 +1,6 @@
 package dk.scheduling.schedulingfrontend.background
 
 import android.content.Context
-import android.util.Log
 import androidx.work.Constraints
 import androidx.work.CoroutineWorker
 import androidx.work.NetworkType
@@ -43,20 +42,17 @@ class EventCollectorWorker(
     params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        Log.i("EventCollectorWorker", "Run EventCollectorWorker")
-
         val dao = App.eventAlarmDb.eventAlarmDao()
         val eventNotifyScheduler = EventNotifyScheduler(context)
         val eventsIdStored = dao.getAll().map { it.id }.toSet()
         val retrievedEventIds = mutableSetOf<Long>()
 
-        Log.i("EventCollectorWorker", "Starting retrieving DeviceTasks and Schedule Alarm")
         try {
             App.appModule.overviewRepo.getDeviceTasks().forEach { deviceTask ->
                 deviceTask.tasks.forEach { taskEvent ->
                     if (taskEvent.event != null) {
                         val id = taskEvent.event.id
-                        Log.i("EventCollectorWorker", "New event $id")
+
                         retrievedEventIds.add(id)
                         if (!(eventsIdStored.contains(id))) {
                             val eventAlarm =
@@ -73,15 +69,12 @@ class EventCollectorWorker(
                 }
             }
         } catch (e: UserNotLoggedInException) {
-            Log.e("EventCollectorWorker", "UserNotLoggedInException: ${e.message}", e.other_exception)
             return Result.retry()
         } catch (e: Throwable) {
-            Log.e("EventCollectorWorker", "Exception: ${e.message}", e)
             return Result.retry()
         }
 
         val cancelEvents = eventsIdStored - retrievedEventIds
-        Log.i("EventCollectorWorker", "Cancel eventAlarms $cancelEvents")
         cancelEvents.forEach {
             dao.loadById(it)?.let {
                 eventNotifyScheduler.cancel(it)

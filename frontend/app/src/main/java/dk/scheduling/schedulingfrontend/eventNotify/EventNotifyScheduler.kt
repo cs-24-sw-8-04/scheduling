@@ -4,7 +4,6 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import dk.scheduling.schedulingfrontend.database.EventAlarm
 import java.time.Duration
 import java.time.LocalDateTime
@@ -18,14 +17,12 @@ class EventNotifyScheduler(
     private val notifyBefore = Duration.ofMinutes(30)
 
     fun scheduler(eventAlarm: EventAlarm) {
-        Log.i("EventNotifyScheduler", "scheduler: new alarm to schedule ${eventAlarm.startTime.minus(notifyBefore)}")
         val status =
             if (LocalDateTime.now() < eventAlarm.startTime.minus(notifyBefore)) {
                 eventAlarm.startTime.minus(notifyBefore)
             } else {
                 LocalDateTime.now()
             }
-        Log.i("EventNotifyScheduler", "scheduler: event ${eventAlarm.id} notify at $status. Event start at ${eventAlarm.startTime}")
 
         val intent =
             Intent(context, EventAlarmReceiver::class.java).apply {
@@ -44,7 +41,6 @@ class EventNotifyScheduler(
             status.atZone(ZoneId.systemDefault()).toEpochSecond() * 1000,
             pendingIntent,
         )
-        Log.i("EventNotifyScheduler", "Set alarm for event ${eventAlarm.id}")
     }
 
     fun cancel(eventAlarm: EventAlarm) {

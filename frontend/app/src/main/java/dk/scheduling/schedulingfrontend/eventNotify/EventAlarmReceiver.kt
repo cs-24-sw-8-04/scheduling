@@ -3,7 +3,6 @@ package dk.scheduling.schedulingfrontend.eventNotify
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.getString
 import dk.scheduling.schedulingfrontend.App
@@ -20,20 +19,16 @@ class EventAlarmReceiver : BroadcastReceiver() {
         context: Context?,
         intent: Intent?,
     ) {
-        Log.i("EventAlarmReceiver", "onReceive: Received an alarm")
         context ?: return
         val data = intent?.extras ?: return
 
         val id = if (data.containsKey("ID")) data.getLong("ID") else return
-        Log.i("EventAlarmReceiver", "Received alarm with id = $id")
         Thread {
             val dbo = App.eventAlarmDb.eventAlarmDao()
-            Log.i("EventAlarmReceiver", "create notification for event alarm: ${dbo.loadById(id)}")
             val eventAlarm = dbo.loadById(id) ?: return@Thread
 
             val notification = createEventNotification(eventAlarm)
 
-            Log.i("EventAlarmReceiver", "Show notification: $notification")
             showNotification(Random.nextInt(), App.context, notification)
 
             if (!notification.startEvent) {
