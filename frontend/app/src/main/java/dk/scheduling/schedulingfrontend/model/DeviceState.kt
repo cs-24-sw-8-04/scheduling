@@ -1,6 +1,6 @@
 package dk.scheduling.schedulingfrontend.model
 
-import dk.scheduling.schedulingfrontend.api.protocol.Event
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Event
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 

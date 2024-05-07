@@ -19,15 +19,22 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import dk.scheduling.schedulingfrontend.pages.AccountPage
-import dk.scheduling.schedulingfrontend.pages.CreateDevicePage
-import dk.scheduling.schedulingfrontend.pages.CreateTaskPage
-import dk.scheduling.schedulingfrontend.pages.HomePage
-import dk.scheduling.schedulingfrontend.pages.LoginPage
-import dk.scheduling.schedulingfrontend.pages.Page
-import dk.scheduling.schedulingfrontend.pages.SignUpPage
-import dk.scheduling.schedulingfrontend.pages.TaskOverviewPage
-import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
+import dk.scheduling.schedulingfrontend.datasources.AccountDataSource
+import dk.scheduling.schedulingfrontend.datasources.api.getApiClient
+import dk.scheduling.schedulingfrontend.gui.pages.AccountPage
+import dk.scheduling.schedulingfrontend.gui.pages.CreateDevicePage
+import dk.scheduling.schedulingfrontend.gui.pages.CreateTaskPage
+import dk.scheduling.schedulingfrontend.gui.pages.HomePage
+import dk.scheduling.schedulingfrontend.gui.pages.LoginPage
+import dk.scheduling.schedulingfrontend.gui.pages.Page
+import dk.scheduling.schedulingfrontend.gui.pages.SignUpPage
+import dk.scheduling.schedulingfrontend.gui.pages.TaskOverviewPage
+import dk.scheduling.schedulingfrontend.gui.theme.SchedulingFrontendTheme
+import dk.scheduling.schedulingfrontend.repositories.account.AccountRepository
+import dk.scheduling.schedulingfrontend.repositories.device.DeviceRepository
+import dk.scheduling.schedulingfrontend.repositories.event.EventRepository
+import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
+import dk.scheduling.schedulingfrontend.repositories.task.TaskRepository
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
@@ -96,7 +103,11 @@ class MainActivity : ComponentActivity() {
                             CreateDevicePage(
                                 deviceRepository = App.appModule.deviceRepo,
                                 navigateOnValidCreation = { appState.navHostController.navigate(Page.DeviceOverview.route) },
-                                navigateOnCancelCreation = { appState.navHostController.navigate(Page.DeviceOverview.route) },
+                                navigateOnCancelCreation = {
+                                    appState.navHostController.navigate(
+                                        Page.DeviceOverview.route,
+                                    )
+                                },
                             )
                         }
                         composable(
@@ -107,7 +118,11 @@ class MainActivity : ComponentActivity() {
                                 deviceRepository = App.appModule.deviceRepo,
                                 taskRepository = App.appModule.taskRepo,
                                 navigateOnValidCreation = { appState.navHostController.navigate(Page.TaskOverview.route) },
-                                navigateOnCancelCreation = { appState.navHostController.navigate(Page.TaskOverview.route) },
+                                navigateOnCancelCreation = {
+                                    appState.navHostController.navigate(
+                                        Page.TaskOverview.route,
+                                    )
+                                },
                             )
                         }
                         composable(Page.Account.route) {

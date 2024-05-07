@@ -1,6 +1,6 @@
 package testdata
 
-import dk.scheduling.schedulingfrontend.api.protocol.Device
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Device
 import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
 import kotlinx.coroutines.delay
 

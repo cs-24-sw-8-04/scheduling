@@ -1,8 +1,8 @@
 package dk.scheduling.schedulingfrontend.repositories.device
 
-import dk.scheduling.schedulingfrontend.api.ApiService
-import dk.scheduling.schedulingfrontend.api.protocol.CreateDeviceRequest
-import dk.scheduling.schedulingfrontend.api.protocol.Device
+import dk.scheduling.schedulingfrontend.datasources.api.ApiService
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.CreateDeviceRequest
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Device
 import dk.scheduling.schedulingfrontend.exceptions.CreationFailedException
 import dk.scheduling.schedulingfrontend.exceptions.DeletionFailedException
 import dk.scheduling.schedulingfrontend.exceptions.NoBodyWasProvidedException

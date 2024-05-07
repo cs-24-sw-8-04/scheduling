@@ -1,13 +1,13 @@
 package dk.scheduling.schedulingfrontend
 
-import dk.scheduling.schedulingfrontend.api.ApiService
-import dk.scheduling.schedulingfrontend.api.getApiClient
-import dk.scheduling.schedulingfrontend.api.protocol.CreateDeviceRequest
-import dk.scheduling.schedulingfrontend.api.protocol.CreateTaskRequest
-import dk.scheduling.schedulingfrontend.api.protocol.Device
-import dk.scheduling.schedulingfrontend.api.protocol.RegisterOrLoginRequest
-import dk.scheduling.schedulingfrontend.api.protocol.Task
-import dk.scheduling.schedulingfrontend.api.protocol.Timespan
+import dk.scheduling.schedulingfrontend.datasources.api.ApiService
+import dk.scheduling.schedulingfrontend.datasources.api.getApiClient
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.CreateDeviceRequest
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.CreateTaskRequest
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Device
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.RegisterOrLoginRequest
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Task
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Timespan
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Before
