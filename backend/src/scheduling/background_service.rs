@@ -113,9 +113,12 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
     let values = vec![
         0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 28.0, 200.0, 484.0, 829.0, 1186.0, 1407.0, 1475.0, 1455.0,
         1393.0, 1271.0, 1044.0, 754.0, 445.0, 154.0, 10.0, 0.0, 0.0, 0.0,
-    ];
+    ]
+    .into_iter()
+    .flat_map(|v| vec![v; 60])
+    .collect();
 
-    let mut graph = DiscreteGraph::new(values, Duration::hours(1), Utc::now());
+    let mut graph = DiscreteGraph::new(values, Duration::minutes(1), Utc::now());
 
     let events = algorithm.schedule(&mut graph, tasks)?;
 
