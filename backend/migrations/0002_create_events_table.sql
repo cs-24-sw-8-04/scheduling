@@ -2,5 +2,6 @@ CREATE TABLE Events(
   id INTEGER PRIMARY KEY NOT NULL,
   task_id INTEGER NOT NULL
     REFERENCES Tasks(id) ON DELETE CASCADE,
-  start_time DATETIME NOT NULL
+  start_time DATETIME NOT NULL,
+  UNIQUE(task_id)
 );
