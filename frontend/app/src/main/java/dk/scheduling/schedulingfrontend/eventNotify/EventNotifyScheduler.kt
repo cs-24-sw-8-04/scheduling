@@ -14,7 +14,7 @@ class EventNotifyScheduler(
 ) {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
 
-    private val notifyBefore = Duration.ofMinutes(30)
+    private val notifyBefore = Duration.ofMinutes(1)
 
     fun scheduler(eventAlarm: EventAlarm) {
         val status =

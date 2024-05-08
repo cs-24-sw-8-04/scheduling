@@ -1,12 +1,10 @@
 package dk.scheduling.schedulingfrontend.repositories.task
 
 import android.content.Context
-import androidx.work.WorkManager
 import dk.scheduling.schedulingfrontend.api.ApiService
 import dk.scheduling.schedulingfrontend.api.protocol.CreateTaskRequest
 import dk.scheduling.schedulingfrontend.api.protocol.Task
 import dk.scheduling.schedulingfrontend.api.protocol.Timespan
-import dk.scheduling.schedulingfrontend.background.EventAlarmSetterWorker.Request.eventAlarmSetterWorkOnetimeRequest
 import dk.scheduling.schedulingfrontend.exceptions.CreationFailedException
 import dk.scheduling.schedulingfrontend.exceptions.DeletionFailedException
 import dk.scheduling.schedulingfrontend.exceptions.NoBodyWasProvidedException
@@ -44,8 +42,6 @@ class TaskRepository(
         val authToken = getAuthToken()
         val response = service.createTask(authToken = authToken, CreateTaskRequest(timeSpan, duration, device_id))
         if (response.isSuccessful) {
-            val workManager = WorkManager.getInstance(context)
-            workManager.enqueue(eventAlarmSetterWorkOnetimeRequest())
             return
         }
         if (response.code() == 401) {
