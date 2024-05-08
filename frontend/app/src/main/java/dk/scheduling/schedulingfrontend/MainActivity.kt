@@ -44,7 +44,12 @@ class MainActivity : ComponentActivity() {
                         Page.Account,
                     )
 
-                val startDestinationPage = if (runBlocking { App.appModule.accountRepo.isLoggedIn() }) Page.DeviceOverview else Page.LoginPage
+                val startDestinationPage =
+                    if (runBlocking { App.appModule.accountRepo.isLoggedIn() }) {
+                        Page.DeviceOverview
+                    } else {
+                        Page.LoginPage
+                    }
 
                 Scaffold(
                     bottomBar = {
