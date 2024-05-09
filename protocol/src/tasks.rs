@@ -9,7 +9,19 @@ use crate::{
 };
 
 #[derive(
-    Deserialize, Serialize, Debug, sqlx::Type, PartialEq, Eq, From, Into, Clone, Copy, Display,
+    Deserialize,
+    Serialize,
+    Debug,
+    sqlx::Type,
+    PartialEq,
+    Eq,
+    From,
+    Into,
+    Clone,
+    Copy,
+    Display,
+    PartialOrd,
+    Ord,
 )]
 #[sqlx(transparent)]
 pub struct TaskId(i64);

@@ -9,11 +9,11 @@ import dk.scheduling.schedulingfrontend.exceptions.DeletionFailedException
 import dk.scheduling.schedulingfrontend.exceptions.NoBodyWasProvidedException
 import dk.scheduling.schedulingfrontend.exceptions.UnauthorizedException
 import dk.scheduling.schedulingfrontend.exceptions.UnsuccessfulRequestException
-import dk.scheduling.schedulingfrontend.repositories.account.AccountRepository
+import dk.scheduling.schedulingfrontend.repositories.account.IAccountRepository
 
 class TaskRepository(
     private val service: ApiService,
-    private val accountRepository: AccountRepository,
+    private val accountRepository: IAccountRepository,
 ) : ITaskRepository {
     private suspend fun getAuthToken(): String {
         return accountRepository.getAuthToken().toString()
