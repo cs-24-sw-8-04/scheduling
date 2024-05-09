@@ -30,11 +30,11 @@ data class TaskForm(
     }
 
     fun startDateTime(): LocalDateTime {
-        return dateRange.rangeStart()!!.plusHours(startTime.hour.toLong()).plusMinutes(startTime.minute.toLong())
+        return dateRange.rangeStart()!!.withHour(startTime.hour).withMinute(startTime.minute)
     }
 
     fun endDateTime(): LocalDateTime {
-        return dateRange.rangeEnd()!!.plusHours(endTime.hour.toLong()).plusMinutes(endTime.minute.toLong())
+        return dateRange.rangeEnd()!!.withHour(endTime.hour).withMinute(endTime.minute)
     }
 
     private fun timeStatus(): Status {
