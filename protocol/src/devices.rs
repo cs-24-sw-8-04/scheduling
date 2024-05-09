@@ -1,5 +1,3 @@
-use std::ops::AddAssign;
-
 use derive_more::{Display, From, Into};
 use serde::{Deserialize, Serialize};
 use std::hash::{Hash, Hasher};
@@ -9,12 +7,6 @@ use std::hash::{Hash, Hasher};
 )]
 #[sqlx(transparent)]
 pub struct DeviceId(i64);
-
-impl AddAssign<i64> for DeviceId {
-    fn add_assign(&mut self, rhs: i64) {
-        self.0 += rhs;
-    }
-}
 
 #[derive(Deserialize, Serialize)]
 pub struct GetDevicesResponse {
