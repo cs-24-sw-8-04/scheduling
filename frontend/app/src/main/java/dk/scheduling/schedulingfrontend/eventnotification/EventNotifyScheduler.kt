@@ -11,10 +11,9 @@ import java.time.ZoneId
 
 class EventNotifyScheduler(
     private val context: Context,
+    private val notifyBefore: Duration = Duration.ofMinutes(1),
 ) {
     private val alarmManager = context.getSystemService(AlarmManager::class.java)
-
-    private val notifyBefore = Duration.ofMinutes(1)
 
     fun scheduler(eventAlarm: EventAlarm) {
         val status =
@@ -36,6 +35,7 @@ class EventNotifyScheduler(
                 intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
+
         alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             status.atZone(ZoneId.systemDefault()).toEpochSecond() * 1000,
