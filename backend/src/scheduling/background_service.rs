@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{Duration, Utc};
+use chrono::{Datelike, Duration, TimeZone, Utc};
 use protocol::{
     tasks::TaskId,
     time::{Milliseconds, Timespan},
@@ -118,7 +118,7 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
     .flat_map(|v| vec![v; 60])
     .collect();
 
-    let mut graph = DiscreteGraph::new(values, Duration::minutes(1), Utc::now());
+    let mut graph = DiscreteGraph::new(values, Duration::minutes(1), Utc.with_ymd_and_hms(now.year(), now.month(), now.day(), 0, 0, 0).unwrap());
 
     let events = algorithm.schedule(&mut graph, tasks)?;
 
