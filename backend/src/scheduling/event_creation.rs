@@ -27,26 +27,3 @@ pub async fn _create_event(
         start_time,
     })
 }
-
-pub async fn _create_event_with_task_id(
-    pool: &SqlitePool,
-    task_id: TaskId,
-    start_time: DateTime<Utc>,
-) -> Result<Event, Error> {
-    let event_id = sqlx::query_scalar!(
-        r#"
-        INSERT INTO Events (task_id, start_time) VALUES (?, ?)
-        RETURNING id as "id: EventId"
-        "#,
-        task_id,
-        start_time
-    )
-    .fetch_one(pool)
-    .await?;
-
-    Ok(Event {
-        id: event_id,
-        task_id: task_id,
-        start_time,
-    })
-}
