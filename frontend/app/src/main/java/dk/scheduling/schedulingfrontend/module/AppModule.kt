@@ -49,7 +49,7 @@ class AppModule(
         TaskRepository(accountRepository = accountRepo, service = apiService)
     }
     override val eventRepo: IEventRepository by lazy {
-        EventRepository(accountRepository = accountRepo, service = apiService)
+        EventRepository(service = apiService, accountRepository = accountRepo)
     }
     override val overviewRepo: OverviewRepository by lazy {
         OverviewRepository(
