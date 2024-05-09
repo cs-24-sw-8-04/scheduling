@@ -33,6 +33,9 @@ jobs:
         workspaces: "${{ matrix.project }} -> target"
         cache-all-crates: true
 
+    - name: Install cargo-llvm-cov
+      uses: taiki-e/install-action@cargo-llvm-cov
+
     - name: Install sqlx-cli
       run: cargo install sqlx-cli --no-default-features --features sqlite
       if: matrix.project != 'protocol'
@@ -56,6 +59,16 @@ jobs:
 
     - name: Run tests
       run: cargo test --verbose
+
+    - name: Generate code coverage
+      run: cargo llvm-cov --all-features --workspace --lcov --output-path lcov.info
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v4
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        files: lcov.info
+        fail_ci_if_error: true
 
     - name: Run simulator
       run: cargo run
