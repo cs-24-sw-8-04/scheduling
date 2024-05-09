@@ -1,5 +1,5 @@
 use anyhow::Result;
-use chrono::{DateTime, Datelike, Duration, TimeZone, Utc};
+use chrono::{Datelike, Duration, TimeZone, Utc};
 use protocol::{
     tasks::TaskId,
     time::{Milliseconds, Timespan},
@@ -8,7 +8,7 @@ use sqlx::SqlitePool;
 use tokio::{select, sync::mpsc::UnboundedReceiver, time::sleep};
 use tracing::{event, Level};
 
-use crate::{data_model::graph::DiscreteGraph, scheduling::event_creation::{_create_event, _create_event_with_task_id}};
+use crate::data_model::graph::DiscreteGraph;
 
 use super::{scheduler::SchedulerAlgorithm, task_for_scheduler::TaskForScheduler};
 
