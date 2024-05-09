@@ -34,7 +34,7 @@ pub async fn background_service<F, TAlg>(
             break;
         }
 
-        let debounce = sleep(std::time::Duration::from_secs(10));
+        let debounce = sleep(std::time::Duration::from_secs(5 * 60));
 
         select! {
             _ = debounce => {
