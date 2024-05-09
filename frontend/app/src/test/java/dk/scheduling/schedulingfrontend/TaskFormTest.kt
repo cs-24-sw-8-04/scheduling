@@ -75,7 +75,6 @@ class TaskFormTest {
                 1,
                 // 24 hours and one minute in minutes
                 Duration("1441"),
-                // One day in milliseconds
                 DateRange(timeSinceEpochInMillis, tomorrowInMillis),
                 timeMidday,
                 timeMidday,
