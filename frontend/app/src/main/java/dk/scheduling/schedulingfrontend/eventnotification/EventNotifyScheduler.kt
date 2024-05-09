@@ -35,7 +35,6 @@ class EventNotifyScheduler(
                 intent,
                 PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT,
             )
-
         alarmManager.setAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             status.atZone(ZoneId.systemDefault()).toEpochSecond() * 1000,
