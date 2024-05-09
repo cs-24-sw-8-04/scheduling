@@ -19,8 +19,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import dk.scheduling.schedulingfrontend.api.getApiClient
-import dk.scheduling.schedulingfrontend.datasources.AccountDataSource
 import dk.scheduling.schedulingfrontend.pages.AccountPage
 import dk.scheduling.schedulingfrontend.pages.CreateDevicePage
 import dk.scheduling.schedulingfrontend.pages.CreateTaskPage
@@ -29,11 +27,6 @@ import dk.scheduling.schedulingfrontend.pages.LoginPage
 import dk.scheduling.schedulingfrontend.pages.Page
 import dk.scheduling.schedulingfrontend.pages.SignUpPage
 import dk.scheduling.schedulingfrontend.pages.TaskOverviewPage
-import dk.scheduling.schedulingfrontend.repositories.account.AccountRepository
-import dk.scheduling.schedulingfrontend.repositories.device.DeviceRepository
-import dk.scheduling.schedulingfrontend.repositories.event.EventRepository
-import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
-import dk.scheduling.schedulingfrontend.repositories.task.TaskRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import kotlinx.coroutines.runBlocking
 
@@ -42,19 +35,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SchedulingFrontendTheme {
-                val service = getApiClient(baseUrl = getString(R.string.base_url))
-                val accountDataStorage = AccountDataSource(this)
-                val accountRepo = AccountRepository(accountDataSource = accountDataStorage, service = service)
-                val deviceRepo = DeviceRepository(accountRepository = accountRepo, service = service)
-                val taskRepo = TaskRepository(accountRepository = accountRepo, service = service)
-                val eventRepo = EventRepository(accountRepository = accountRepo, service = service)
-                val overviewRepo =
-                    OverviewRepository(
-                        deviceRepository = deviceRepo,
-                        taskRepository = taskRepo,
-                        eventRepository = eventRepo,
-                    )
-
                 val appState = rememberAppState()
 
                 val pages =
@@ -64,7 +44,12 @@ class MainActivity : ComponentActivity() {
                         Page.Account,
                     )
 
-                val startDestinationPage = if (runBlocking { accountRepo.isLoggedIn() }) Page.DeviceOverview else Page.LoginPage
+                val startDestinationPage =
+                    if (runBlocking { App.appModule.accountRepo.isLoggedIn() }) {
+                        Page.DeviceOverview
+                    } else {
+                        Page.LoginPage
+                    }
 
                 Scaffold(
                     bottomBar = {
@@ -92,40 +77,40 @@ class MainActivity : ComponentActivity() {
                     ) {
                         composable(Page.LoginPage.route) {
                             LoginPage(
-                                accountRepo = accountRepo,
+                                accountRepo = App.appModule.accountRepo,
                                 navigateOnValidLogin = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                                 navigateToSignUpPage = { appState.navHostController.navigate(Page.SignUpPage.route) },
                             )
                         }
                         composable(Page.SignUpPage.route) {
                             SignUpPage(
-                                accountRepo = accountRepo,
+                                accountRepo = App.appModule.accountRepo,
                                 navigateOnValidSignUp = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                                 navigateToLoginPage = { appState.navHostController.navigate(Page.LoginPage.route) },
                             )
                         }
-                        composable(Page.DeviceOverview.route) { HomePage(overviewRepository = overviewRepo) }
+                        composable(Page.DeviceOverview.route) { HomePage(overviewRepository = App.appModule.overviewRepo) }
                         composable(Page.CreateDevicePage.route) {
                             CreateDevicePage(
-                                deviceRepository = deviceRepo,
+                                deviceRepository = App.appModule.deviceRepo,
                                 navigateOnValidCreation = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                                 navigateOnCancelCreation = { appState.navHostController.navigate(Page.DeviceOverview.route) },
                             )
                         }
                         composable(
                             Page.TaskOverview.route,
-                        ) { TaskOverviewPage(overviewRepository = overviewRepo) }
+                        ) { TaskOverviewPage(overviewRepository = App.appModule.overviewRepo) }
                         composable(Page.CreateTaskPage.route) {
                             CreateTaskPage(
-                                deviceRepository = deviceRepo,
-                                taskRepository = taskRepo,
+                                deviceRepository = App.appModule.deviceRepo,
+                                taskRepository = App.appModule.taskRepo,
                                 navigateOnValidCreation = { appState.navHostController.navigate(Page.TaskOverview.route) },
                                 navigateOnCancelCreation = { appState.navHostController.navigate(Page.TaskOverview.route) },
                             )
                         }
                         composable(Page.Account.route) {
                             AccountPage(
-                                accountRepo = accountRepo,
+                                accountRepo = App.appModule.accountRepo,
                                 navigateOnLogout = { appState.navHostController.navigate(Page.LoginPage.route) },
                             )
                         }
