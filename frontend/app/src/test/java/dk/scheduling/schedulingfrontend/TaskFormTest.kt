@@ -14,6 +14,8 @@ class TaskFormTest {
     private val timeMidday = TimePickerState(12, 0, true)
     private val timeOneMinutePastMidday = TimePickerState(12, 1, true)
     private val millisecondsInADay = 86400000L
+    private val timeSinceEpochInMillis = Instant.now().toEpochMilli()
+    private val tomorrowInMillis = timeSinceEpochInMillis + millisecondsInADay
 
     @Test
     fun statusIsValidTest() {
@@ -21,7 +23,7 @@ class TaskFormTest {
             TaskForm(
                 1,
                 Duration("1"),
-                DateRange(Long.MAX_VALUE, Long.MAX_VALUE),
+                DateRange(tomorrowInMillis, tomorrowInMillis),
                 timeMidday,
                 timeOneMinutePastMidday,
             )
@@ -31,29 +33,28 @@ class TaskFormTest {
             TaskForm(
                 1,
                 Duration("1"),
-                DateRange(Long.MAX_VALUE - millisecondsInADay, Long.MAX_VALUE),
+                DateRange(timeSinceEpochInMillis, tomorrowInMillis),
                 timeMidday,
                 timeMidday,
             )
         assert(taskDifferentDates.status().isValid) { "Valid task, different dates" }
 
         // Say the current time is 14:10
-        val timeInstant = Instant.now()
-        // Then the start time is 14:00 and end time is 14:15
-        // The duration of the task is 4 minutes, which fits the interval.
+        // Then the start time is 14:00 and end time is 14:20
+        // The duration of the task is 7 minutes, which fits the interval.
         val timeLocal = LocalDateTime.now().minusMinutes(10)
-        val timeLocalEnd = timeLocal.plusMinutes(15)
+        val timeLocalEnd = timeLocal.plusMinutes(20)
         val taskTimeNowCloseToEndTime =
             TaskForm(
                 1,
-                Duration("4"),
-                DateRange(timeInstant.toEpochMilli(), timeInstant.toEpochMilli()),
+                Duration("7"),
+                DateRange(tomorrowInMillis, tomorrowInMillis),
                 TimePickerState(timeLocal.hour, timeLocal.minute, true),
                 TimePickerState(timeLocalEnd.hour, timeLocalEnd.minute, true),
             )
         // If the task is scheduled instantly, then the event could start at 14:10.
         // This would leave enough time to perform the task before the end time:
-        // 14:10 (current time) + 0:04 (the duration)  <  14:15 (end time)
+        // 14:10 (current time) + 0:07 (the duration)  <  14:20 (end time)
         assert(taskTimeNowCloseToEndTime.status().isValid) { "Valid task, end time is after (current time + duration)" }
     }
 
@@ -63,7 +64,7 @@ class TaskFormTest {
             TaskForm(
                 1,
                 Duration("2"),
-                DateRange(Long.MAX_VALUE, Long.MAX_VALUE),
+                DateRange(tomorrowInMillis, tomorrowInMillis),
                 timeMidday,
                 timeOneMinutePastMidday,
             )
@@ -75,7 +76,7 @@ class TaskFormTest {
                 // 24 hours and one minute in minutes
                 Duration("1441"),
                 // One day in milliseconds
-                DateRange(Long.MAX_VALUE - millisecondsInADay, Long.MAX_VALUE),
+                DateRange(timeSinceEpochInMillis, tomorrowInMillis),
                 timeMidday,
                 timeMidday,
             )
@@ -88,7 +89,7 @@ class TaskFormTest {
             TaskForm(
                 null,
                 Duration("1"),
-                DateRange(Long.MAX_VALUE, Long.MAX_VALUE),
+                DateRange(tomorrowInMillis, tomorrowInMillis),
                 timeMidday,
                 timeOneMinutePastMidday,
             )
@@ -98,17 +99,16 @@ class TaskFormTest {
     @Test
     fun endTime_before_currentTimePlusDuration_InvalidStatus() {
         // Say the current time is 14:04
-        val timeInstant = Instant.now()
         // Then the start time is 14:00 and end time is 14:06
         // The duration of the task is 4 minutes, which fits the interval.
         val timeLocal = LocalDateTime.now().minusMinutes(4)
         val timeLocalEnd = timeLocal.plusMinutes(6)
 
-        val taskTimeNowCloseToEndTime =
+        val timeNowCloseToEndTime =
             TaskForm(
                 1,
                 Duration("4"),
-                DateRange(timeInstant.toEpochMilli(), timeInstant.toEpochMilli()),
+                DateRange(timeSinceEpochInMillis, timeSinceEpochInMillis),
                 TimePickerState(timeLocal.hour, timeLocal.minute, true),
                 TimePickerState(timeLocalEnd.hour, timeLocalEnd.minute, true),
             )
@@ -116,6 +116,6 @@ class TaskFormTest {
         // then the event would be 14:04.
         // But this does not leave enough time to run the 4 minute duration before the end time 14:06
         // 14:04 (current time) + 0:04 (the duration)  >  14:06 (end time)  -> Impossible!
-        assert(!taskTimeNowCloseToEndTime.status().isValid) { "Invalid task, end time is before (current time + duration)" }
+        assert(!timeNowCloseToEndTime.status().isValid) { "Invalid task, end time is before (current time + duration)" }
     }
 }

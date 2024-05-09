@@ -31,6 +31,7 @@ import dk.scheduling.schedulingfrontend.model.Status
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.ZoneId
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -113,7 +114,7 @@ private fun DialogActions(
 
 data class DateRange(val startTime: Long?, val endTime: Long?) {
     private fun millisToLocalDateTime(millis: Long): LocalDateTime =
-        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault())
+        LocalDateTime.ofInstant(Instant.ofEpochMilli(millis), ZoneId.systemDefault()).with(LocalTime.MIDNIGHT)
 
     fun rangeStart(): LocalDateTime? = startTime?.let { millisToLocalDateTime(it) }
 

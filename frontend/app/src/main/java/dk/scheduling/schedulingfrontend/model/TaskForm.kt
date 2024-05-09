@@ -41,12 +41,12 @@ data class TaskForm(
         val start = startDateTime()
         val end = endDateTime()
         val intervalLengthInMinutes = start.until(end, ChronoUnit.MINUTES)
-        val latestPossibleEventStartTime = end.minus(intervalLengthInMinutes, ChronoUnit.MINUTES)
+        val latestPossibleEventStartTime = end.minus(duration.value.toLong(), ChronoUnit.MINUTES)
         return if (!start.isBefore(end)) {
             Status(false, "Start time must be before end time, change times or date interval")
         } else if (intervalLengthInMinutes < duration.value.toLong()) {
             Status(false, "The duration may not be larger than the specified interval")
-        } else if (!latestPossibleEventStartTime.isAfter(LocalDateTime.now())) {
+        } else if (LocalDateTime.now().isAfter(latestPossibleEventStartTime)) {
             Status(false, "There is not enough time perform the task before the deadline")
         } else {
             Status(true, "")
