@@ -67,7 +67,7 @@ class EventWorkerTest {
 
         val db = App.eventAlarmDb
 
-        assertTrue("the list suppose to be empty", db.eventAlarmDao().getAll().isEmpty())
+        assertTrue("the list is supposed to be empty", db.eventAlarmDao().getAll().isEmpty())
         runBlocking {
             val expectedNumEvents = App.appModule.eventRepo.getAllEvents().count()
 
