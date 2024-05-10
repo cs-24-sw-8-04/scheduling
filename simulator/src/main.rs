@@ -85,8 +85,7 @@ mod tests {
     async fn generate_devices_test() {
         let client = &mut make_client();
         let amount_of_users = 10;
-        let min_amount_of_devices_per_user = 1;
-        let max_amount_of_devices_per_user = 3;
+        let amount_of_devices_per_user = 3;
         let min_effect = 10.0;
         let max_effect = 10000.0;
 
@@ -95,8 +94,7 @@ mod tests {
             .expect("Could not create users for devices");
 
         let device_ownership = data_factory::generate_devices(
-            min_amount_of_devices_per_user,
-            max_amount_of_devices_per_user,
+            amount_of_devices_per_user,
             client,
             &auth_tokens,
             min_effect,
@@ -108,15 +106,14 @@ mod tests {
         assert!(device_ownership.keys().count() == amount_of_users);
         device_ownership
             .values()
-            .for_each(|value| assert!(value.len() <= max_amount_of_devices_per_user));
+            .for_each(|value| assert!(value.len() == amount_of_devices_per_user));
     }
 
     #[tokio::test]
     async fn generate_tasks_test() {
         let client = &mut make_client();
         let amount_of_users = 10;
-        let min_amount_of_devices_per_user = 1;
-        let max_amount_of_devices_per_user = 3;
+        let amount_of_devices_per_user = 3;
         let min_amount_of_tasks_per_device = 1;
         let max_amount_of_tasks_per_device = 3;
         let min_effect = 10.0;
@@ -128,8 +125,7 @@ mod tests {
             .await
             .expect("Could not create users for devices");
         let device_ownership = data_factory::generate_devices(
-            min_amount_of_devices_per_user,
-            max_amount_of_devices_per_user,
+            amount_of_devices_per_user,
             client,
             &auth_tokens,
             min_effect,

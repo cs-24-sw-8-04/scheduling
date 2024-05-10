@@ -1,12 +1,14 @@
 use chrono::{DateTime, Duration, Utc};
 use criterion::{criterion_group, criterion_main, Criterion};
 
-use protocol::{graph::DiscreteGraph, tasks::TaskId, time::Timespan};
+use protocol::{tasks::TaskId, time::Timespan};
 use rand::Rng;
 use scheduling_backend::scheduling::{
     scheduler::{GlobalSchedulerAlgorithm, NaiveSchedulerAlgorithm, SchedulerAlgorithm},
     task_for_scheduler::TaskForScheduler,
 };
+
+use simulator::compare_algorithms::make_discrete_graph_from_delta;
 
 struct TaskFactory {
     task_id: TaskId,
@@ -58,37 +60,6 @@ impl TaskFactory {
         }
         res
     }
-}
-
-#[allow(dead_code)] // Used in benchmark
-pub fn make_discrete_graph_from_vec(
-    time_now: DateTime<Utc>,
-    vec: Vec<f64>,
-    total_duration: Duration,
-) -> DiscreteGraph {
-    let len = vec.len() as i64;
-    DiscreteGraph::new(
-        vec,
-        Duration::seconds(total_duration.num_seconds() / len),
-        time_now,
-    )
-}
-
-pub fn make_discrete_graph_from_delta(
-    time_now: DateTime<Utc>,
-    delta: Duration,
-    total_duration: Duration,
-    min_available_effect: u64,
-    max_available_effect: u64,
-) -> DiscreteGraph {
-    let mut rng = rand::thread_rng();
-    DiscreteGraph::new(
-        (0..(total_duration.num_seconds() / delta.num_seconds()))
-            .map(|_| (rng.gen_range(min_available_effect..max_available_effect)) as f64)
-            .collect::<Vec<f64>>(),
-        delta,
-        time_now,
-    )
 }
 
 fn naive_scheduling_benchmark(c: &mut Criterion) {
