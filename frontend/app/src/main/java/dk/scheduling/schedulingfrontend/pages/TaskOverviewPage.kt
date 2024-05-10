@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
@@ -54,7 +55,9 @@ import dk.scheduling.schedulingfrontend.model.DeviceTask
 import dk.scheduling.schedulingfrontend.model.TaskEvent
 import dk.scheduling.schedulingfrontend.repositories.overviews.IOverviewsRepository
 import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
+import dk.scheduling.schedulingfrontend.repositories.task.ITaskRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
+import kotlinx.coroutines.launch
 import testdata.DummyDeviceRepository
 import testdata.DummyEventRepository
 import testdata.DummyTaskRepository
@@ -65,6 +68,7 @@ import java.time.LocalDateTime
 fun TaskOverviewPage(
     modifier: Modifier = Modifier,
     overviewRepository: IOverviewsRepository,
+    taskRepository: ITaskRepository,
 ) {
     var deviceTasks by remember { mutableStateOf(mutableListOf<DeviceTask>()) }
     val refreshState = rememberPullToRefreshState()
@@ -92,7 +96,9 @@ fun TaskOverviewPage(
                     if (deviceTask.tasks.isNotEmpty()) {
                         DeviceTaskCard(
                             deviceTask = deviceTask,
-                        ) { deviceTasks.remove(deviceTask) }
+                            onRemoveDeviceTask = { deviceTasks.remove(deviceTask) },
+                            taskRepository = taskRepository,
+                        )
                     }
                 }
 
@@ -113,6 +119,7 @@ fun TaskOverviewPage(
 fun DeviceTaskCard(
     deviceTask: DeviceTask,
     onRemoveDeviceTask: () -> Unit,
+    taskRepository: ITaskRepository,
 ) {
     val tasks = deviceTask.tasks.toMutableStateList()
 
@@ -129,11 +136,16 @@ fun DeviceTaskCard(
                     .fillMaxWidth()
                     .padding(8.dp),
         )
-
+        val coroutineScope = rememberCoroutineScope()
         tasks.forEach {
             TaskViewer(
                 taskEvent = it,
-            ) { tasks.remove(it) }
+            ) {
+                coroutineScope.launch {
+                    taskRepository.deleteTask(it.task.id)
+                    tasks.remove(it)
+                }
+            }
         }
 
         if (tasks.isEmpty()) {
@@ -383,7 +395,13 @@ fun CancelTaskAlertDialog(
 @Composable
 fun TaskOverviewPagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        TaskOverviewPage(overviewRepository = OverviewRepository(DummyDeviceRepository(0), DummyTaskRepository(0), DummyEventRepository(0)))
+        val dummyTaskRepo = DummyTaskRepository(0)
+        val dummyDeviceRepo = DummyDeviceRepository(0)
+        val dummyEventRepo = DummyEventRepository(0)
+        TaskOverviewPage(
+            overviewRepository = OverviewRepository(dummyDeviceRepo, dummyTaskRepo, dummyEventRepo),
+            taskRepository = dummyTaskRepo,
+        )
     }
 }
 
@@ -391,6 +409,12 @@ fun TaskOverviewPagePreviewLightMode() {
 @Composable
 fun TaskOverviewPagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        TaskOverviewPage(overviewRepository = OverviewRepository(DummyDeviceRepository(0), DummyTaskRepository(0), DummyEventRepository(0)))
+        val dummyTaskRepo = DummyTaskRepository(0)
+        val dummyDeviceRepo = DummyDeviceRepository(0)
+        val dummyEventRepo = DummyEventRepository(0)
+        TaskOverviewPage(
+            overviewRepository = OverviewRepository(dummyDeviceRepo, dummyTaskRepo, dummyEventRepo),
+            taskRepository = dummyTaskRepo,
+        )
     }
 }
