@@ -57,6 +57,7 @@ import dk.scheduling.schedulingfrontend.model.getDeviceState
 import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
 import dk.scheduling.schedulingfrontend.repositories.overviews.IOverviewsRepository
 import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
+import kotlinx.coroutines.launch
 import testdata.DummyDeviceRepository
 import testdata.DummyEventRepository
 import testdata.DummyTaskRepository
