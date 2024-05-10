@@ -19,8 +19,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import dk.scheduling.schedulingfrontend.datasources.AccountDataSource
-import dk.scheduling.schedulingfrontend.datasources.api.getApiClient
 import dk.scheduling.schedulingfrontend.gui.pages.AccountPage
 import dk.scheduling.schedulingfrontend.gui.pages.CreateDevicePage
 import dk.scheduling.schedulingfrontend.gui.pages.CreateTaskPage
@@ -30,11 +28,6 @@ import dk.scheduling.schedulingfrontend.gui.pages.Page
 import dk.scheduling.schedulingfrontend.gui.pages.SignUpPage
 import dk.scheduling.schedulingfrontend.gui.pages.TaskOverviewPage
 import dk.scheduling.schedulingfrontend.gui.theme.SchedulingFrontendTheme
-import dk.scheduling.schedulingfrontend.repositories.account.AccountRepository
-import dk.scheduling.schedulingfrontend.repositories.device.DeviceRepository
-import dk.scheduling.schedulingfrontend.repositories.event.EventRepository
-import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
-import dk.scheduling.schedulingfrontend.repositories.task.TaskRepository
 import kotlinx.coroutines.runBlocking
 
 class MainActivity : ComponentActivity() {
