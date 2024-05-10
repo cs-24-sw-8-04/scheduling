@@ -101,7 +101,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(
                             Page.TaskOverview.route,
-                        ) { TaskOverviewPage(overviewRepository = App.appModule.verviewRepo, taskRepository = App.appModule.taskRepo) }
+                        ) { TaskOverviewPage(overviewRepository = App.appModule.overviewRepo, taskRepository = App.appModule.taskRepo) }
                         composable(Page.CreateTaskPage.route) {
                             CreateTaskPage(
                                 deviceRepository = App.appModule.deviceRepo,
