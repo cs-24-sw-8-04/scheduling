@@ -42,9 +42,6 @@ fun SignUpPage(
     var password by remember {
         mutableStateOf("")
     }
-    var homeAddress by remember {
-        mutableStateOf("")
-    }
     var isSignUpFailed by remember {
         mutableStateOf(false)
     }
@@ -77,18 +74,6 @@ fun SignUpPage(
             password,
             onPasswordChange = {
                 password = it
-                if (isSignUpFailed) isSignUpFailed = false
-            },
-            isError = isSignUpFailed,
-        )
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        StandardTextField(
-            label = "Home Address",
-            value = homeAddress,
-            onValueChange = {
-                homeAddress = it
                 if (isSignUpFailed) isSignUpFailed = false
             },
             isError = isSignUpFailed,

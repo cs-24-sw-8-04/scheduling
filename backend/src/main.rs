@@ -10,15 +10,16 @@ use axum::{
     extract::State,
     http::StatusCode,
     routing::{delete, get, post},
-    Router,
+    Json, Router,
 };
 use clap::Parser;
 use dotenv::dotenv;
+use protocol::graph::DiscreteGraph;
 use scheduling::{
     background_service::{
         background_service, simulator_background_service, BackgroundServiceMessage,
     },
-    scheduler::NaiveSchedulerAlgorithm,
+    scheduler::{GlobalSchedulerAlgorithm, NaiveSchedulerAlgorithm},
 };
 use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 use tokio::{
@@ -31,7 +32,9 @@ use tower_http::trace::TraceLayer;
 use tracing::{event, Level};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-use crate::handlers::util::internal_error;
+use protocol::scheduling::SchedulingGlob;
+
+use crate::scheduling::background_service::run_algorithm;
 
 #[derive(Clone)]
 pub struct MyState {
@@ -125,19 +128,38 @@ fn app(state: MyState, simulator_mode: bool) -> Router {
         .route("/events/get", get(get_device_event));
 
     if simulator_mode {
-        router = router.route("/scheduling/run", post(run_scheduling));
+        router = router.route("/scheduling/run", get(run_scheduling));
     }
 
     router.layer(TraceLayer::new_for_http()).with_state(state)
 }
 
 #[debug_handler]
-async fn run_scheduling(State(state): State<MyState>) -> Result<(), (StatusCode, String)> {
-    state
-        .sender
-        .send(BackgroundServiceMessage::RunScheduler)
-        .map_err(internal_error)?;
-    Ok(())
+async fn run_scheduling(
+    State(state): State<MyState>,
+    Json(scheduling_glob): Json<SchedulingGlob>,
+) -> Result<Json<DiscreteGraph>, (StatusCode, String)> {
+    let mut discrete_graph = scheduling_glob.get_discrete_graph().clone();
+    let _ = match scheduling_glob.get_alg() {
+        0 => {
+            run_algorithm(
+                &state.pool,
+                &mut NaiveSchedulerAlgorithm::new(),
+                &mut discrete_graph,
+            )
+            .await
+        }
+        1 => {
+            run_algorithm(
+                &state.pool,
+                &mut GlobalSchedulerAlgorithm::new(),
+                &mut discrete_graph,
+            )
+            .await
+        }
+        _ => Ok(()), // Return error instead
+    };
+    Ok(Json(discrete_graph))
 }
 
 #[cfg(test)]

@@ -1259,6 +1259,7 @@ dependencies = [
  "chrono",
  "derive_more",
  "serde",
+ "serde_with",
  "sqlx",
  "uuid",
 ]

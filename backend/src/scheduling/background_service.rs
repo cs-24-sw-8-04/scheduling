@@ -1,14 +1,13 @@
 use anyhow::Result;
 use chrono::{Duration, Utc};
 use protocol::{
+    graph::DiscreteGraph,
     tasks::TaskId,
     time::{Milliseconds, Timespan},
 };
 use sqlx::SqlitePool;
 use tokio::{select, sync::mpsc::UnboundedReceiver, time::sleep};
 use tracing::{event, Level};
-
-use crate::data_model::graph::DiscreteGraph;
 
 use super::{scheduler::SchedulerAlgorithm, task_for_scheduler::TaskForScheduler};
 
@@ -36,9 +35,19 @@ pub async fn background_service<F, TAlg>(
 
         let debounce = sleep(std::time::Duration::from_secs(5 * 60));
 
+        let values = vec![
+            0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 28.0, 200.0, 484.0, 829.0, 1186.0, 1407.0, 1475.0,
+            1455.0, 1393.0, 1271.0, 1044.0, 754.0, 445.0, 154.0, 10.0, 0.0, 0.0, 0.0,
+        ]
+        .into_iter()
+        .flat_map(|v| vec![v; 60])
+        .collect();
+
+        let mut discrete_graph = DiscreteGraph::new(values, Duration::minutes(1), Utc::now());
+
         select! {
             _ = debounce => {
-                if let Err(error) = run_algorithm(&pool, &mut algorithm).await {
+                if let Err(error) = run_algorithm(&pool, &mut algorithm, &mut discrete_graph).await {
                     println!("Algorithm error!: {}", error);
                 }
             }
@@ -69,10 +78,17 @@ pub async fn simulator_background_service<F, TAlg>(
 
         let msg = msg.unwrap();
 
+        let mut discrete_graph = DiscreteGraph::new(
+            vec![0.0, 2.0, 4.0, 6.0, 8.0, 10.0],
+            Duration::hours(4),
+            Utc::now(),
+        );
+
         match msg {
             BackgroundServiceMessage::Update => {}
             BackgroundServiceMessage::RunScheduler => {
-                if let Err(error) = run_algorithm(&pool, &mut algorithm).await {
+                if let Err(error) = run_algorithm(&pool, &mut algorithm, &mut discrete_graph).await
+                {
                     println!("Algorithm error!: {}", error);
                 }
             }
@@ -80,9 +96,12 @@ pub async fn simulator_background_service<F, TAlg>(
     }
 }
 
-async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorithm) -> Result<()> {
-    let now = Utc::now();
-
+pub async fn run_algorithm(
+    pool: &SqlitePool,
+    algorithm: &mut impl SchedulerAlgorithm,
+    graph: &mut DiscreteGraph,
+) -> Result<()> {
+    let now = graph.get_start_time();
     // TODO: Filter out tasks that have a started event
     let tasks = sqlx::query!(
         r#"
@@ -110,17 +129,7 @@ async fn run_algorithm(pool: &SqlitePool, algorithm: &mut impl SchedulerAlgorith
 
     event!(target: "backend", Level::INFO, "Running algorithm on {} tasks", tasks.len());
 
-    let values = vec![
-        0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 28.0, 200.0, 484.0, 829.0, 1186.0, 1407.0, 1475.0, 1455.0,
-        1393.0, 1271.0, 1044.0, 754.0, 445.0, 154.0, 10.0, 0.0, 0.0, 0.0,
-    ]
-    .into_iter()
-    .flat_map(|v| vec![v; 60])
-    .collect();
-
-    let mut graph = DiscreteGraph::new(values, Duration::minutes(1), Utc::now());
-
-    let events = algorithm.schedule(&mut graph, tasks)?;
+    let events = algorithm.schedule(graph, tasks.clone())?;
 
     for event in events {
         sqlx::query!(
