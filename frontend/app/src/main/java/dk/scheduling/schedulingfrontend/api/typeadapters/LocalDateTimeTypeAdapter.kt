@@ -12,6 +12,7 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.ZoneOffset
+import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
 class LocalDateTimeTypeAdapter :
@@ -24,7 +25,13 @@ class LocalDateTimeTypeAdapter :
         typeOfSrc: Type,
         context: JsonSerializationContext,
     ): JsonElement {
-        return JsonPrimitive(datetime.atZone(ZoneOffset.UTC).format(formatter))
+        val output =
+            ZonedDateTime.ofInstant(
+                datetime.atZone(ZoneId.systemDefault()).toInstant(),
+                ZoneId.of("UTC"),
+            ).toLocalDateTime().atZone(ZoneOffset.UTC).format(formatter)
+
+        return JsonPrimitive(output)
     }
 
     @Throws(JsonParseException::class)
