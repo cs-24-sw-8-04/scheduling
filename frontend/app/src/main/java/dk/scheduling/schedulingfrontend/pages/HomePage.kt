@@ -32,6 +32,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
@@ -50,11 +51,13 @@ import dk.scheduling.schedulingfrontend.components.Loading
 import dk.scheduling.schedulingfrontend.model.DeviceOverview
 import dk.scheduling.schedulingfrontend.model.DeviceState
 import dk.scheduling.schedulingfrontend.model.getDeviceState
+import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
 import dk.scheduling.schedulingfrontend.repositories.overviews.IOverviewsRepository
 import dk.scheduling.schedulingfrontend.repositories.overviews.OverviewRepository
 import dk.scheduling.schedulingfrontend.ui.theme.SchedulingFrontendTheme
 import dk.scheduling.schedulingfrontend.ui.theme.scheduled
 import dk.scheduling.schedulingfrontend.ui.theme.success
+import kotlinx.coroutines.launch
 import testdata.DummyDeviceRepository
 import testdata.DummyEventRepository
 import testdata.DummyTaskRepository
@@ -64,7 +67,13 @@ import java.time.temporal.ChronoUnit
 @Composable
 fun HomePagePreviewLightMode() {
     SchedulingFrontendTheme(darkTheme = false, dynamicColor = false) {
-        HomePage(overviewRepository = OverviewRepository(DummyDeviceRepository(0), DummyTaskRepository(0), DummyEventRepository(0)))
+        val dummyTaskRepo = DummyTaskRepository(0)
+        val dummyDeviceRepo = DummyDeviceRepository(0)
+        val dummyEventRepo = DummyEventRepository(0)
+        HomePage(
+            overviewRepository = OverviewRepository(dummyDeviceRepo, dummyTaskRepo, dummyEventRepo),
+            deviceRepository = dummyDeviceRepo,
+        )
     }
 }
 
@@ -72,7 +81,13 @@ fun HomePagePreviewLightMode() {
 @Composable
 fun HomePagePreviewDarkMode() {
     SchedulingFrontendTheme(darkTheme = true, dynamicColor = false) {
-        HomePage(overviewRepository = OverviewRepository(DummyDeviceRepository(0), DummyTaskRepository(0), DummyEventRepository(0)))
+        val dummyTaskRepo = DummyTaskRepository(0)
+        val dummyDeviceRepo = DummyDeviceRepository(0)
+        val dummyEventRepo = DummyEventRepository(0)
+        HomePage(
+            overviewRepository = OverviewRepository(dummyDeviceRepo, dummyTaskRepo, dummyEventRepo),
+            deviceRepository = dummyDeviceRepo,
+        )
     }
 }
 
@@ -81,6 +96,7 @@ fun HomePagePreviewDarkMode() {
 fun HomePage(
     modifier: Modifier = Modifier,
     overviewRepository: IOverviewsRepository,
+    deviceRepository: IDeviceRepository,
 ) {
     var devices by remember { mutableStateOf(mutableListOf<DeviceOverview>()) }
     val refreshState = rememberPullToRefreshState()
@@ -105,10 +121,14 @@ fun HomePage(
                         .fillMaxSize(),
             ) {
                 items(devices) { deviceOverview ->
+                    val coroutineScope = rememberCoroutineScope()
                     DeviceCard(
                         deviceOverview = deviceOverview,
                         onRemove = {
-                            devices.remove(it)
+                            coroutineScope.launch {
+                                deviceRepository.deleteDevice(it.device.id)
+                                devices.remove(it)
+                            }
                         },
                     )
                 }

@@ -89,7 +89,9 @@ class MainActivity : ComponentActivity() {
                                 navigateToLoginPage = { appState.navHostController.navigate(Page.LoginPage.route) },
                             )
                         }
-                        composable(Page.DeviceOverview.route) { HomePage(overviewRepository = App.appModule.overviewRepo) }
+                        composable(Page.DeviceOverview.route) {
+                            HomePage(overviewRepository = App.appModule.overviewRepo, deviceRepository = App.appModule.deviceRepo)
+                        }
                         composable(Page.CreateDevicePage.route) {
                             CreateDevicePage(
                                 deviceRepository = App.appModule.deviceRepo,
@@ -99,7 +101,7 @@ class MainActivity : ComponentActivity() {
                         }
                         composable(
                             Page.TaskOverview.route,
-                        ) { TaskOverviewPage(overviewRepository = App.appModule.overviewRepo) }
+                        ) { TaskOverviewPage(overviewRepository = App.appModule.overviewRepo, taskRepository = App.appModule.taskRepo) }
                         composable(Page.CreateTaskPage.route) {
                             CreateTaskPage(
                                 deviceRepository = App.appModule.deviceRepo,
