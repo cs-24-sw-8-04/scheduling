@@ -89,7 +89,7 @@ pub async fn delete_task(
     Authentication(account_id): Authentication,
     Query(delete_task_request): Query<DeleteTaskRequest>,
 ) -> Result<(), (StatusCode, String)> {
-    sqlx::query!(
+    let affected_rows = sqlx::query!(
         r#"
         DELETE FROM Tasks
         WHERE id == ? AND EXISTS (
@@ -98,13 +98,21 @@ pub async fn delete_task(
             JOIN Devices ON Tasks.device_id == Devices.id 
             AND Devices.account_id == ?
         )
+        RETURNING id
         "#,
         delete_task_request.id,
         account_id
     )
-    .execute(&state.pool)
+    .fetch_all(&state.pool)
     .await
     .map_err(internal_error)?;
+
+    if affected_rows.len() != 1 {
+        return Err((
+            StatusCode::UNAUTHORIZED,
+            "No associated task found".to_owned(),
+        ));
+    }
 
     state.update_schedule().map_err(internal_error)?;
 

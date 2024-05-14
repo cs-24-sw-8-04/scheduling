@@ -46,7 +46,7 @@ pub struct CreateTaskRequest {
 
 #[derive(Deserialize, Serialize)]
 pub struct DeleteTaskRequest {
-    pub id: DeviceId,
+    pub id: TaskId,
 }
 
 #[derive(Serialize, Deserialize, Debug, PartialEq)]

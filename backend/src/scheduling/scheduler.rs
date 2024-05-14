@@ -2,9 +2,9 @@ use std::cmp::min;
 
 use super::task_for_scheduler::TaskForScheduler;
 use super::unpublished_event::UnpublishedEvent;
-use crate::data_model::graph::DiscreteGraph;
 use anyhow::{bail, Result};
 use itertools::Itertools;
+use protocol::graph::DiscreteGraph;
 
 pub trait SchedulerAlgorithm {
     fn schedule(
@@ -84,7 +84,6 @@ impl SchedulerAlgorithm for GlobalSchedulerAlgorithm {
         tasks: Vec<TaskForScheduler>,
     ) -> Result<Vec<UnpublishedEvent>> {
         let mut scheduled_events: Vec<UnpublishedEvent> = Vec::new();
-
         for task in &tasks {
             let temp_graph = graph.clone();
             let best_event = make_unpublished_event_and_remove_from_graph(
@@ -224,13 +223,13 @@ fn duration_as_timeslots(task: &TaskForScheduler, graph: &DiscreteGraph) -> Resu
 #[cfg(test)]
 mod tests {
     use super::SchedulerAlgorithm;
-    use crate::data_model::graph::DiscreteGraph;
     use crate::scheduling::scheduler::{
         AllPermutationsAlgorithm, GlobalSchedulerAlgorithm, NaiveSchedulerAlgorithm,
     };
     use crate::scheduling::task_for_scheduler::TaskForScheduler as Task;
     use crate::scheduling::unpublished_event::UnpublishedEvent;
     use chrono::{DateTime, Duration, Utc};
+    use protocol::graph::DiscreteGraph;
     use protocol::tasks::TaskId;
     use protocol::time::{Milliseconds, Timespan};
 
@@ -738,10 +737,9 @@ mod tests {
 
 #[cfg(test)]
 mod dependancy_tests {
-    use crate::{
-        data_model::graph::DiscreteGraph, scheduling::task_for_scheduler::TaskForScheduler,
-    };
+    use crate::scheduling::task_for_scheduler::TaskForScheduler;
     use chrono::{DateTime, Duration, Utc};
+    use protocol::graph::DiscreteGraph;
     use protocol::time::Timespan;
 
     use super::{get_task_as_timeslots, make_p_from_duration_in_timeslots};

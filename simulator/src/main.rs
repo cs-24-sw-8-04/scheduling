@@ -1,25 +1,18 @@
 use anyhow::Result;
-use anyhow::{anyhow, bail};
-use generate_data::BASE_URL;
-use http::{header::USER_AGENT, HeaderValue, Request};
-use http_body_util::BodyExt;
-use http_client::HttpClient;
+use compare_algorithms::compare;
+use http::{header::USER_AGENT, HeaderValue};
 use hyper_util::client::legacy::Client;
 use hyper_util::rt::TokioExecutor;
 use tower::ServiceBuilder;
-use tower::{Service, ServiceExt};
 use tower_http::{
     classify::StatusInRangeAsFailures, decompression::DecompressionLayer,
     set_header::SetRequestHeaderLayer, trace::TraceLayer,
 };
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
-mod generate_data;
+mod compare_algorithms;
+mod data_factory;
 mod http_client;
-
-const AMOUNT_OF_USERS: usize = 100;
-const MAX_AMOUNT_OF_DEVICES_PER_USER: usize = 3;
-const MAX_AMOUNT_OF_TASKS_PER_DEVICE: usize = 3;
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -44,60 +37,16 @@ async fn main() -> Result<()> {
         .layer(DecompressionLayer::new())
         .service(client);
 
-    let auth_tokens = generate_data::generate_users(AMOUNT_OF_USERS, &mut client).await?;
-    let device_ownership =
-        generate_data::generate_devices(MAX_AMOUNT_OF_DEVICES_PER_USER, &mut client, &auth_tokens)
-            .await?;
-    let task_onwership = generate_data::generate_tasks(
-        MAX_AMOUNT_OF_TASKS_PER_DEVICE,
-        &mut client,
-        &device_ownership,
-    )
-    .await?;
-
-    // Run the scheduler
-    run_scheduler(&mut client).await?;
-
-    println!("-------------------------------------------------------------");
-    println!("Auth tokens: {:?}", auth_tokens);
-    println!("-------------------------------------------------------------");
-    println!("Device ownership: {:?}", device_ownership);
-    println!("-------------------------------------------------------------");
-    println!("Task ownership: {:?}", task_onwership);
-
-    Ok(())
-}
-
-async fn run_scheduler(client: &mut HttpClient) -> Result<(), anyhow::Error> {
-    let request = Request::builder()
-        .uri(BASE_URL.to_owned() + "/scheduling/run")
-        .method("POST")
-        .header("Content-Type", "application/json")
-        .body("".to_string())?;
-
-    let response = client.ready().await?.call(request).await?;
-
-    if !response.status().is_success() {
-        let status = response.status();
-        let body = response
-            .into_body()
-            .collect()
-            .await
-            .map_err(|e| anyhow!(e))?;
-        bail!(
-            "status message: {} message: {:?}",
-            status,
-            String::from_utf8(body.to_bytes().to_vec())
-        );
-    }
+    compare(&mut client).await?;
 
     Ok(())
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::generate_data;
+    use crate::data_factory;
     use crate::http_client::HttpClient;
+    use chrono::{Duration, Utc};
 
     use http::{header::USER_AGENT, HeaderValue};
     use hyper_util::{client::legacy::Client, rt::TokioExecutor};
@@ -126,7 +75,7 @@ mod tests {
         let client = &mut make_client();
         let amount_of_users = 10;
 
-        let auth_tokens = generate_data::generate_users(amount_of_users, client)
+        let auth_tokens = data_factory::generate_users(amount_of_users, client)
             .await
             .expect("Could not create users");
         assert!(auth_tokens.len() == amount_of_users);
@@ -136,42 +85,62 @@ mod tests {
     async fn generate_devices_test() {
         let client = &mut make_client();
         let amount_of_users = 10;
-        let max_amount_of_devices_per_user = 3;
+        let amount_of_devices_per_user = 3;
+        let min_effect = 10.0;
+        let max_effect = 10000.0;
 
-        let auth_tokens = generate_data::generate_users(amount_of_users, client)
+        let auth_tokens = data_factory::generate_users(amount_of_users, client)
             .await
             .expect("Could not create users for devices");
 
-        let device_ownership =
-            generate_data::generate_devices(max_amount_of_devices_per_user, client, &auth_tokens)
-                .await
-                .expect("Could not create devices");
+        let device_ownership = data_factory::generate_devices(
+            amount_of_devices_per_user,
+            client,
+            &auth_tokens,
+            min_effect,
+            max_effect,
+        )
+        .await
+        .expect("Could not create devices");
 
         assert!(device_ownership.keys().count() == amount_of_users);
         device_ownership
             .values()
-            .for_each(|value| assert!(value.len() <= max_amount_of_devices_per_user));
+            .for_each(|value| assert!(value.len() == amount_of_devices_per_user));
     }
 
     #[tokio::test]
     async fn generate_tasks_test() {
         let client = &mut make_client();
         let amount_of_users = 10;
-        let max_amount_of_devices_per_user = 3;
+        let amount_of_devices_per_user = 3;
+        let min_amount_of_tasks_per_device = 1;
         let max_amount_of_tasks_per_device = 3;
+        let min_effect = 10.0;
+        let max_effect = 10000.0;
+        let time_now = Utc::now();
+        let total_duration = Duration::hours(24);
 
-        let auth_tokens = generate_data::generate_users(amount_of_users, client)
+        let auth_tokens = data_factory::generate_users(amount_of_users, client)
             .await
             .expect("Could not create users for devices");
-        let device_ownership =
-            generate_data::generate_devices(max_amount_of_devices_per_user, client, &auth_tokens)
-                .await
-                .expect("Could not create devices");
+        let device_ownership = data_factory::generate_devices(
+            amount_of_devices_per_user,
+            client,
+            &auth_tokens,
+            min_effect,
+            max_effect,
+        )
+        .await
+        .expect("Could not create devices");
 
-        let task_ownership = generate_data::generate_tasks(
+        let task_ownership = data_factory::generate_tasks(
+            min_amount_of_tasks_per_device,
             max_amount_of_tasks_per_device,
             client,
             &device_ownership,
+            total_duration,
+            time_now,
         )
         .await
         .expect("Could not create tasks");

@@ -70,10 +70,6 @@ jobs:
         files: lcov.info
         fail_ci_if_error: true
 
-    - name: Run simulator
-      run: cargo run
-      if: matrix.project == 'simulator'
-
     - uses: giraffate/clippy-action@v1
       with:
         reporter: 'github-pr-review'
