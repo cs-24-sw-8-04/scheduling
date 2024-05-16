@@ -15,13 +15,13 @@ pub fn make_discrete_graph_from_delta(
     time_now: DateTime<Utc>,
     delta: Duration,
     total_duration: Duration,
-    min_available_effect: u64,
-    max_available_effect: u64,
+    min_available_effect: f64,
+    max_available_effect: f64,
 ) -> DiscreteGraph {
     let mut rng = rand::thread_rng();
     DiscreteGraph::new(
         (0..(total_duration.num_seconds() / delta.num_seconds()))
-            .map(|_| (rng.gen_range(min_available_effect..max_available_effect)) as f64)
+            .map(|_| (rng.gen_range(min_available_effect..max_available_effect)))
             .collect::<Vec<f64>>(),
         delta,
         time_now,
@@ -31,12 +31,12 @@ pub fn make_discrete_graph_from_delta(
 pub async fn compare(client: &mut HttpClient) -> Result<()> {
     let amount_of_users = 1;
     let amount_of_devices_per_user = 1;
-    let min_amount_of_tasks_per_device = 8;
-    let max_amount_of_tasks_per_device = 8;
+    let min_amount_of_tasks_per_device = 1;
+    let max_amount_of_tasks_per_device = 1;
     let min_effect = 10.0;
     let max_effect = 1000.0;
-    let min_available_effect = 1000;
-    let max_available_effect = 8100;
+    let min_available_effect = 10.0;
+    let max_available_effect = 116.25;
     let runs = 100;
     let time_now = Utc::now();
     let total_duration = Duration::hours(24);
