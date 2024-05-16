@@ -16,7 +16,7 @@ data class TaskForm(
 ) {
     fun status(): Status {
         return if (deviceId == null) {
-            return Status(false, "No device selected")
+            Status(false, "No device selected")
         } else if (!duration.status().isValid) {
             duration.status()
         } else if (!dateRange.status().isValid) {

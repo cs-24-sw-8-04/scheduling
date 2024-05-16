@@ -126,6 +126,7 @@ fun CreateDevicePage(
                 }
             },
             text = "Create Device",
+            enabled = device.name.isNotBlank() && device.effect > 0,
         )
 
         Spacer(modifier = Modifier.height(10.dp))
