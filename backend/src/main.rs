@@ -19,7 +19,7 @@ use scheduling::{
     background_service::{
         background_service, simulator_background_service, BackgroundServiceMessage,
     },
-    scheduler::{GlobalSchedulerAlgorithm, NaiveSchedulerAlgorithm},
+    scheduler::{AllPermutationsAlgorithm, GlobalSchedulerAlgorithm, NaiveSchedulerAlgorithm},
 };
 use sqlx::{sqlite::SqlitePoolOptions, SqlitePool};
 use tokio::{
@@ -153,6 +153,14 @@ async fn run_scheduling(
             run_algorithm(
                 &state.pool,
                 &mut GlobalSchedulerAlgorithm::new(),
+                &mut discrete_graph,
+            )
+            .await
+        }
+        2 => {
+            run_algorithm(
+                &state.pool,
+                &mut AllPermutationsAlgorithm::new(),
                 &mut discrete_graph,
             )
             .await

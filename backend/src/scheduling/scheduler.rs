@@ -17,7 +17,11 @@ pub struct AllPermutationsAlgorithm;
 pub struct GlobalSchedulerAlgorithm;
 pub struct NaiveSchedulerAlgorithm;
 
+#[allow(clippy::new_without_default)]
 impl AllPermutationsAlgorithm {
+    pub fn new() -> Self {
+        AllPermutationsAlgorithm
+    }
     fn weight(val: &f64) -> f64 {
         if *val < 0.0 {
             val.powi(3).abs()
@@ -52,27 +56,26 @@ impl SchedulerAlgorithm for AllPermutationsAlgorithm {
         let len = tasks.len();
         let permutaions = tasks.into_iter().permutations(len);
 
-        let (_, best_schedule) = permutaions
+        let (best_graph, _, best_schedule) = permutaions
             .map(|permutation| {
                 let mut temp_graph = graph.clone();
                 let res = scheudler.schedule(&mut temp_graph, permutation);
                 (temp_graph, res)
             })
             .map(|(graph, schedule)| {
-                (
-                    graph
-                        .get_values()
-                        .iter()
-                        .map(|val: &f64| Self::weight(val))
-                        .sum::<f64>(),
-                    schedule,
-                )
+                let graph_sum = graph
+                    .get_values()
+                    .iter()
+                    .map(|val: &f64| Self::weight(val))
+                    .sum::<f64>();
+                (graph, graph_sum, schedule)
             })
-            .min_by(|(graph1_sum, _schedule1), (graph2_sum, _schedule2)| {
+            .min_by(|(_, graph1_sum, _), (_, graph2_sum, _)| {
                 graph1_sum.partial_cmp(graph2_sum).unwrap()
             })
             .unwrap();
 
+        *graph = best_graph;
         best_schedule
     }
 }
