@@ -100,6 +100,7 @@ fun SignUpPage(
                 }
             },
             text = "Sign up",
+            enabled = username.isNotBlank() && password.isNotBlank(),
         )
     }
 

@@ -102,6 +102,7 @@ fun LoginPage(
                 }
             },
             text = "Log In",
+            enabled = username.isNotBlank() && password.isNotBlank(),
         )
     }
 
