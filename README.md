@@ -86,18 +86,23 @@ cargo build
 ```
 
 # Simulation
+## Prepare Database
 When you want to simulate, you have to recreate the database, to ensure that the database does not have any old data.
 Go to the backend directory and execute the following
-## Windows
+### Windows
 >> .\make_new_db.bat
 
-## Linux & Mac
+### Linux & Mac
 >> ./make_new_db.sh
 
+## Run backend in simulator mode
 After that, the backend shall be executed in simulator mode
 >> cargo run -- --simulator
 
+## Set parameters for the simulation
 Then open a new terminal in the simulator directory and modify the parameters in the compare function in `simulator/src/compare_alforithms.rs` to match the simulation.
 It is important that the available wattage match the tasks, so given n tasks the available watt per timeslot should be [1000; 2*505n], but you may round the calculated number up to a "nicer" number. 
-When that is done, simply run the simulation
+
+## Run simulation
+When the parameters are set, simply run the simulation
 >> cargo run
