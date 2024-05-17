@@ -70,8 +70,8 @@ fn naive_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -97,8 +97,8 @@ fn naive_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -124,8 +124,8 @@ fn naive_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -151,8 +151,8 @@ fn naive_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -178,8 +178,8 @@ fn naive_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -207,8 +207,8 @@ fn global_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -234,8 +234,8 @@ fn global_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -261,8 +261,8 @@ fn global_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -288,8 +288,8 @@ fn global_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -315,8 +315,8 @@ fn global_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -344,8 +344,8 @@ fn all_perm_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -373,8 +373,8 @@ fn all_perm_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -402,8 +402,8 @@ fn all_perm_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -431,8 +431,8 @@ fn all_perm_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -460,8 +460,8 @@ fn all_perm_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -489,8 +489,8 @@ fn all_perm_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -518,8 +518,8 @@ fn all_perm_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -547,8 +547,8 @@ fn all_perm_scheduling_benchmark(c: &mut Criterion) {
         let max_effect = 10000.0;
         let time_now = Utc::now();
         let total_duration = Duration::hours(24);
-        let min_available_effect = 1000;
-        let max_available_effect = 1000000000;
+        let min_available_effect = 1000.0;
+        let max_available_effect = 1000000000.0;
 
         let tasks = criterion::black_box(TaskFactory::new().make_tasks(
             amount_of_tasks,
@@ -574,8 +574,8 @@ fn all_perm_scheduling_benchmark(c: &mut Criterion) {
 
 criterion_group!(
     benches,
-    naive_scheduling_benchmark,
-    global_scheduling_benchmark,
+    //naive_scheduling_benchmark,
+    //global_scheduling_benchmark,
     all_perm_scheduling_benchmark
 );
 criterion_main!(benches);

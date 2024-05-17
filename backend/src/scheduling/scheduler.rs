@@ -5,6 +5,7 @@ use super::unpublished_event::UnpublishedEvent;
 use anyhow::{bail, Result};
 use itertools::Itertools;
 use protocol::graph::DiscreteGraph;
+use rayon::prelude::*;
 
 pub trait SchedulerAlgorithm {
     fn schedule(
@@ -57,6 +58,7 @@ impl SchedulerAlgorithm for AllPermutationsAlgorithm {
         let permutaions = tasks.into_iter().permutations(len);
 
         let (best_graph, _, best_schedule) = permutaions
+            .par_bridge()
             .map(|permutation| {
                 let mut temp_graph = graph.clone();
                 let res = scheudler.schedule(&mut temp_graph, permutation);

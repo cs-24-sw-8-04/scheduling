@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 use anyhow::{anyhow, bail, Result};
 use chrono::{DateTime, Duration, Utc};
 use rand::Rng;
@@ -29,25 +31,28 @@ pub fn make_discrete_graph_from_delta(
 }
 
 pub async fn compare(client: &mut HttpClient) -> Result<()> {
-    let amount_of_users = 1;
-    let amount_of_devices_per_user = 1;
-    let min_amount_of_tasks_per_device = 1;
-    let max_amount_of_tasks_per_device = 1;
+    let amount_of_users = 100;
+    let amount_of_devices_per_user = 10;
+    let min_amount_of_tasks_per_device = 5;
+    let max_amount_of_tasks_per_device = 15;
     let min_effect = 10.0;
     let max_effect = 1000.0;
-    let min_available_effect = 10.0;
-    let max_available_effect = 116.25;
-    let runs = 100;
+    let min_available_effect = 1000.0;
+    let max_available_effect = 1261500.0;
+    let runs = 1;
     let time_now = Utc::now();
     let total_duration = Duration::hours(24);
     let mut naive_result: f64 = 0.0;
     let mut global_result: f64 = 0.0;
     let mut all_perm_result: f64 = 0.0;
+    let perform_naive = false;
+    let perform_global = true;
     let perform_all_perm = false;
     let auth_tokens = generate_users(amount_of_users, client).await?;
 
+    let now = Instant::now();
     for i in 0..runs {
-        if i % 2 == 0 {
+        if i % 5 == 0 {
             println!("Round: {}", i);
         }
         let discrete_graph = make_discrete_graph_from_delta(
@@ -77,92 +82,103 @@ pub async fn compare(client: &mut HttpClient) -> Result<()> {
         )
         .await?;
 
-        let discrete_graph_naive =
-            run_scheduling_algorithm(0, discrete_graph.clone(), client).await?;
-        let discrete_graph_global =
-            run_scheduling_algorithm(1, discrete_graph.clone(), client).await?;
-        if perform_all_perm{
-            let discrete_graph_all_perm = run_scheduling_algorithm(2, discrete_graph, client).await?;
+        if perform_naive {
+            let discrete_graph_naive =
+                run_scheduling_algorithm(0, discrete_graph.clone(), client).await?;
+            let current_naive_result: f64 = discrete_graph_naive
+                .get_values()
+                .iter()
+                .map(|&val| {
+                    if val < 0.0 {
+                        val.powi(3).abs()
+                    } else {
+                        val.powi(2)
+                    }
+                })
+                .sum();
+            naive_result += current_naive_result;
+        }
+
+        if perform_global {
+            let discrete_graph_global =
+                run_scheduling_algorithm(1, discrete_graph.clone(), client).await?;
+
+            let current_global_result: f64 = discrete_graph_global
+                .get_values()
+                .iter()
+                .map(|&val| {
+                    if val < 0.0 {
+                        val.powi(3).abs()
+                    } else {
+                        val.powi(2)
+                    }
+                })
+                .sum();
+            global_result += current_global_result;
+        }
+
+        if perform_all_perm {
+            let discrete_graph_all_perm =
+                run_scheduling_algorithm(2, discrete_graph, client).await?;
             let current_all_perm_result: f64 = discrete_graph_all_perm
-            .get_values()
-            .iter()
-            .map(|&val| {
-                if val < 0.0 {
-                    val.powi(3).abs()
-                } else {
-                    val.powi(2)
-                }
-            })
-            .sum();
+                .get_values()
+                .iter()
+                .map(|&val| {
+                    if val < 0.0 {
+                        val.powi(3).abs()
+                    } else {
+                        val.powi(2)
+                    }
+                })
+                .sum();
             all_perm_result += current_all_perm_result;
         }
 
-        let current_naive_result: f64 = discrete_graph_naive
-            .get_values()
-            .iter()
-            .map(|&val| {
-                if val < 0.0 {
-                    val.powi(3).abs()
-                } else {
-                    val.powi(2)
-                }
-            })
-            .sum();
-
-        let current_global_result: f64 = discrete_graph_global
-            .get_values()
-            .iter()
-            .map(|&val| {
-                if val < 0.0 {
-                    val.powi(3).abs()
-                } else {
-                    val.powi(2)
-                }
-            })
-            .sum();
-
-        
-
-        if current_naive_result < current_global_result {
-            println!("Naive was better: {}", i);
-        }
-        naive_result += current_naive_result;
-        global_result += current_global_result;
-
         delete_devices(device_ownership.clone(), client).await?;
     }
+    let elapsed = now.elapsed();
 
-    println!("Naive result: {}", naive_result);
-    println!("-------------------------------------------------------------");
-    println!("Global result: {}", global_result);
+    if perform_naive {
+        println!("Naive result: {}", naive_result);
+    }
+
+    if perform_global {
+        println!("Global result: {}", global_result);
+    }
+
     if perform_all_perm {
-        println!("-------------------------------------------------------------");
         println!("All perm result: {}", all_perm_result);
     }
 
-    if global_result < naive_result {
-        println!(
-            "Naive algorithm is {}% worse",
-            ((naive_result - global_result) / global_result) * 100.0
-        );
-    } else {
-        println!(
-            "Global algorithm is {}% worse",
-            ((global_result - naive_result) / naive_result) * 100.0
-        );
+    if perform_naive && perform_global {
+        if global_result < naive_result {
+            println!(
+                "Naive algorithm is {}% worse",
+                ((naive_result - global_result) / global_result) * 100.0
+            );
+        } else {
+            println!(
+                "Global algorithm is {}% worse",
+                ((global_result - naive_result) / naive_result) * 100.0
+            );
+        }
     }
 
-    if perform_all_perm && all_perm_result < global_result {
-        println!(
-            "Global algorithm is {}% worse",
-            ((global_result - all_perm_result) / all_perm_result) * 100.0
-        );
-    } else {
-        println!(
-            "All perm algorithm is {}% worse",
-            ((all_perm_result - global_result) / global_result) * 100.0
-        );
+    if perform_all_perm {
+        if all_perm_result < global_result {
+            println!(
+                "Global algorithm is {}% worse",
+                ((global_result - all_perm_result) / all_perm_result) * 100.0
+            );
+        } else {
+            println!(
+                "All perm algorithm is {}% worse",
+                ((all_perm_result - global_result) / global_result) * 100.0
+            );
+        }
     }
+
+    println!("elapsed time: {}", elapsed.as_secs());
 
     Ok(())
 }
