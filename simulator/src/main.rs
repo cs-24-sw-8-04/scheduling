@@ -19,7 +19,7 @@ async fn main() -> Result<()> {
     tracing_subscriber::registry()
         .with(
             tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
-                "simulator=trace,tower_http=debug,axum::rejection=trace".into()
+                "axum::rejection=trace".into()
             }),
         )
         .with(tracing_subscriber::fmt::layer())

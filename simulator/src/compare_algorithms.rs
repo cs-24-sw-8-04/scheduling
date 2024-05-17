@@ -47,7 +47,7 @@ pub async fn compare(client: &mut HttpClient) -> Result<()> {
     let auth_tokens = generate_users(amount_of_users, client).await?;
 
     for i in 0..runs {
-        if i % 50 == 0 {
+        if i % 2 == 0 {
             println!("Round: {}", i);
         }
         let discrete_graph = make_discrete_graph_from_delta(
