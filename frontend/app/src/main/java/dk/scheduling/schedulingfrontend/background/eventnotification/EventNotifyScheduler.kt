@@ -1,10 +1,10 @@
-package dk.scheduling.schedulingfrontend.eventnotification
+package dk.scheduling.schedulingfrontend.background.eventnotification
 
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import dk.scheduling.schedulingfrontend.database.EventAlarm
+import dk.scheduling.schedulingfrontend.datasources.eventalarm.EventAlarm
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.ZoneId

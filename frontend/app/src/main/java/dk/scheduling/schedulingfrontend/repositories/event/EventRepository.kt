@@ -2,7 +2,7 @@ package dk.scheduling.schedulingfrontend.repositories.event
 
 import android.content.Context
 import androidx.work.WorkManager
-import dk.scheduling.schedulingfrontend.background.EventAlarmSetterWorker
+import dk.scheduling.schedulingfrontend.background.eventnotification.EventAlarmSetterWorker
 import dk.scheduling.schedulingfrontend.datasources.api.ApiService
 import dk.scheduling.schedulingfrontend.datasources.api.protocol.Event
 import dk.scheduling.schedulingfrontend.exceptions.NoBodyWasProvidedException
