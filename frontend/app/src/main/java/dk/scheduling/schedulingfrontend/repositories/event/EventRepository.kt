@@ -2,9 +2,9 @@ package dk.scheduling.schedulingfrontend.repositories.event
 
 import android.content.Context
 import androidx.work.WorkManager
-import dk.scheduling.schedulingfrontend.api.ApiService
-import dk.scheduling.schedulingfrontend.api.protocol.Event
 import dk.scheduling.schedulingfrontend.background.EventAlarmSetterWorker
+import dk.scheduling.schedulingfrontend.datasources.api.ApiService
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Event
 import dk.scheduling.schedulingfrontend.exceptions.NoBodyWasProvidedException
 import dk.scheduling.schedulingfrontend.exceptions.UnauthorizedException
 import dk.scheduling.schedulingfrontend.exceptions.UnsuccessfulRequestException

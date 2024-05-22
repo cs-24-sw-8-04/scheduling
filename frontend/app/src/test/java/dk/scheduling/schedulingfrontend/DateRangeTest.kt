@@ -1,6 +1,6 @@
 package dk.scheduling.schedulingfrontend
 
-import dk.scheduling.schedulingfrontend.components.DateRange
+import dk.scheduling.schedulingfrontend.gui.components.DateRange
 import org.junit.Test
 
 class DateRangeTest {

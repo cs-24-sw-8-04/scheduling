@@ -1,7 +1,7 @@
 package dk.scheduling.schedulingfrontend.repositories.task
 
-import dk.scheduling.schedulingfrontend.api.protocol.Task
-import dk.scheduling.schedulingfrontend.api.protocol.Timespan
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Task
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Timespan
 
 interface ITaskRepository {
     suspend fun getAllTasks(): List<Task>

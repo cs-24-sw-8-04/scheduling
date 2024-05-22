@@ -1,9 +1,9 @@
 package dk.scheduling.schedulingfrontend.repositories.task
 
-import dk.scheduling.schedulingfrontend.api.ApiService
-import dk.scheduling.schedulingfrontend.api.protocol.CreateTaskRequest
-import dk.scheduling.schedulingfrontend.api.protocol.Task
-import dk.scheduling.schedulingfrontend.api.protocol.Timespan
+import dk.scheduling.schedulingfrontend.datasources.api.ApiService
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.CreateTaskRequest
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Task
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Timespan
 import dk.scheduling.schedulingfrontend.exceptions.CreationFailedException
 import dk.scheduling.schedulingfrontend.exceptions.DeletionFailedException
 import dk.scheduling.schedulingfrontend.exceptions.NoBodyWasProvidedException

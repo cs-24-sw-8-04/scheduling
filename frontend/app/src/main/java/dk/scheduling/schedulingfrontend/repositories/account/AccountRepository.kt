@@ -1,8 +1,8 @@
 package dk.scheduling.schedulingfrontend.repositories.account
 
-import dk.scheduling.schedulingfrontend.api.ApiService
-import dk.scheduling.schedulingfrontend.api.protocol.RegisterOrLoginRequest
 import dk.scheduling.schedulingfrontend.datasources.AccountDataSource
+import dk.scheduling.schedulingfrontend.datasources.api.ApiService
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.RegisterOrLoginRequest
 import java.util.UUID
 
 class AccountRepository(

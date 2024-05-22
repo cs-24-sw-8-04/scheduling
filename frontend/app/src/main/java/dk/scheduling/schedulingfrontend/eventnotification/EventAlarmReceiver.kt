@@ -7,8 +7,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.getString
 import dk.scheduling.schedulingfrontend.App
 import dk.scheduling.schedulingfrontend.R
-import dk.scheduling.schedulingfrontend.components.DATE_AND_TIME_FORMAT
 import dk.scheduling.schedulingfrontend.database.EventAlarm
+import dk.scheduling.schedulingfrontend.gui.components.DATE_AND_TIME_FORMAT
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit

@@ -1,7 +1,7 @@
 package testdata
 
-import dk.scheduling.schedulingfrontend.api.protocol.Task
-import dk.scheduling.schedulingfrontend.api.protocol.Timespan
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Task
+import dk.scheduling.schedulingfrontend.datasources.api.protocol.Timespan
 import dk.scheduling.schedulingfrontend.repositories.task.ITaskRepository
 import kotlinx.coroutines.delay
 
