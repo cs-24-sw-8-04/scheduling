@@ -20,34 +20,30 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ElevatedCard
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import dk.scheduling.schedulingfrontend.datasources.api.protocol.Device
 import dk.scheduling.schedulingfrontend.gui.components.ConfirmAlertDialog
 import dk.scheduling.schedulingfrontend.gui.components.DATE_FORMATTER
 import dk.scheduling.schedulingfrontend.gui.components.Loading
+import dk.scheduling.schedulingfrontend.gui.components.Refreshable
 import dk.scheduling.schedulingfrontend.gui.theme.SchedulingFrontendTheme
 import dk.scheduling.schedulingfrontend.gui.theme.scheduled
 import dk.scheduling.schedulingfrontend.gui.theme.success
@@ -91,30 +87,30 @@ fun HomePagePreviewDarkMode() {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(
     modifier: Modifier = Modifier,
     overviewRepository: IOverviewsRepository,
     deviceRepository: IDeviceRepository,
 ) {
-    var devices by remember { mutableStateOf(mutableListOf<DeviceOverview>()) }
-    val refreshState = rememberPullToRefreshState()
-    if (refreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            devices = overviewRepository.getDeviceOverview().toMutableStateList()
-            refreshState.endRefresh()
+    val devices = remember { mutableStateListOf<DeviceOverview>() }
+
+    suspend fun loadDevices() {
+        devices.apply {
+            clear()
+            addAll(overviewRepository.getDeviceOverview())
         }
     }
 
     val (isLoading, setIsLoading) = remember { mutableStateOf(true) }
-
     Loading(
         isLoading = isLoading,
         setIsLoading = setIsLoading,
-        onLoading = { devices = overviewRepository.getDeviceOverview().toMutableStateList() },
+        onLoading = { loadDevices() },
     ) {
-        Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
+        Refreshable(
+            onRefresh = { loadDevices() },
+        ) {
             LazyColumn(
                 modifier =
                     modifier
@@ -137,11 +133,6 @@ fun HomePage(
                     Spacer(modifier = Modifier.height(70.dp))
                 }
             }
-
-            PullToRefreshContainer(
-                modifier = Modifier.align(Alignment.TopCenter),
-                state = refreshState,
-            )
         }
     }
 }
