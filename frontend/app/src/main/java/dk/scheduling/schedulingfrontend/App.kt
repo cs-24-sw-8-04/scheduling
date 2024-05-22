@@ -9,8 +9,8 @@ import androidx.room.Room
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.ExistingWorkPolicy
 import androidx.work.WorkManager
-import dk.scheduling.schedulingfrontend.background.EventAlarmSetterWorker.Request.eventAlarmSetterWorkOnetimeRequest
-import dk.scheduling.schedulingfrontend.background.EventAlarmSetterWorker.Request.eventAlarmSetterWorkPeriodicRequest
+import dk.scheduling.schedulingfrontend.background.eventnotification.EventAlarmSetterWorker.Request.eventAlarmSetterWorkOnetimeRequest
+import dk.scheduling.schedulingfrontend.background.eventnotification.EventAlarmSetterWorker.Request.eventAlarmSetterWorkPeriodicRequest
 import dk.scheduling.schedulingfrontend.database.EventDatabase
 import dk.scheduling.schedulingfrontend.module.AppModule
 import dk.scheduling.schedulingfrontend.module.IAppModule

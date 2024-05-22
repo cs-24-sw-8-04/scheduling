@@ -4,6 +4,8 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverter
 import androidx.room.TypeConverters
+import dk.scheduling.schedulingfrontend.datasources.eventalarm.EventAlarm
+import dk.scheduling.schedulingfrontend.datasources.eventalarm.EventAlarmDao
 import java.time.LocalDateTime
 
 @Database(entities = [EventAlarm::class], version = 1)

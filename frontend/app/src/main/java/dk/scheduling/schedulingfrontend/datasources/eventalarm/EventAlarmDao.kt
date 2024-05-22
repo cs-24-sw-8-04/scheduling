@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend.database
+package dk.scheduling.schedulingfrontend.datasources.eventalarm
 
 import androidx.room.Dao
 import androidx.room.Delete

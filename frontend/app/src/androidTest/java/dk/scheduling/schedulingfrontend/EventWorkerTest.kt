@@ -11,8 +11,8 @@ import androidx.work.WorkManager
 import androidx.work.testing.SynchronousExecutor
 import androidx.work.testing.TestListenableWorkerBuilder
 import androidx.work.testing.WorkManagerTestInitHelper
-import dk.scheduling.schedulingfrontend.background.EventAlarmSetterWorker
-import dk.scheduling.schedulingfrontend.background.EventAlarmSetterWorker.Request.eventAlarmSetterWorkPeriodicRequest
+import dk.scheduling.schedulingfrontend.background.eventnotification.EventAlarmSetterWorker
+import dk.scheduling.schedulingfrontend.background.eventnotification.EventAlarmSetterWorker.Request.eventAlarmSetterWorkPeriodicRequest
 import dk.scheduling.schedulingfrontend.module.TestMockAppModule
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals

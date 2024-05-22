@@ -1,4 +1,4 @@
-package dk.scheduling.schedulingfrontend.background
+package dk.scheduling.schedulingfrontend.background.eventnotification
 
 import android.content.Context
 import androidx.work.Constraints
@@ -10,8 +10,7 @@ import androidx.work.PeriodicWorkRequest
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkerParameters
 import dk.scheduling.schedulingfrontend.App
-import dk.scheduling.schedulingfrontend.database.EventAlarm
-import dk.scheduling.schedulingfrontend.eventnotification.EventNotifyScheduler
+import dk.scheduling.schedulingfrontend.datasources.eventalarm.EventAlarm
 import dk.scheduling.schedulingfrontend.exceptions.UserNotLoggedInException
 import java.time.Duration
 
