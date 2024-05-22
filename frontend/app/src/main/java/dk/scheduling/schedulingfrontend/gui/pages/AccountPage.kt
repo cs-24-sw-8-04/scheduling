@@ -3,9 +3,7 @@ package dk.scheduling.schedulingfrontend.gui.pages
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,8 +19,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
+import dk.scheduling.schedulingfrontend.gui.components.ConfirmAlertDialog
 import dk.scheduling.schedulingfrontend.gui.components.FilledButton
-import dk.scheduling.schedulingfrontend.gui.components.OutlinedButton
 import dk.scheduling.schedulingfrontend.gui.theme.SchedulingFrontendTheme
 import dk.scheduling.schedulingfrontend.repositories.account.IAccountRepository
 import kotlinx.coroutines.launch
@@ -80,49 +78,21 @@ fun AccountPage(
 
 @Composable
 fun LogoutButton(logout: () -> Unit) {
-    var openConfirmDialog by remember { mutableStateOf(false) }
+    val (openConfirmDialog, setOpenConfirmDialog) = remember { mutableStateOf(false) }
 
-    if (openConfirmDialog) {
-        AlertDialog(
-            title = {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = "Logout?",
-                    textAlign = TextAlign.Center,
-                )
-            },
-            text = {
-                Text(
-                    modifier = Modifier.fillMaxWidth(),
-                    text = "Are you sure that you want to logout?",
-                    textAlign = TextAlign.Center,
-                )
-            },
-            confirmButton = {
-                FilledButton(
-                    onClick = {
-                        openConfirmDialog = false
-                        logout()
-                    },
-                    text = "Confirm",
-                )
-            },
-            dismissButton = {
-                OutlinedButton(
-                    onClick = {
-                        openConfirmDialog = false
-                    },
-                    text = "Cancel",
-                )
-            },
-            onDismissRequest = { openConfirmDialog = false },
-        )
-    }
+    ConfirmAlertDialog(
+        openConfirmDialog = openConfirmDialog,
+        setOpenConfirmDialog = setOpenConfirmDialog,
+        title = "Logout?",
+        text = "Are you sure that you want to logout?",
+        onConfirm = { logout() },
+        dismissLabel = "Cancel",
+    )
 
     FilledButton(
         text = "Logout",
         onClick = {
-            openConfirmDialog = true
+            setOpenConfirmDialog(true)
         },
     )
 }
