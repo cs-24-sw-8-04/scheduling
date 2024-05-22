@@ -17,16 +17,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.em
 import dk.scheduling.schedulingfrontend.datasources.api.protocol.Device
 import dk.scheduling.schedulingfrontend.gui.components.FilledButton
 import dk.scheduling.schedulingfrontend.gui.components.OutlinedButton
 import dk.scheduling.schedulingfrontend.gui.components.StandardTextField
+import dk.scheduling.schedulingfrontend.gui.components.Title
 import dk.scheduling.schedulingfrontend.repositories.device.IDeviceRepository
 import kotlinx.coroutines.launch
 import testdata.DummyDeviceRepository
@@ -50,23 +49,7 @@ fun CreateDevicePage(
         mutableStateOf(null)
     }
 
-    Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .padding(all = 50.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top,
-    ) {
-        Spacer(modifier = Modifier.height(90.dp))
-        Text(
-            text = "Create a Device",
-            fontSize = 7.em,
-            textAlign = TextAlign.Center,
-            color = MaterialTheme.colorScheme.primary,
-            fontWeight = FontWeight(700),
-        )
-    }
+    Title(titleText = "Create a Device")
 
     Column(
         modifier =
