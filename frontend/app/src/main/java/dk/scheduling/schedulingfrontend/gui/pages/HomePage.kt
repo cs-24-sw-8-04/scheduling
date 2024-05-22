@@ -173,27 +173,21 @@ fun DeviceCard(
                         ),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Column {
-                    DeviceStateIcon(deviceState)
-                }
+                DeviceStateIcon(deviceState)
 
-                Column {
-                    Text(
-                        text = deviceOverview.device.name,
-                        modifier =
-                            Modifier.padding(8.dp),
-                    )
-                }
+                Text(
+                    text = deviceOverview.device.name,
+                    modifier =
+                        Modifier.padding(8.dp),
+                )
 
                 Spacer(Modifier.weight(1f))
 
-                Column {
-                    Icon(
-                        modifier = Modifier.rotate(rotationState),
-                        imageVector = Icons.Default.ArrowDropDown,
-                        contentDescription = "Drop-Down Arrow",
-                    )
-                }
+                Icon(
+                    modifier = Modifier.rotate(rotationState),
+                    imageVector = Icons.Default.ArrowDropDown,
+                    contentDescription = "Drop-Down Arrow",
+                )
             }
             if (expandedCard) {
                 DeviceInfo(modifier = Modifier, deviceOverview.device)
@@ -288,22 +282,18 @@ fun DeleteDeviceIconButton(
     onRemove: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    var openConfirmDialog by remember { mutableStateOf(false) }
+    val (openConfirmDialog, setOpenConfirmDialog) = remember { mutableStateOf(false) }
 
     ConfirmAlertDialog(
         openConfirmDialog = openConfirmDialog,
-        setOpenConfirmDialog = { openConfirmDialog = it },
+        setOpenConfirmDialog = setOpenConfirmDialog,
         title = "Remove " + device.name,
         text = "Are you sure that you want to remove " + device.name + "?",
-        onConfirm = { // TODO: Call API to remove a device
-            onRemove()
-        },
+        onConfirm = { onRemove() },
     )
 
     IconButton(
-        onClick = {
-            openConfirmDialog = true
-        },
+        onClick = { setOpenConfirmDialog(true) },
     ) {
         Icon(
             imageVector = Icons.Default.Delete,
