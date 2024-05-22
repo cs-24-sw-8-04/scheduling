@@ -54,11 +54,12 @@ fun LoginPage(
         modifier =
             modifier
                 .fillMaxSize()
-                .padding(50.dp), // Adjust column placement.
+                .padding(50.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        StandardTextField( // Input field for username.
+        // Input field for username.
+        StandardTextField(
             label = "Username",
             value = username,
             onValueChange = {
@@ -70,7 +71,8 @@ fun LoginPage(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        PasswordTextField( // Input field for password.
+        // Input field for password.
+        PasswordTextField(
             password,
             onPasswordChange = {
                 password = it // it holds the value of the text field.
