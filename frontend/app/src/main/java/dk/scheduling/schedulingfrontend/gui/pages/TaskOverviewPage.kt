@@ -21,15 +21,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.pulltorefresh.PullToRefreshContainer
-import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -37,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -50,6 +46,7 @@ import dk.scheduling.schedulingfrontend.gui.components.ConfirmAlertDialog
 import dk.scheduling.schedulingfrontend.gui.components.DATE_AND_TIME_FORMAT
 import dk.scheduling.schedulingfrontend.gui.components.DATE_FORMAT
 import dk.scheduling.schedulingfrontend.gui.components.Loading
+import dk.scheduling.schedulingfrontend.gui.components.Refreshable
 import dk.scheduling.schedulingfrontend.gui.components.TIME_FORMAT
 import dk.scheduling.schedulingfrontend.gui.theme.SchedulingFrontendTheme
 import dk.scheduling.schedulingfrontend.model.DeviceTask
@@ -63,19 +60,18 @@ import testdata.DummyEventRepository
 import testdata.DummyTaskRepository
 import java.time.LocalDateTime
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskOverviewPage(
     modifier: Modifier = Modifier,
     overviewRepository: IOverviewsRepository,
     taskRepository: ITaskRepository,
 ) {
-    var deviceTasks by remember { mutableStateOf(mutableListOf<DeviceTask>()) }
-    val refreshState = rememberPullToRefreshState()
-    if (refreshState.isRefreshing) {
-        LaunchedEffect(true) {
-            deviceTasks = overviewRepository.getDeviceTasks().toMutableStateList()
-            refreshState.endRefresh()
+    val deviceTasks = remember { mutableStateListOf<DeviceTask>() }
+
+    suspend fun loadDeviceTasks() {
+        deviceTasks.apply {
+            clear()
+            addAll(overviewRepository.getDeviceTasks())
         }
     }
 
@@ -84,9 +80,11 @@ fun TaskOverviewPage(
     Loading(
         isLoading = isLoading,
         setIsLoading = setIsLoading,
-        onLoading = { deviceTasks = overviewRepository.getDeviceTasks().toMutableStateList() },
+        onLoading = { loadDeviceTasks() },
     ) {
-        Box(Modifier.nestedScroll(refreshState.nestedScrollConnection)) {
+        Refreshable(
+            onRefresh = { loadDeviceTasks() },
+        ) {
             LazyColumn(
                 modifier =
                     modifier
@@ -106,11 +104,6 @@ fun TaskOverviewPage(
                     Spacer(modifier = Modifier.height(70.dp))
                 }
             }
-
-            PullToRefreshContainer(
-                modifier = Modifier.align(Alignment.TopCenter),
-                state = refreshState,
-            )
         }
     }
 }
