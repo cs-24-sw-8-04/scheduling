@@ -49,20 +49,20 @@ fun LoginPage(
     val coroutineScope = rememberCoroutineScope()
 
     Title(titleText = "Login")
-
+    // Arranges the fields and the button in vertical sequence.
     Column(
         modifier =
             modifier
                 .fillMaxSize()
-                .padding(50.dp),
+                .padding(50.dp), // Adjust column placement.
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        StandardTextField(
+        StandardTextField( // Input field for username.
             label = "Username",
             value = username,
             onValueChange = {
-                username = it
+                username = it // it holds the value of the text field.
                 if (isLoginFailed) isLoginFailed = false
             },
             isError = isLoginFailed,
@@ -70,16 +70,16 @@ fun LoginPage(
 
         Spacer(modifier = Modifier.height(20.dp))
 
-        PasswordTextField(
+        PasswordTextField( // Input field for password.
             password,
             onPasswordChange = {
-                password = it
+                password = it // it holds the value of the text field.
                 if (isLoginFailed) isLoginFailed = false
             },
             isError = isLoginFailed,
         )
 
-        if (isLoginFailed) {
+        if (isLoginFailed) { // Shows an error message if the login fails
             Spacer(modifier = Modifier.height(20.dp))
             Text(
                 text = "Wrong username or password",
@@ -91,7 +91,7 @@ fun LoginPage(
 
         FilledButton(
             onClick = {
-                coroutineScope.launch {
+                coroutineScope.launch { // Runs asynchronous
                     if (accountRepo.login(username, password)) {
                         navigateOnValidLogin()
                     } else {
