@@ -11,7 +11,7 @@ simulator = { path = "../simulator" }
 chrono = { version = "0.4", features = ["serde"] }
 uuid = { version = "1.8.0", features = ["v4", "serde"] }
 axum = { version = "0.7", features = ["macros"] }
-tokio = { version = "1.37", features = ["full"] }
+tokio = { version = "1.38", features = ["full"] }
 tower = "0.4"
 sqlx = { version = "0.7", features = ["sqlite", "macros", "migrate", "runtime-tokio", "chrono", "uuid"] }
 serde = "1.0"
